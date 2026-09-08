@@ -2730,11 +2730,11 @@
                 </div>
             </div>
         
-            <!-- Proof 4: Wave Computing & Zero-Thermal Compute -->
-            <div class="proof-card" style="border-color: rgba(0, 243, 255, 0.4); background: linear-gradient(180deg, rgba(16, 24, 48, 0.7) 0%, rgba(10, 14, 28, 0.8) 100%);">
+            <!-- Proof 6: Wave Computing & Zero-Thermal Compute -->
+            <div class="proof-card">
                 <div class="proof-card-header">
-                    <span class="proof-badge" style="background: rgba(0, 243, 255, 0.15); color: #00f3ff; border-color: rgba(0, 243, 255, 0.4);">PHYSICAL WAVE COMPUTING (NATURE 2022)</span>
-                    <h3>4. Zero-Thermal Compute via Physical RF Superposition</h3>
+                    <span class="proof-badge" style="background: #e0f2fe; color: #0284c7; border-color: #bae6fd;">PHYSICAL WAVE COMPUTING (NATURE 2022)</span>
+                    <h3>6. Zero-Thermal Compute via Physical RF Superposition</h3>
                 </div>
                 <div class="proof-q-box">
                     <span class="q-label">THE SKEPTIC'S QUESTION:</span>
@@ -2747,11 +2747,11 @@
                     <p>
                         Heimdall bypasses the digital compute bottleneck using <strong>Over-the-Air Wave Computing (AirComp)</strong>. Attention weights are folded into a <strong>13 Eigen-Node &times; 32 Subcarrier Phase Matrix</strong> (416 phase angles &theta; &isin; [0, 2&pi;]). Linear vector additions occur <em>passively in the ambient physical wavefield</em> at the speed of light (c = 299,792,458 m/s, 500.35 ns cavity latency) via electromagnetic superposition.
                     </p>
-                    <div class="formula-box" style="color: #00f3ff; border-color: rgba(0, 243, 255, 0.3);">
+                    <div class="formula-box" style="background: #f0f9ff; color: #0369a1; border-color: #bae6fd;">
                         E_rx(t) = &Sigma; W_i &middot; s_i(t) &nbsp;|&nbsp; Analog Matrix Superposition in Physical Space &bull; 0.0W Transistor Switching
                     </div>
                     <p>
-                        The ESP32-C6 only modulates phase registers (taking 48.5 microseconds of CPU time) and returns to idle sleep. The physical board remains completely ice-cold at ambient room temperature while running edge neural adaptation.
+                        The ESP32-C6 only modulates phase registers (taking 48.5 microseconds of CPU time) and returns to idle sleep. The physical board remains completely <strong>ice-cold at ambient room temperature</strong> while running edge neural adaptation.
                     </p>
                 </div>
                 <div class="proof-footer">
@@ -2759,40 +2759,11 @@
                 </div>
             </div>
 
-            <!-- Proof 5: MAG-XX Physical-Layer Anti-Tamper Security -->
-            <div class="proof-card" style="border-color: rgba(0, 255, 136, 0.4); background: linear-gradient(180deg, rgba(16, 36, 32, 0.7) 0%, rgba(10, 20, 18, 0.8) 100%);">
+            <!-- Proof 7: 641 MB Empirical Dataset & TinyML Audit -->
+            <div class="proof-card">
                 <div class="proof-card-header">
-                    <span class="proof-badge" style="background: rgba(0, 255, 136, 0.15); color: #00ff88; border-color: rgba(0, 255, 136, 0.4);">GEOMAGNETIC ANOMALY CRYPTOGRAPHY</span>
-                    <h3>5. MAG-XX Anti-Tamper Physical-Layer Security</h3>
-                </div>
-                <div class="proof-q-box">
-                    <span class="q-label">THE SKEPTIC'S QUESTION:</span>
-                    <p>"How do you prove a node is genuine and prevent tampering without vulnerable GPS?"</p>
-                </div>
-                <div class="proof-body">
-                    <p>
-                        Indoor architectural structures (structural steel, concrete rebar grids, copper conduits) distort Earth's planetary magnetic field in a permanent, spatially unique pattern (&Delta;B).
-                    </p>
-                    <p>
-                        The <code>MagXXEngine</code> samples the 3D geomagnetic vector B = (Bx, By, Bz), horizontal component H, and inclination dip angle I = arctan2(Bz, H). It quantizes this into a deterministic cryptographic hash: <code>MAG-XXXX-XXXX@|B|&micro;T/&theta;&deg;DIR</code>.
-                    </p>
-                    <div class="formula-box" style="color: #00ff88; border-color: rgba(0, 255, 136, 0.3);">
-                        &Delta;B_disp = &radic;((Bx - Bx0)&sup2; + (By - By0)&sup2; + (Bz - Bz0)&sup2;) &nbsp;|&nbsp; Tolerance: 2.8 &micro;T
-                    </div>
-                    <p>
-                        If an attacker physically moves, unmounts, or tampers with the node by more than 2.8 &micro;T, the physical-layer tripwire triggers instantly: volatile cryptographic keys are zeroized within 1 clock cycle (<code>VOLATILE_KEYS_ZEROIZED_DEEP_LOCKDOWN</code>), preventing cold-boot memory extraction.
-                    </p>
-                </div>
-                <div class="proof-footer">
-                    <span>🧭 Reference: IEEE Trans. Instrum. Meas. (Indoor Geomagnetic Anomaly Positioning) &bull; FIPS 140-3 Zeroization</span>
-                </div>
-            </div>
-
-            <!-- Proof 6: 641 MB Empirical Dataset & TinyML Audit -->
-            <div class="proof-card" style="border-color: rgba(255, 184, 0, 0.4); background: linear-gradient(180deg, rgba(36, 30, 16, 0.7) 0%, rgba(20, 16, 10, 0.8) 100%);">
-                <div class="proof-card-header">
-                    <span class="proof-badge" style="background: rgba(255, 184, 0, 0.15); color: #ffb800; border-color: rgba(255, 184, 0, 0.4);">EMPIRICAL AUDIT REPORT</span>
-                    <h3>6. 641 MB Empirical Dataset &amp; 97.6% Material Classification</h3>
+                    <span class="proof-badge" style="background: #fef3c7; color: #b45309; border-color: #fde68a;">EMPIRICAL BENCH AUDIT</span>
+                    <h3>7. 641 MB Empirical Dataset &amp; 97.6% Material Classification</h3>
                 </div>
                 <div class="proof-q-box">
                     <span class="q-label">THE SKEPTIC'S QUESTION:</span>
@@ -2802,7 +2773,7 @@
                     <p>
                         Heimdall was grounded on a raw <strong>641 MB training dataset</strong> comprising over 137,000 empirical RF frames captured across real domestic environments.
                     </p>
-                    <ul style="color: #b0c0d8; font-size: 13px; line-height: 1.8; margin-top: 10px; padding-left: 18px;">
+                    <ul style="color: #4b5563; font-size: 14px; line-height: 1.8; margin-top: 10px; padding-left: 20px;">
                         <li><strong>Material Classification:</strong> <strong>97.62% validated accuracy</strong> distinguishing drywall vs. glass vs. wood vs. biological tissue.</li>
                         <li><strong>Vital Regressor MAE:</strong> <strong>6.15 BPM Mean Absolute Error</strong> against clinical ground-truth pulse monitors.</li>
                         <li><strong>Firmware Footprint:</strong> <strong>18.2 KB Flash / 3.4 KB SRAM</strong> compiled into <code>micro_radar_ai_weights.h</code> for instantaneous 2.4 ms inference.</li>
