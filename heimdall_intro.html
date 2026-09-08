@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HEIMDALL | Opening Screen</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+        }
+
+        #webgl-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            background: radial-gradient(circle at 50% 45%, #ffffff 0%, #faf5ff 55%, #f5f3ff 100%);
+        }
+
+        /* Ambient luxury HUD overlays */
+        .overlay-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 36px 48px;
+        }
+
+        .brand-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            opacity: 0;
+            animation: fadeIn 2s ease 1s forwards;
+        }
+
+        .tagline {
+            font-size: 11px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: #7c3aed;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .tagline::before {
+            content: "";
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #d97706, #7c3aed);
+            display: inline-block;
+        }
+
+        .net-tag {
+            font-size: 10px;
+            font-family: monospace;
+            font-weight: 700;
+            color: #b45309;
+            background: rgba(245, 158, 11, 0.12);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            padding: 4px 10px;
+            border-radius: 20px;
+            letter-spacing: 1px;
+        }
+
+        .footer-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            pointer-events: auto;
+            opacity: 0;
+            animation: fadeIn 2s ease 3s forwards;
+        }
+
+        .phase-indicator {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            font-size: 11px;
+            font-family: monospace;
+            color: #6b7280;
+            letter-spacing: 1px;
+        }
+        .phase-name {
+            font-size: 13px;
+            font-weight: 800;
+            color: #1f2937;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .phase-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #d97706;
+            box-shadow: 0 0 10px rgba(217, 119, 6, 0.6);
+            animation: pulse 1.5s infinite alternate;
+        }
+
+        .action-cluster {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+        }
+
+        .btn-enter {
+            background: linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #d97706 100%);
+            color: #ffffff;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(124, 58, 237, 0.25), 0 4px 12px rgba(217, 119, 6, 0.2);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-enter:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(124, 58, 237, 0.35), 0 6px 16px rgba(217, 119, 6, 0.3);
+        }
+
+        .btn-replay {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(124, 58, 237, 0.25);
+            color: #581c87;
+            padding: 14px 20px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            backdrop-filter: blur(8px);
+            transition: all 0.2s;
+        }
+        .btn-replay:hover {
+            background: #f5f3ff;
+            border-color: #7c3aed;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pulse {
+            from { opacity: 0.4; transform: scale(0.85); }
+            to { opacity: 1; transform: scale(1.2); }
+        }
+    </style>
+
+    <script>
+        // Keyboard & click navigation to explore
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowRight') {
+                window.location.href = '/about';
+            }
+        });
+    </script>
+
+</head>
+<body>
+
+    <div id="webgl-canvas"></div>
+
+    <div class="overlay-layer">
+        <div class="brand-header">
+            <div class="tagline">RANDRTECH • DEPIN CONTINUOUS RADAR INTELLIGENCE</div>
+            <div class="net-tag">BASE L2 MAINNET</div>
+        </div>
+
+        <div class="footer-controls">
+            <div class="phase-indicator">
+                <div class="phase-name">
+                    <span class="phase-dot" id="phaseDot"></span>
+                    <span id="phaseText">CLUSTER SYNCHRONIZATION</span>
+                </div>
+                <div>STATE: <span id="timeStateText" style="color: #7c3aed; font-weight: bold;">0.0s</span></div>
+            </div>
+
+            <div class="action-cluster">
+                <button class="btn-replay" onclick="replayAnimation()">⟳ REPLAY INTRO</button>
+                <a href="/about" class="btn-enter">
+                    <span>EXPLORE HEIMDALL</span>
+                    <span>→</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ---------------------------------------------------------------------------------
+        // HEIMDALL KINEMATIC PARTICLE SEQUENCE (THREE.JS)
+        // 1. Organic fluctuation (gold & purple particles drift)
+        // 2. Coherent clustering towards letter typography coordinates
+        // 3. Solidification into the word "HEIMDALL"
+        // 4. Forward camera/text translation towards the viewer
+        // 5. Orbiting swirling particle halo ribbon (Gold & Purple braids)
+        // ---------------------------------------------------------------------------------
+
+        let scene, camera, renderer;
+        let textParticles, haloParticles, ambientDust;
+        let clock = new THREE.Clock();
+        let animStartTime = 0;
+
+        const TOTAL_TEXT_PARTICLES = 16000;
+        const TOTAL_HALO_PARTICLES = 3200;
+        const TOTAL_AMBIENT_PARTICLES = 1600;
+
+        // Particle position arrays & attributes
+        let textGeom, haloGeom, ambientGeom;
+        let textOrigins = [];      // Dispersed fluctuating origins
+        let textTargets = [];      // Exact "HEIMDALL" letter coordinates
+        let textCurrentPos = [];   // Dynamic positions buffer
+        let textColors = [];       // Gold & Purple colors
+        let textVelocities = [];   // Organic drift factors
+
+        let haloAngles = [];
+        let haloSpeeds = [];
+        let haloRadii = [];
+        let haloColors = [];
+        let haloPhaseOffsets = [];
+
+        // Animation Timeline Settings (Seconds)
+        const T_CLUSTER_START = 2.0;    // Starts converging from dispersed state
+        const T_CLUSTER_END   = 5.0;    // Fully assembled into "HEIMDALL"
+        const T_MOVE_FORWARD  = 5.2;    // Glides forward in 3D towards the viewer
+        const T_HALO_IGNITE   = 3.8;    // Swirling halo ribbon begins orbiting
+
+        function createCircleTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 64;
+            canvas.height = 64;
+            const ctx = canvas.getContext('2d');
+
+            const grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 30);
+            grad.addColorStop(0, 'rgba(255, 255, 255, 1.0)');
+            grad.addColorStop(0.72, 'rgba(255, 255, 255, 1.0)');
+            grad.addColorStop(0.92, 'rgba(255, 255, 255, 0.55)');
+            grad.addColorStop(1, 'rgba(255, 255, 255, 0.0)');
+
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, 64, 64);
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        // Generate high-density precise typography target coordinates for "HEIMDALL"
+        function generateTypographyTargets() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 1600;
+            canvas.height = 400;
+            const ctx = canvas.getContext('2d');
+
+            ctx.fillStyle = '#000000';
+            ctx.font = '900 170px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.letterSpacing = '14px';
+            ctx.fillText('HEIMDALL', 800, 200);
+
+            const imgData = ctx.getImageData(0, 0, 1600, 400).data;
+            const validPixels = [];
+
+            // Sample pixels with ultra-crisp 2px resolution
+            for (let y = 0; y < 400; y += 2) {
+                for (let x = 0; x < 1600; x += 2) {
+                    const idx = (y * 1600 + x) * 4;
+                    if (imgData[idx + 3] > 120) {
+                        validPixels.push({
+                            x: (x - 800) * 0.025,
+                            y: -(y - 200) * 0.025,
+                            z: (Math.random() - 0.5) * 0.04 // ultra-tight flat depth plane
+                        });
+                    }
+                }
+            }
+
+            // Shuffle valid pixels for uniform assembly
+            for (let i = validPixels.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [validPixels[i], validPixels[j]] = [validPixels[j], validPixels[i]];
+            }
+
+            return validPixels;
+        }
+
+        function init() {
+            const container = document.getElementById('webgl-canvas');
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+
+            scene = new THREE.Scene();
+            scene.background = null; // transparent to show luxury white CSS radial gradient
+
+            camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 1000);
+            camera.position.set(0, 0, 36);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(width, height);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            container.appendChild(renderer.domElement);
+
+            const particleTexture = createCircleTexture();
+
+            // -------------------------------------------------------------
+            // 1. Text Particles (Fluctuate -> Cluster -> Solidify "HEIMDALL")
+            // -------------------------------------------------------------
+            const sampledTargets = generateTypographyTargets();
+            const N = Math.min(TOTAL_TEXT_PARTICLES, sampledTargets.length);
+
+            textGeom = new THREE.BufferAttribute(new Float32Array(N * 3), 3);
+            const textPosArray = new Float32Array(N * 3);
+            const textColorsArray = new Float32Array(N * 3);
+
+            // Palette Definition for White Canvas
+            // Gold colors: Deep amber, metallic gold, solar yellow
+            const goldPalette = [
+                new THREE.Color(0xd97706),
+                new THREE.Color(0xf59e0b),
+                new THREE.Color(0xb45309),
+                new THREE.Color(0xeab308),
+                new THREE.Color(0xffd700)
+            ];
+
+            // Purple colors: Deep amethyst, regal purple, neon violet
+            const purplePalette = [
+                new THREE.Color(0x7c3aed),
+                new THREE.Color(0x9333ea),
+                new THREE.Color(0x6b21a8),
+                new THREE.Color(0xa855f7),
+                new THREE.Color(0x581c87)
+            ];
+
+            for (let i = 0; i < N; i++) {
+                // Initial dispersed fluctuating cloud
+                const spreadRadius = 45;
+                const ox = (Math.random() - 0.5) * spreadRadius;
+                const oy = (Math.random() - 0.5) * spreadRadius * 0.65;
+                const oz = (Math.random() - 0.5) * 35;
+                textOrigins.push(new THREE.Vector3(ox, oy, oz));
+
+                // Target position on "HEIMDALL"
+                const t = sampledTargets[i];
+                textTargets.push(new THREE.Vector3(t.x, t.y, t.z));
+
+                // Current pos
+                textPosArray[i * 3]     = ox;
+                textPosArray[i * 3 + 1] = oy;
+                textPosArray[i * 3 + 2] = oz;
+
+                // Drift frequencies
+                textVelocities.push({
+                    freqX: 1.2 + Math.random() * 2.0,
+                    freqY: 0.9 + Math.random() * 1.8,
+                    freqZ: 1.5 + Math.random() * 2.2,
+                    amp: 0.6 + Math.random() * 1.2,
+                    phase: Math.random() * Math.PI * 2
+                });
+
+                // Colors: 50% Gold, 50% Purple with harmonic gradients
+                const isGold = (i % 2 === 0) || Math.random() > 0.5;
+                const col = isGold
+                    ? goldPalette[Math.floor(Math.random() * goldPalette.length)]
+                    : purplePalette[Math.floor(Math.random() * purplePalette.length)];
+
+                textColorsArray[i * 3]     = col.r;
+                textColorsArray[i * 3 + 1] = col.g;
+                textColorsArray[i * 3 + 2] = col.b;
+            }
+
+            const textBufferGeom = new THREE.BufferGeometry();
+            textBufferGeom.setAttribute('position', new THREE.BufferAttribute(textPosArray, 3));
+            textBufferGeom.setAttribute('color', new THREE.BufferAttribute(textColorsArray, 3));
+
+            const textMaterial = new THREE.PointsMaterial({
+                size: 0.30,
+                vertexColors: true,
+                map: particleTexture,
+                transparent: true,
+                opacity: 0.95,
+                depthWrite: false,
+                blending: THREE.NormalBlending
+            });
+
+            textParticles = new THREE.Points(textBufferGeom, textMaterial);
+            scene.add(textParticles);
+
+            // -------------------------------------------------------------
+            // 2. Swirling Dual-Braided Particle Halo (Gold + Purple)
+            // -------------------------------------------------------------
+            const haloBufferGeom = new THREE.BufferGeometry();
+            const haloPosArray = new Float32Array(TOTAL_HALO_PARTICLES * 3);
+            const haloColorsArray = new Float32Array(TOTAL_HALO_PARTICLES * 3);
+
+            for (let i = 0; i < TOTAL_HALO_PARTICLES; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                haloAngles.push(angle);
+                haloSpeeds.push(0.9 + Math.random() * 0.7);
+                haloRadii.push({
+                    rx: 15.5 + Math.random() * 4.5,
+                    ry: 4.8 + Math.random() * 2.2,
+                    rz: 6.5 + Math.random() * 3.5,
+                    tube: 0.4 + Math.random() * 1.4
+                });
+                haloPhaseOffsets.push(Math.random() * Math.PI * 2);
+
+                // Alternating braided colors
+                const isGold = i % 2 === 0;
+                const c = isGold
+                    ? goldPalette[Math.floor(Math.random() * goldPalette.length)]
+                    : purplePalette[Math.floor(Math.random() * purplePalette.length)];
+
+                haloColorsArray[i * 3]     = c.r;
+                haloColorsArray[i * 3 + 1] = c.g;
+                haloColorsArray[i * 3 + 2] = c.b;
+
+                haloPosArray[i * 3]     = 0;
+                haloPosArray[i * 3 + 1] = 0;
+                haloPosArray[i * 3 + 2] = -500; // Start hidden
+            }
+
+            haloBufferGeom.setAttribute('position', new THREE.BufferAttribute(haloPosArray, 3));
+            haloBufferGeom.setAttribute('color', new THREE.BufferAttribute(haloColorsArray, 3));
+
+            const haloMaterial = new THREE.PointsMaterial({
+                size: 0.72,
+                vertexColors: true,
+                map: particleTexture,
+                transparent: true,
+                opacity: 0.0,
+                depthWrite: false,
+                blending: THREE.NormalBlending
+            });
+
+            haloParticles = new THREE.Points(haloBufferGeom, haloMaterial);
+            scene.add(haloParticles);
+
+            // -------------------------------------------------------------
+            // 3. Ambient Drifting Stardust
+            // -------------------------------------------------------------
+            const ambGeom = new THREE.BufferGeometry();
+            const ambPos = new Float32Array(TOTAL_AMBIENT_PARTICLES * 3);
+            const ambCol = new Float32Array(TOTAL_AMBIENT_PARTICLES * 3);
+
+            for (let i = 0; i < TOTAL_AMBIENT_PARTICLES; i++) {
+                ambPos[i * 3]     = (Math.random() - 0.5) * 60;
+                ambPos[i * 3 + 1] = (Math.random() - 0.5) * 35;
+                ambPos[i * 3 + 2] = (Math.random() - 0.5) * 30;
+
+                const c = (i % 2 === 0)
+                    ? goldPalette[Math.floor(Math.random() * goldPalette.length)]
+                    : purplePalette[Math.floor(Math.random() * purplePalette.length)];
+
+                ambCol[i * 3]     = c.r;
+                ambCol[i * 3 + 1] = c.g;
+                ambCol[i * 3 + 2] = c.b;
+            }
+
+            ambGeom.setAttribute('position', new THREE.BufferAttribute(ambPos, 3));
+            ambGeom.setAttribute('color', new THREE.BufferAttribute(ambCol, 3));
+
+            const ambMat = new THREE.PointsMaterial({
+                size: 0.35,
+                vertexColors: true,
+                map: particleTexture,
+                transparent: true,
+                opacity: 0.45,
+                depthWrite: false,
+                blending: THREE.NormalBlending
+            });
+
+            ambientDust = new THREE.Points(ambGeom, ambMat);
+            scene.add(ambientDust);
+
+            window.addEventListener('resize', onWindowResize);
+            animStartTime = performance.now() / 1000;
+            animate();
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function smoothstep(min, max, value) {
+            const x = Math.max(0, Math.min(1, (value - min) / (max - min)));
+            return x * x * (3 - 2 * x);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const now = performance.now() / 1000;
+            const elapsed = now - animStartTime;
+
+            // HUD UI State Updates
+            const timeSpan = document.getElementById('timeStateText');
+            if (timeSpan) timeSpan.innerText = `${elapsed.toFixed(1)}s`;
+
+            const phaseTxt = document.getElementById('phaseText');
+            const phaseDot = document.getElementById('phaseDot');
+
+            if (elapsed < T_CLUSTER_START) {
+                if (phaseTxt) phaseTxt.innerText = "ORGANIC FLUCTUATION";
+                if (phaseDot) phaseDot.style.background = "#d97706";
+            } else if (elapsed < T_CLUSTER_END) {
+                if (phaseTxt) phaseTxt.innerText = "COHERENT CLUSTERING → HEIMDALL";
+                if (phaseDot) phaseDot.style.background = "#7c3aed";
+            } else if (elapsed < T_MOVE_FORWARD + 2.0) {
+                if (phaseTxt) phaseTxt.innerText = "FORWARD PERSPECTIVE & SOLIDIFICATION";
+                if (phaseDot) phaseDot.style.background = "#9333ea";
+            } else {
+                if (phaseTxt) phaseTxt.innerText = "HALO SWIRL STABILIZED • READY";
+                if (phaseDot) phaseDot.style.background = "#10b981";
+            }
+
+            // -------------------------------------------------------------
+            // 1. Text Particles Animation (Fluctuation -> Clustering -> Solidify)
+            // -------------------------------------------------------------
+            const textPosAttr = textParticles.geometry.attributes.position;
+            const textPositions = textPosAttr.array;
+            const clusterProgress = smoothstep(T_CLUSTER_START, T_CLUSTER_END, elapsed);
+
+            // Forward translation calculation ("the name move forward on the screen")
+            let forwardZ = 0;
+            if (elapsed > T_MOVE_FORWARD) {
+                const fwdProgress = smoothstep(T_MOVE_FORWARD, T_MOVE_FORWARD + 2.8, elapsed);
+                // Moves forward from Z = 0 to Z = 11.5 closer to the camera
+                forwardZ = fwdProgress * 11.5;
+            }
+
+            // Subtle dynamic tilt to reveal 3D volume
+            const subtleTiltY = Math.sin(elapsed * 0.6) * 0.08;
+            const subtleTiltX = Math.cos(elapsed * 0.5) * 0.04;
+
+            textParticles.position.z = forwardZ;
+            textParticles.rotation.y = subtleTiltY;
+            textParticles.rotation.x = subtleTiltX;
+
+            for (let i = 0; i < textOrigins.length; i++) {
+                const orig = textOrigins[i];
+                const targ = textTargets[i];
+                const vel  = textVelocities[i];
+
+                // Exact zero residual jitter when fully clustered for razor-sharp letters
+                const residual = Math.max(0, 1.0 - clusterProgress);
+                const flucAmp = Math.pow(residual, 2.2) * vel.amp;
+                const flucX = Math.sin(elapsed * vel.freqX + vel.phase) * flucAmp * 2.2;
+                const flucY = Math.cos(elapsed * vel.freqY + vel.phase) * flucAmp * 1.8;
+                const flucZ = Math.sin(elapsed * vel.freqZ + vel.phase) * flucAmp * 2.5;
+
+                // Subtle crystalline twinkle without blur
+                const shimmer = (clusterProgress > 0.95) ? Math.sin(elapsed * 5.0 + i * 0.2) * 0.006 : 0;
+
+                // Position interpolation
+                const curX = orig.x + (targ.x - orig.x) * clusterProgress + flucX + shimmer;
+                const curY = orig.y + (targ.y - orig.y) * clusterProgress + flucY + shimmer;
+                const curZ = orig.z + (targ.z - orig.z) * clusterProgress + flucZ;
+
+                textPositions[i * 3]     = curX;
+                textPositions[i * 3 + 1] = curY;
+                textPositions[i * 3 + 2] = curZ;
+            }
+            textPosAttr.needsUpdate = true;
+
+            // Particle size: tightens into crisp micro-gems when clustered
+            textParticles.material.size = 0.28 + (1.0 - clusterProgress) * 0.16;
+
+            // -------------------------------------------------------------
+            // 2. Swirling Halo Ribbon Animation (Gold & Purple Braids)
+            // -------------------------------------------------------------
+            const haloPosAttr = haloParticles.geometry.attributes.position;
+            const haloPositions = haloPosAttr.array;
+
+            if (elapsed > T_HALO_IGNITE) {
+                const haloFadeIn = smoothstep(T_HALO_IGNITE, T_HALO_IGNITE + 2.0, elapsed);
+                haloParticles.material.opacity = haloFadeIn * 0.88;
+
+                // Center halo around the forward-moving "HEIMDALL"
+                haloParticles.position.z = forwardZ;
+                haloParticles.rotation.y = subtleTiltY * 1.2;
+
+                const tiltAngleX = 0.42; // ~24 deg tilt for orbit
+                const cosTilt = Math.cos(tiltAngleX);
+                const sinTilt = Math.sin(tiltAngleX);
+
+                for (let i = 0; i < TOTAL_HALO_PARTICLES; i++) {
+                    // Update orbital angle
+                    const speed = haloSpeeds[i];
+                    const curAngle = haloAngles[i] + (elapsed - T_HALO_IGNITE) * speed * 1.6;
+                    const r = haloRadii[i];
+                    const ph = haloPhaseOffsets[i];
+
+                    // Toroidal / helical braid calculation around the word
+                    const tubeOffset = Math.sin(curAngle * 4.0 + ph) * r.tube;
+                    const rawX = (r.rx + tubeOffset) * Math.cos(curAngle);
+                    const rawY = (r.ry + tubeOffset) * Math.sin(curAngle);
+                    const rawZ = Math.cos(curAngle * 2.0 + ph) * r.rz;
+
+                    // Apply tilted plane rotation so halo dramatically wraps around the text
+                    const rotX = rawX;
+                    const rotY = rawY * cosTilt - rawZ * sinTilt;
+                    const rotZ = rawY * sinTilt + rawZ * cosTilt;
+
+                    haloPositions[i * 3]     = rotX;
+                    haloPositions[i * 3 + 1] = rotY;
+                    haloPositions[i * 3 + 2] = rotZ;
+                }
+                haloPosAttr.needsUpdate = true;
+            } else {
+                haloParticles.material.opacity = 0;
+            }
+
+            // -------------------------------------------------------------
+            // 3. Ambient Dust Drift
+            // -------------------------------------------------------------
+            if (ambientDust) {
+                ambientDust.rotation.y = elapsed * 0.02;
+                ambientDust.rotation.x = Math.sin(elapsed * 0.015) * 0.05;
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        function replayAnimation() {
+            animStartTime = performance.now() / 1000;
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
