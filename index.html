@@ -2100,6 +2100,8 @@
         }
 
     </style>
+    <!-- Gumroad Overlay Checkout Script -->
+    <script src="https://gumroad.com/js/gumroad.js"></script>
 </head>
 <body>
 
@@ -3254,10 +3256,10 @@
             <!-- Dynamic Price & Token Estimator Box -->
             <div id="paymentRailDetails" style="margin-bottom: 24px;">
                 <div style="font-size: 14px; color: rgba(255,255,255,0.85); margin-bottom: 6px;" id="railHeadline">
-                    Standard Credit Card / Apple Pay / Fiat Checkout: <strong>$450.00 USD</strong>
+                    Standard Credit Card / Apple Pay / Fiat Checkout: <strong>$450.00 USD</strong> <span style="background: #059669; color: #fff; font-size: 11px; padding: 2px 8px; border-radius: 9999px; margin-left: 6px; font-weight: 800;">FREE INSURED SHIPPING</span>
                 </div>
                 <div style="font-size: 12px; color: rgba(255,255,255,0.65);" id="railSubtext">
-                    Includes guaranteed priority commercial node reservation + Free Assembled Prototype (~30 Days).
+                    Includes guaranteed priority commercial node reservation + Free Assembled Prototype Kit (~30 Days Delivery) + 100% Free Shipping worldwide.
                 </div>
             </div>
 
@@ -3284,8 +3286,8 @@
             </div>
 
             <div style="display: flex; justify-content: center; gap: 16px; flex-wrap: wrap;">
-                <a href="/preorder" class="btn-order-glow" id="mainPreorderBtn">
-                    <span id="mainPreorderBtnText">⚡ Claim Pre-Order &amp; Prototype ($450)</span>
+                <a href="https://mrregist.gumroad.com/l/Heimdall" class="btn-order-glow gumroad-button" id="mainPreorderBtn" target="_blank">
+                    <span id="mainPreorderBtnText">⚡ Claim Pre-Order &amp; Prototype ($450 • Free Shipping)</span>
                     <span>→</span>
                 </a>
                 <button onclick="payWithRnrDirect()" class="btn-order-glow" id="btnPayWithRnrDirect" style="display: none; background: linear-gradient(135deg, #059669, #047857); box-shadow: 0 10px 30px rgba(5,150,105,0.4);">
@@ -3404,8 +3406,8 @@
             if (rail === 'USD') {
                 btnUsd.classList.add('active');
                 btnRnr.classList.remove('active');
-                if (headline) headline.innerHTML = 'Standard Credit Card / Apple Pay / Fiat Checkout: <strong>$450.00 USD</strong>';
-                if (subtext) subtext.innerHTML = 'Includes guaranteed priority commercial node reservation + Free Assembled Prototype (~30 Days).';
+                if (headline) headline.innerHTML = 'Standard Credit Card / Apple Pay / Fiat Checkout: <strong>$450.00 USD</strong> <span style="background: #059669; color: #fff; font-size: 11px; padding: 2px 8px; border-radius: 9999px; margin-left: 6px; font-weight: 800;">FREE INSURED SHIPPING</span>';
+                if (subtext) subtext.innerHTML = 'Includes guaranteed priority commercial node reservation + Free Assembled Prototype Kit (~30 Days Delivery) + 100% Free Shipping worldwide.';
                 if (mainBtn) mainBtn.style.display = 'inline-flex';
                 if (directRnrBtn) directRnrBtn.style.display = 'none';
             } else {
@@ -3884,16 +3886,12 @@
             }
         }
 
-        // Wire main preorder button to open Stripe modal instead of dead link
+        // Wire main preorder button directly to Gumroad checkout overlay
         document.addEventListener('DOMContentLoaded', () => {
             const mainBtn = document.getElementById('mainPreorderBtn');
             if (mainBtn) {
-                mainBtn.removeAttribute('href');
-                mainBtn.style.cursor = 'pointer';
-                mainBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    openStripeModal();
-                });
+                mainBtn.setAttribute('href', 'https://mrregist.gumroad.com/l/Heimdall');
+                mainBtn.classList.add('gumroad-button');
             }
         });
 
@@ -3941,6 +3939,12 @@
                     <input type="text" id="custCountry" required placeholder="United States" style="width: 100%; padding: 12px 14px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 14px; outline: none;">
                 </div>
 
+                <div style="margin-bottom: 12px; text-align: center;">
+                    <a href="https://mrregist.gumroad.com/l/Heimdall" target="_blank" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 14px; background: #ff90e8; color: #000; border: 2px solid #000; border-radius: 12px; font-size: 14px; font-weight: 900; text-decoration: none; box-shadow: 3px 3px 0px #000;">
+                        <span>⚡ Instant Checkout via Gumroad ($450 • Free Shipping)</span>
+                        <span>→</span>
+                    </a>
+                </div>
                 <button type="submit" id="btnSubmitStripe" style="width: 100%; padding: 16px; background: linear-gradient(135deg, #7c3aed, #6d28d9); color: #ffffff; border: none; border-radius: 12px; font-size: 15px; font-weight: 800; cursor: pointer; box-shadow: 0 10px 25px rgba(124, 58, 237, 0.35); display: flex; align-items: center; justify-content: center; gap: 8px;">
                     <span>🔒 Proceed to Stripe Secure Payment ($450 USD)</span>
                     <span>→</span>
