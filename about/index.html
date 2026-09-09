@@ -3357,7 +3357,7 @@
                 </div>
                 <div class="cta-perk">
                     <div class="cta-perk-title">🚀 Free Assembled Prototype (~30 Days)</div>
-                    <div class="cta-perk-desc">Hand-built and calibrated prototype featuring 3D-printed metamaterial lens, mmWave sensor, and ESP32-C6 (buyer covers shipping).</div>
+                    <div class="cta-perk-desc">Hand-built prototype featuring custom dielectric housing, Seeed Studio XIAO ESP32-C6 core, pre-flashed with our fully tuned spatial presence firmware. (Commercial production unit reserves final factory dual mmWave radar & magnetometer array).</div>
                 </div>
                 <div class="cta-perk">
                     <div class="cta-perk-title">💰 Early Mining Genesis Multiplier</div>
@@ -3386,6 +3386,23 @@
                 </div>
             </div>
 
+            <!-- Direct Checkout CTA (Positioned Immediately Under Selector) -->
+            <div id="checkoutActionContainer" style="margin: 20px auto 28px; text-align: center;">
+                <div style="display: flex; justify-content: center; gap: 16px; flex-wrap: wrap;">
+                <a href="https://mrregist.gumroad.com/l/Heimdall" class="btn-order-glow gumroad-button" id="mainPreorderBtn" target="_blank">
+                    <span id="mainPreorderBtnText">⚡ Claim Pre-Order &amp; Prototype ($450 • Free Shipping)</span>
+                    <span>→</span>
+                </a>
+                <button onclick="payWithRnrDirect()" class="btn-order-glow" id="btnPayWithRnrDirect" style="display: none; background: linear-gradient(135deg, #059669, #047857); box-shadow: 0 10px 30px rgba(5,150,105,0.4);">
+                    <span>⚡ Pay 7,600 $RNR on Base ($380 • 15% OFF)</span>
+                    <span>→</span>
+                </button>
+                <a href="/airmouse/" style="background: rgba(255,255,255,0.12); color: #fff; padding: 18px 32px; border-radius: 9999px; text-decoration: none; font-weight: 800; border: 1px solid rgba(255,255,255,0.25); display: inline-flex; align-items: center; gap: 8px;">
+                    <span>✋ Test Virtual Studio Simulator</span>
+                </a>
+            </div>
+            </div>
+    
             <!-- The Closed-Loop Burn & Recycle Flywheel Infographic -->
             <div class="rnr-flywheel-box">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -3408,19 +3425,7 @@
                 </div>
             </div>
 
-            <div style="display: flex; justify-content: center; gap: 16px; flex-wrap: wrap;">
-                <a href="https://mrregist.gumroad.com/l/Heimdall" class="btn-order-glow gumroad-button" id="mainPreorderBtn" target="_blank">
-                    <span id="mainPreorderBtnText">⚡ Claim Pre-Order &amp; Prototype ($450 • Free Shipping)</span>
-                    <span>→</span>
-                </a>
-                <button onclick="payWithRnrDirect()" class="btn-order-glow" id="btnPayWithRnrDirect" style="display: none; background: linear-gradient(135deg, #059669, #047857); box-shadow: 0 10px 30px rgba(5,150,105,0.4);">
-                    <span>⚡ Pay 7,600 $RNR on Base ($380 • 15% OFF)</span>
-                    <span>→</span>
-                </button>
-                <a href="/airmouse/" style="background: rgba(255,255,255,0.12); color: #fff; padding: 18px 32px; border-radius: 9999px; text-decoration: none; font-weight: 800; border: 1px solid rgba(255,255,255,0.25); display: inline-flex; align-items: center; gap: 8px;">
-                    <span>✋ Test Virtual Studio Simulator</span>
-                </a>
-            </div>
+            
         </div>
     </section>
 
@@ -3545,7 +3550,13 @@
                 if (mainBtn) mainBtn.style.display = 'none';
                 if (directRnrBtn) {
                     directRnrBtn.style.display = 'inline-flex';
-                    directRnrBtn.innerHTML = `<span>⚡ Pay ${tokensNeeded} $RNR on Base ($380 • 15% OFF)</span> <span>→</span>`;
+                    directRnrBtn.innerHTML = `<span>⚡ Pay ${tokensNeeded
+            // Smoothly snap focus to the action button so mobile users instantly see where to tap
+            const actionBtn = (rail === 'USD') ? mainBtn : directRnrBtn;
+            if (actionBtn) {
+                actionBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+} $RNR on Base ($380 • 15% OFF)</span> <span>→</span>`;
                 }
             }
         }
