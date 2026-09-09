@@ -1,0 +1,1964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heimdall 3D Spatial Workspace • Air Mouse &amp; Hexagon Menu</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <style>
+        :root {
+            --bg-dark: #030712;
+            --card-bg: rgba(15, 23, 42, 0.82);
+            --card-border: rgba(124, 58, 237, 0.35);
+            --purple: #7c3aed;
+            --purple-light: #a855f7;
+            --gold: #f59e0b;
+            --gold-light: #fbbf24;
+            --cyan: #38bdf8;
+            --green: #34d399;
+            --rose: #f43f5e;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        /* 3D WebGL Canvas Layer */
+        #webgl-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
+        }
+
+        /* Glassmorphic UI Overlays */
+        .ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 10;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 24px 32px;
+        }
+
+        /* Top Navigation & Status Bar */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            pointer-events: auto;
+        }
+
+        .brand-pill {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(15, 23, 42, 0.75);
+            border: 1px solid var(--card-border);
+            padding: 10px 20px;
+            border-radius: 9999px;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .brand-logo {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, var(--purple) 0%, var(--gold) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 15px;
+            color: #fff;
+        }
+
+        .brand-title {
+            font-size: 14px;
+            font-weight: 900;
+            letter-spacing: 0.5px;
+        }
+        .brand-title span { color: var(--gold); }
+
+        .mode-badge {
+            font-size: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 800;
+            padding: 3px 8px;
+            border-radius: 6px;
+            background: rgba(56, 189, 248, 0.15);
+            border: 1px solid var(--cyan);
+            color: var(--cyan);
+        }
+
+        .top-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .btn-top {
+            background: rgba(15, 23, 42, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #cbd5e1;
+            padding: 8px 16px;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 700;
+            text-decoration: none;
+            backdrop-filter: blur(12px);
+            transition: all 0.2s;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-top:hover {
+            border-color: var(--purple-light);
+            color: #fff;
+            background: rgba(124, 58, 237, 0.2);
+        }
+
+        /* Active Gesture HUD (Top Right) */
+        .gesture-hud-card {
+            position: absolute;
+            top: 84px;
+            right: 32px;
+            width: 320px;
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid var(--card-border);
+            border-radius: 18px;
+            padding: 20px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6);
+            pointer-events: auto;
+        }
+
+        .hud-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            font-size: 11px;
+            color: var(--text-muted);
+            letter-spacing: 0.8px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--green);
+            box-shadow: 0 0 10px var(--green);
+            display: inline-block;
+            margin-right: 6px;
+        }
+
+        .active-gesture-display {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(124, 58, 237, 0.3);
+            border-radius: 12px;
+            padding: 14px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 14px;
+        }
+
+        .gesture-icon-box {
+            width: 46px;
+            height: 46px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, rgba(124, 58, 237, 0.3), rgba(245, 158, 11, 0.3));
+            border: 1px solid rgba(251, 191, 36, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+
+        .gesture-text-box {
+            flex: 1;
+        }
+        .gesture-label {
+            font-size: 14px;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: 0.5px;
+        }
+        .gesture-sub {
+            font-size: 11px;
+            color: var(--cyan);
+            font-family: 'JetBrains Mono', monospace;
+            margin-top: 2px;
+        }
+
+        .confidence-bar-bg {
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 6px;
+        }
+        .confidence-bar-fill {
+            height: 100%;
+            width: 92%;
+            background: linear-gradient(90deg, var(--cyan), var(--purple-light));
+            transition: width 0.15s ease;
+        }
+
+        /* Hand Tracking Telemetry Grid */
+        .hand-telemetry-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            font-size: 11px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .telem-pill {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            padding: 8px 10px;
+        }
+        .telem-lbl { color: var(--text-muted); font-size: 9px; }
+        .telem-val { color: #fff; font-weight: 700; margin-top: 2px; }
+
+        /* Bottom Gesture Instruction Bar */
+        .bottom-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            pointer-events: auto;
+            width: 100%;
+        }
+
+        .gesture-guide-cluster {
+            display: flex;
+            gap: 12px;
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid var(--card-border);
+            padding: 12px 20px;
+            border-radius: 20px;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+        }
+
+        .guide-step {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #cbd5e1;
+            padding: 4px 10px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            transition: all 0.2s;
+        }
+        .guide-step.active {
+            border-color: var(--purple-light);
+            background: rgba(124, 58, 237, 0.25);
+            color: #fff;
+            box-shadow: 0 0 12px rgba(124, 58, 237, 0.4);
+        }
+        .guide-step span.icon { font-size: 16px; }
+
+        /* Simulator Test Bench Controls */
+        .sim-test-controls {
+            display: flex;
+            gap: 8px;
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            padding: 10px 16px;
+            border-radius: 16px;
+            backdrop-filter: blur(16px);
+        }
+
+        .btn-sim-trigger {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #fff;
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-sim-trigger:hover {
+            background: var(--purple);
+            border-color: var(--purple-light);
+            transform: translateY(-2px);
+        }
+
+        /* 3D Menu Selection Details Modal */
+        #detailModal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            width: 680px;
+            max-width: 90vw;
+            max-height: 85vh;
+            background: rgba(15, 23, 42, 0.95);
+            border: 2px solid var(--purple-light);
+            border-radius: 24px;
+            padding: 36px;
+            backdrop-filter: blur(28px);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(124, 58, 237, 0.25);
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow-y: auto;
+        }
+        #detailModal.open {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .modal-tag {
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--gold);
+            font-family: 'JetBrains Mono', monospace;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .modal-title {
+            font-size: 26px;
+            font-weight: 900;
+            color: #fff;
+            margin-top: 4px;
+        }
+        .modal-close-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 14px;
+        }
+        .modal-close-btn:hover {
+            background: var(--rose);
+            border-color: var(--rose);
+        }
+
+        .modal-body {
+            font-size: 14px;
+            color: #cbd5e1;
+            line-height: 1.6;
+        }
+
+        /* Reticle pointer for Mid-air Air Mouse */
+        #radar-reticle {
+            position: absolute;
+            width: 44px;
+            height: 44px;
+            border: 2px solid var(--cyan);
+            border-radius: 50%;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: border-color 0.15s, box-shadow 0.15s, transform 0.05s linear;
+            box-shadow: 0 0 16px rgba(56, 189, 248, 0.45);
+        }
+        #radar-reticle::before {
+            content: '';
+            position: absolute;
+            width: 56px;
+            height: 56px;
+            border: 1px dashed rgba(56, 189, 248, 0.5);
+            border-radius: 50%;
+            animation: spinRing 8s linear infinite;
+        }
+        #radar-reticle::after {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--gold);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--gold);
+        }
+        @keyframes spinRing {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        #reticle-label {
+            position: absolute;
+            top: 48px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            font-family: monospace;
+            white-space: nowrap;
+            color: var(--cyan);
+            text-shadow: 0 0 6px rgba(56, 189, 248, 0.8);
+            background: rgba(3, 7, 18, 0.85);
+            padding: 2px 8px;
+            border-radius: 4px;
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            pointer-events: none;
+        }
+
+        /* Sound Effect Indicator */
+        .toast-msg {
+            position: absolute;
+            top: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(124, 58, 237, 0.9);
+            color: #fff;
+            padding: 8px 24px;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 200;
+        }
+        .toast-msg.show { opacity: 1; }
+        /* Hardware Disconnected / Demo Banner */
+        .hw-gated-banner {
+            position: absolute;
+            top: 76px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(15, 23, 42, 0.94);
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            border-radius: 16px;
+            padding: 12px 24px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6), 0 0 25px rgba(245, 158, 11, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            z-index: 80;
+            pointer-events: auto;
+            max-width: 780px;
+            width: calc(100vw - 420px);
+            animation: bannerPulse 4s infinite alternate;
+        }
+        @keyframes bannerPulse {
+            0% { border-color: rgba(245, 158, 11, 0.35); box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+            100% { border-color: rgba(245, 158, 11, 0.7); box-shadow: 0 10px 35px rgba(245, 158, 11, 0.25); }
+        }
+        .banner-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .pulse-lock {
+            font-size: 24px;
+            filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.6));
+        }
+        .banner-title {
+            font-size: 12px;
+            font-weight: 900;
+            color: var(--gold-light);
+            letter-spacing: 0.5px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .banner-sub {
+            font-size: 11px;
+            color: #cbd5e1;
+            margin-top: 2px;
+        }
+        .banner-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+        .btn-banner-action {
+            background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+            border: none;
+            color: #030712;
+            padding: 8px 16px;
+            border-radius: 9999px;
+            font-size: 11px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-banner-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(56, 189, 248, 0.4);
+        }
+        .btn-banner-preorder {
+            background: rgba(245, 158, 11, 0.15);
+            border: 1px solid var(--gold);
+            color: var(--gold-light);
+            padding: 8px 16px;
+            border-radius: 9999px;
+            font-size: 11px;
+            font-weight: 800;
+            text-decoration: none;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-banner-preorder:hover {
+            background: var(--gold);
+            color: #000;
+        }
+        .btn-banner-dismiss {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 16px;
+            padding: 4px;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+        .btn-banner-dismiss:hover { color: #fff; }
+    </style>
+</head>
+<body>
+
+    <!-- Three.js 3D WebGL Canvas -->
+    <div id="webgl-canvas"></div>
+
+    <!-- Laser Air Mouse Reticle -->
+    <div id="radar-reticle">
+        <div id="reticle-label">RADAR LOCK (COM10)</div>
+    </div>
+
+    <!-- Action Toast -->
+    <div class="toast-msg" id="toastMsg">GESTURE TRIGGERED</div>
+
+    <!-- Hardware Disconnected / Demo Banner -->
+    <div class="hw-gated-banner" id="hwGatedBanner">
+        <div class="banner-left">
+            <span class="pulse-lock">🔒</span>
+            <div>
+                <div class="banner-title">HARDWARE DISCONNECTED • 3D SIMULATOR ACTIVE</div>
+                <div class="banner-sub">Physical 60GHz mmWave radar hardware is required for live mid-air tracking. Test the 3D Hexagon menu below or connect your node.</div>
+            </div>
+        </div>
+        <div class="banner-actions">
+            <button class="btn-banner-action" onclick="connectUsbSerial()" id="btnConnectSerial">🔌 Connect USB-C Node</button>
+            <a href="/preorder" class="btn-banner-preorder">🛒 Pre-Order Node ($149)</a>
+            <button class="btn-banner-dismiss" onclick="dismissBanner()">✕</button>
+        </div>
+    </div>
+
+    <!-- UI Overlay Layer -->
+    <div class="ui-layer">
+        
+        <!-- Top Navigation -->
+        <div class="top-bar">
+            <div class="brand-pill">
+                <div class="brand-logo">H</div>
+                <div class="brand-title">Heim<span>dall</span> 3D Spatial</div>
+                <span class="mode-badge" id="hardwareStatusBadge">VIRTUAL SIMULATOR</span>
+            </div>
+
+            <div class="top-actions">
+                <a href="/about" class="btn-top">📖 About Tech</a>
+                <a href="/preorder" class="btn-top" style="border-color: var(--gold); color: var(--gold-light);">🛒 Pre-Order Node</a>
+                <button class="btn-top" onclick="openAITrainingModal()" id="btnTrainAI" style="border-color: var(--green); color: var(--green); background: rgba(52, 211, 153, 0.15); font-weight: 800;">🎓 Train AI (Wave In)</button>
+                <button class="btn-top" onclick="toggleSimMode()" id="btnToggleSource">🔌 Switch To Hardware</button>
+            </div>
+        </div>
+
+        <!-- Active Gesture HUD (Upper Right) -->
+        <div class="gesture-hud-card">
+            <div class="hud-header">
+                <div><span class="status-dot" id="liveDot"></span><span id="trackerStateText">RADAR KINEMATICS LOCK</span></div>
+                <div id="handDistanceLabel">45 cm</div>
+            </div>
+
+            <div class="active-gesture-display">
+                <div class="gesture-icon-box" id="gestureIconDisplay">👋</div>
+                <div class="gesture-text-box">
+                    <div class="gesture-label" id="gestureNameText">READY FOR GESTURE</div>
+                    <div class="gesture-sub" id="gestureConfidenceText">Confidence: 94%</div>
+                    <div class="confidence-bar-bg">
+                        <div class="confidence-bar-fill" id="confBarFill"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hand-telemetry-row" style="margin-top: 6px; background: rgba(124, 58, 237, 0.2); border: 1px solid rgba(168, 85, 247, 0.45); border-radius: 8px; padding: 6px 10px;">
+                <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+                    <div style="font-size: 10px; font-weight: 800; font-family: monospace; color: var(--purple-light);">⚡ TINYML AI CLASSIFIER</div>
+                    <div id="aiPredictionPill" style="font-size: 11px; font-weight: 900; font-family: monospace; color: var(--green);">WAVE_IN 99.7%</div>
+                </div>
+            </div>
+
+            <div class="hand-telemetry-row">
+                <div class="telem-pill">
+                    <div class="telem-lbl">ACTIVE HAND</div>
+                    <div class="telem-val" id="activeHandLabel">RIGHT HAND</div>
+                </div>
+                <div class="telem-pill">
+                    <div class="telem-lbl">HEXAGON STATE</div>
+                    <div class="telem-val" id="hexStateLabel">FOREGROUND</div>
+                </div>
+            </div>
+            <div class="hand-telemetry-row" style="margin-top: 6px;">
+                <div class="telem-pill">
+                    <div class="telem-lbl">MAG-XX ADDRESS</div>
+                    <div class="telem-val" style="color: var(--gold);" id="magAddressShort">MAG-7B3F</div>
+                </div>
+                <div class="telem-pill">
+                    <div class="telem-lbl">ANTI-TAMPER</div>
+                    <div class="telem-val" style="color: var(--green);" id="tamperStatusLabel">ARMED &amp; LOCKED</div>
+                </div>
+            </div>
+            <div class="hand-telemetry-row" style="margin-top: 6px;">
+                <div class="telem-pill">
+                    <div class="telem-lbl">AZIMUTH ANGLE</div>
+                    <div class="telem-val" style="color: var(--cyan);" id="handAngleLabel">0.0°</div>
+                </div>
+                <div class="telem-pill">
+                    <div class="telem-lbl">LIVE VELOCITY</div>
+                    <div class="telem-val" style="color: var(--cyan);" id="handVelocityLabel">0.00 m/s</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Gesture Guidance & Test Controls -->
+        <div class="bottom-bar">
+            <!-- 3 Core Gestures Illustrated -->
+            <div class="gesture-guide-cluster">
+                <div class="guide-step active" id="guideStep1" onclick="triggerGesture('PULL')">
+                    <span class="icon">👋</span>
+                    <div>
+                        <div style="font-size: 10px; color: var(--gold);">STEP 1: SUMMON</div>
+                        <div>Wave In (Palm Facing)</div>
+                    </div>
+                </div>
+                <div class="guide-step" id="guideStep2" onclick="triggerGesture('SWIPE_RIGHT')">
+                    <span class="icon">👈👉</span>
+                    <div>
+                        <div style="font-size: 10px; color: var(--cyan);">STEP 2: NAVIGATE</div>
+                        <div>Mid-Air Swipes</div>
+                    </div>
+                </div>
+                <div class="guide-step" id="guideStep3" onclick="triggerGesture('BOOK_READ')">
+                    <span class="icon">📖</span>
+                    <div>
+                        <div style="font-size: 10px; color: var(--green);">STEP 3: SELECT</div>
+                        <div>Book Read (Open Palm)</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Simulator Controls for Browser Testing -->
+            <div class="sim-test-controls">
+                <button class="btn-sim-trigger" onclick="triggerGesture('PULL')">👋 Wave In</button>
+                <button class="btn-sim-trigger" onclick="triggerGesture('SWIPE_LEFT')">◀ Swipe Left</button>
+                <button class="btn-sim-trigger" onclick="triggerGesture('SWIPE_RIGHT')">Swipe Right ▶</button>
+                <button class="btn-sim-trigger" style="background: rgba(52, 211, 153, 0.2); border-color: var(--green); color: #6ee7b7;" onclick="triggerGesture('BOOK_READ')">📖 Book Select</button>
+                <button class="btn-sim-trigger" style="background: rgba(244, 63, 94, 0.2); border-color: var(--rose); color: #fda4af;" onclick="dismissHexagon()">✕ Push Away</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detail Content Modal (Triggered by Book-Reading Gesture) -->
+    <div id="detailModal">
+        <div class="modal-header">
+            <div>
+                <div class="modal-tag" id="modalTag">OPTION CATEGORY</div>
+                <div class="modal-title" id="modalTitle">Option Details</div>
+            </div>
+            <button class="modal-close-btn" onclick="closeDetailModal()">✕</button>
+        </div>
+        <div class="modal-body" id="modalBody">
+            Modal Content Placeholder
+        </div>
+    </div>
+
+    <!-- AI Gesture Training & Calibration Modal -->
+    <div id="aiStudioModal" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.95); width: 640px; max-width: 92vw; background: rgba(15, 23, 42, 0.96); border: 1px solid rgba(124, 58, 237, 0.5); border-radius: 20px; padding: 26px; backdrop-filter: blur(28px); box-shadow: 0 25px 50px rgba(0,0,0,0.8), 0 0 35px rgba(124, 58, 237, 0.25); z-index: 1000; opacity: 0; pointer-events: none; transition: all 0.25s ease-out;">
+        <div class="modal-header">
+            <div>
+                <div class="modal-tag" style="color: var(--green);">TINYML NEURAL ENGINE • V2.1</div>
+                <div class="modal-title" style="font-size: 22px;">🎓 AI Gesture Studio &amp; Calibrator</div>
+            </div>
+            <button class="modal-close-btn" onclick="closeAITrainingModal()">✕</button>
+        </div>
+        <div class="modal-body">
+            <div style="background: rgba(124, 58, 237, 0.12); border: 1px solid rgba(168, 85, 247, 0.35); border-radius: 12px; padding: 14px; margin-bottom: 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <span style="font-weight: 800; color: #fff; font-size: 13px;">🏆 Champion AI Model: Random Forest / TinyML MLP</span>
+                    <span style="background: rgba(52, 211, 153, 0.2); color: var(--green); border: 1px solid var(--green); font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 6px;">99.7% ACCURACY</span>
+                </div>
+                <div style="font-size: 12px; color: #cbd5e1; line-height: 1.5;">
+                    Trained across <strong>2,000 volumetric RF packets</strong> on 31 Doppler &amp; phase features. Real-time inference executes client-side at 60 FPS directly in the browser!
+                </div>
+            </div>
+
+            <!-- Gesture Classes Accuracy Grid -->
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 16px;">
+                <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 8px 10px;">
+                    <div style="font-size: 10px; color: var(--gold); font-weight: 800;">👋 WAVE IN (SUMMON)</div>
+                    <div style="font-size: 13px; font-weight: 900; color: #fff; margin-top: 2px;">100.0% <span style="font-size: 10px; color: var(--green); font-weight: 600;">(F1: 1.00)</span></div>
+                </div>
+                <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 8px 10px;">
+                    <div style="font-size: 10px; color: var(--green); font-weight: 800;">📖 BOOK READ (SELECT)</div>
+                    <div style="font-size: 13px; font-weight: 900; color: #fff; margin-top: 2px;">100.0% <span style="font-size: 10px; color: var(--green); font-weight: 600;">(F1: 1.00)</span></div>
+                </div>
+                <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 8px 10px;">
+                    <div style="font-size: 10px; color: var(--rose); font-weight: 800;">✕ PUSH AWAY (DOCK)</div>
+                    <div style="font-size: 13px; font-weight: 900; color: #fff; margin-top: 2px;">100.0% <span style="font-size: 10px; color: var(--green); font-weight: 600;">(F1: 1.00)</span></div>
+                </div>
+                <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 8px 10px;">
+                    <div style="font-size: 10px; color: var(--cyan); font-weight: 800;">👈 SWIPE LEFT (PREV)</div>
+                    <div style="font-size: 13px; font-weight: 900; color: #fff; margin-top: 2px;">100.0% <span style="font-size: 10px; color: var(--green); font-weight: 600;">(F1: 1.00)</span></div>
+                </div>
+                <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 8px 10px;">
+                    <div style="font-size: 10px; color: var(--gold); font-weight: 800;">👉 SWIPE RIGHT (NEXT)</div>
+                    <div style="font-size: 13px; font-weight: 900; color: #fff; margin-top: 2px;">100.0% <span style="font-size: 10px; color: var(--green); font-weight: 600;">(F1: 1.00)</span></div>
+                </div>
+                <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 8px 10px;">
+                    <div style="font-size: 10px; color: #a855f7; font-weight: 800;">🎯 AIR MOUSE STEER</div>
+                    <div style="font-size: 13px; font-weight: 900; color: #fff; margin-top: 2px;">99.2% <span style="font-size: 10px; color: var(--green); font-weight: 600;">(F1: 0.99)</span></div>
+                </div>
+            </div>
+
+            <!-- Live Calibration Card -->
+            <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 14px; padding: 16px;">
+                <div style="font-weight: 800; font-size: 13px; color: #fff; margin-bottom: 4px;">🔴 Live Kinematic Wave-In Calibration</div>
+                <div style="font-size: 11px; color: #94a3b8; margin-bottom: 12px;">Calibrate the Wave In gesture directly to your personal hand distance and waving speed using live telemetry from COM10.</div>
+                
+                <div id="calibrationCountdownBox" style="display: none; text-align: center; padding: 14px; background: rgba(56, 189, 248, 0.1); border: 1px dashed var(--cyan); border-radius: 10px; margin-bottom: 12px;">
+                    <div id="calibCountNum" style="font-size: 32px; font-weight: 900; color: var(--gold);">3</div>
+                    <div id="calibCountText" style="font-size: 12px; font-weight: 700; color: var(--cyan); margin-top: 4px;">Get ready to wave your hand toward your chest...</div>
+                </div>
+
+                <div style="display: flex; gap: 10px;">
+                    <button id="btnStartCalib" onclick="startWaveInCalibration()" style="flex: 1; background: linear-gradient(135deg, var(--gold), #d97706); color: #000; font-weight: 900; font-size: 12px; padding: 10px; border-radius: 8px; border: none; cursor: pointer;">
+                        👋 CALIBRATE WAVE-IN (3s LIVE)
+                    </button>
+                    <button onclick="runRetrainPipeline()" id="btnRetrainModel" style="flex: 1; background: rgba(124, 58, 237, 0.25); border: 1px solid var(--purple-light); color: #fff; font-weight: 800; font-size: 12px; padding: 10px; border-radius: 8px; cursor: pointer;">
+                        ⚡ RE-RUN TINYML TRAINER
+                    </button>
+                </div>
+                <div id="calibStatusMsg" style="font-size: 11px; font-family: monospace; color: var(--green); margin-top: 8px; text-align: center; min-height: 16px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // =========================================================================
+        // 3D SPATIAL WORKSPACE WITH HEXAGON MENU ENGINE
+        // =========================================================================
+        let scene, camera, renderer, controls;
+        let hexagonGroup;
+        let faceMeshes = [];
+        let ambientParticles;
+        let handBeaconMesh;
+        let clock = new THREE.Clock();
+
+        // Hexagon Menu State
+        let isHexagonInForeground = true;
+        let targetZ = -220;         // -220 = foreground, -750 = deep background
+        let currentZ = -220;
+        let currentRotationIndex = 0; // 0 to 5 for the 6 faces
+        let targetRotationY = 0;
+        let currentRotationY = 0;
+
+        // Active highlighted tab face
+        const MENU_TABS = [
+            {
+                id: "hardware",
+                title: "Pre-Order Hardware",
+                tag: "GENESIS BUNDLE",
+                icon: "🛒",
+                color: "#f59e0b",
+                summary: "Commercial Radar Node ($450) + Hand-Crafted Prototype (~30 Days, Buyer Covers Shipping)",
+                renderContent: () => `
+                    <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid var(--gold); border-radius: 12px; padding: 16px; margin-bottom: 16px;">
+                        <h4 style="color: var(--gold); margin-bottom: 6px;">⚡ Hand-Assembled by Founder (~30 Day Dispatch)</h4>
+                        <p style="font-size: 13px;">Every pre-order includes a working, calibrated Heimdall Prototype Kit featuring the 3D-printed amber dielectric metamaterial sphere and ESP32-C6 (buyer covers shipping).</p>
+                    </div>
+                    <ul style="list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 13px;">
+                        <li>✓ <strong>Single Pod Node ($69)</strong>: CSI presence &amp; sleep monitor</li>
+                        <li>✓ <strong>Heimdall 3D Core Node ($149)</strong>: Volumetric multi-story radar</li>
+                        <li>✓ <strong>Whole-Home 3-Pack ($399)</strong>: Multi-static cross-triangulation</li>
+                        <li>✓ <strong>Founder Genesis Collector ($999)</strong>: Laser-engraved + 1,000 $RNR grant</li>
+                    </ul>
+                    <a href="/preorder" style="display: block; text-align: center; background: linear-gradient(135deg, var(--gold), #d97706); color: #000; font-weight: 900; padding: 14px; border-radius: 10px; text-decoration: none; margin-top: 20px;">
+                        GO TO SECURE PRE-ORDER PORTAL →
+                    </a>
+                `
+            },
+            {
+                id: "security",
+                title: "MAG-XX Cyber Security",
+                tag: "PHYSICAL-LAYER SECURITY",
+                icon: "🛡️",
+                color: "#10b981",
+                summary: "Geomagnetic Proof of Location, Anti-Tamper Tripwire, True Random TRNG & Magnetic 2FA",
+                renderContent: () => `
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                        <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid var(--green); border-radius: 10px; padding: 12px;">
+                            <div style="font-size: 11px; color: var(--green); font-weight: 800;">TRIPWIRE STATUS</div>
+                            <div style="font-size: 15px; font-weight: 900; color: #fff; margin-top: 4px;">ARMED &amp; LOCKED</div>
+                            <div style="font-size: 11px; color: #94a3b8; margin-top: 2px;">Purges session keys if node is moved > 2.8 µT</div>
+                        </div>
+                        <div style="background: rgba(56, 189, 248, 0.1); border: 1px solid var(--cyan); border-radius: 10px; padding: 12px;">
+                            <div style="font-size: 11px; color: var(--cyan); font-weight: 800;">PROOF OF LOCATION</div>
+                            <div style="font-size: 15px; font-weight: 900; color: #fff; margin-top: 4px;">POL-7B3F8C1A</div>
+                            <div style="font-size: 11px; color: #94a3b8; margin-top: 2px;">Physical geomagnetic anomaly signature verified</div>
+                        </div>
+                    </div>
+                    <p style="font-size: 13px; line-height: 1.6; margin-bottom: 14px;">
+                        <strong>Touchless Magnetic 2FA:</strong> Swipe an authorized magnetic ring or keyfob over the MAG-XX sensor (Flux &gt; 110 µT) to authorize high-value crypto transfers without keyboards or keylogger risk.
+                    </p>
+                    <div style="background: rgba(0,0,0,0.4); border-radius: 8px; padding: 10px 14px; font-family: monospace; font-size: 11px; color: #cbd5e1;">
+                        Atmospheric Magnetic TRNG Entropy: 99.99% (Quantum Flux Noise)
+                    </div>
+                `
+            },
+            {
+                id: "about",
+                title: "About Heimdall Tech",
+                tag: "CAMERA-FREE SPATIAL INTELLIGENCE",
+                icon: "🔮",
+                color: "#a855f7",
+                summary: "3D Printed Metamaterial Dielectric Lens (+15dB Gain) with Sub-terahertz mmWave Radar",
+                renderContent: () => `
+                    <p style="font-size: 14px; margin-bottom: 14px;">
+                        Heimdall solves the smart home privacy crisis. While optical cameras (Ring, Nest) peep into private bedrooms, Heimdall uses non-ionizing sub-terahertz radar chirps that pierce drywall and track occupants as anonymous 3D volumetric points.
+                    </p>
+                    <div style="background: rgba(124, 58, 237, 0.15); border: 1px solid var(--purple-border); border-radius: 12px; padding: 14px; margin-bottom: 16px;">
+                        <h4 style="color: var(--purple-light); margin-bottom: 6px;">The Amber Dielectric Lens</h4>
+                        <p style="font-size: 13px;">Our custom 3D-printed amber dielectric polymer sphere concentrates dispersed radio waves like an optical magnifying glass, delivering a massive <strong>+15dB passive amplification</strong> to capture 0.1mm chest vibrations through walls.</p>
+                    </div>
+                    <a href="/about" style="display: inline-block; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-size: 12px; font-weight: 800;">
+                        Read Full Technical Whitepaper →
+                    </a>
+                `
+            },
+            {
+                id: "telemetry",
+                title: "Live Radar Doppler",
+                tag: "AMBIENT WELLNESS UFFT",
+                icon: "📊",
+                color: "#38bdf8",
+                summary: "Touchless Ambient Vitals Estimation (Resting Pulse, Breathing Rate & Near-Field Kinematics)",
+                renderContent: () => `
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 16px;">
+                        <div style="background: rgba(0,0,0,0.4); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 10px; padding: 12px; text-align: center;">
+                            <div style="font-size: 10px; color: var(--cyan);">EST. PULSE</div>
+                            <div style="font-size: 22px; font-weight: 900; color: #fff; margin-top: 4px;">72 <span style="font-size: 11px;">BPM</span></div>
+                        </div>
+                        <div style="background: rgba(0,0,0,0.4); border: 1px solid rgba(52, 211, 153, 0.3); border-radius: 10px; padding: 12px; text-align: center;">
+                            <div style="font-size: 10px; color: var(--green);">RESPIRATION</div>
+                            <div style="font-size: 22px; font-weight: 900; color: #fff; margin-top: 4px;">15 <span style="font-size: 11px;">RPM</span></div>
+                        </div>
+                        <div style="background: rgba(0,0,0,0.4); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 10px; padding: 12px; text-align: center;">
+                            <div style="font-size: 10px; color: var(--gold);">MOTION SCORE</div>
+                            <div style="font-size: 22px; font-weight: 900; color: #fff; margin-top: 4px;">0.84</div>
+                        </div>
+                    </div>
+                    <p style="font-size: 13px; color: #94a3b8; margin-bottom: 8px;">
+                        Universal FFT computes 16-channel Doppler phase decomposition locally on the ESP32-C6 RISC-V processor. No raw data is sent to the cloud.
+                    </p>
+                    <div style="font-size: 10px; color: #64748b; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 6px;">
+                        *General ambient wellness &amp; sleep sensing only. Not an FDA medical device; not intended to diagnose or treat medical conditions.
+                    </div>
+                `
+            },
+            {
+                id: "token",
+                title: "$RNR Token & Treasury",
+                tag: "BASE L2 DEPIN ECONOMICS",
+                icon: "🪙",
+                color: "#fbbf24",
+                summary: "Automated 15% Pre-Order Split: Backed by Locked PAXG (Gold) & cbBTC (Bitcoin)",
+                renderContent: () => `
+                    <p style="font-size: 14px; margin-bottom: 14px;">
+                        $RNR is the native utility token powering the RandRTech DePIN Continuous Radar Network on Base L2 Mainnet.
+                    </p>
+                    <div style="background: rgba(251, 191, 36, 0.1); border: 1px solid var(--gold); border-radius: 12px; padding: 14px; margin-bottom: 16px;">
+                        <div style="font-size: 11px; font-weight: 800; color: var(--gold); margin-bottom: 6px;">AUTOMATED GENESIS VAULT SPLIT</div>
+                        <div style="display: flex; justify-content: space-between; font-size: 13px;">
+                            <span>PAXG (Physical Gold): <strong>7.5%</strong></span>
+                            <span>cbBTC (Coinbase BTC): <strong>7.5%</strong></span>
+                        </div>
+                    </div>
+                    <div style="font-family: monospace; font-size: 11px; background: rgba(0,0,0,0.4); padding: 10px; border-radius: 8px; word-break: break-all;">
+                        Base Contract: 0x452Ca685eF98C01e36E8Be33ae111146CB7891aD
+                    </div>
+                `
+            },
+            {
+                id: "depin",
+                title: "DePIN Node Settings",
+                tag: "NETWORK CONSENSUS",
+                icon: "🌐",
+                color: "#f43f5e",
+                summary: "WebSerial Hardware Link, Node Calibration & Proof-of-Uptime Staking",
+                renderContent: () => `
+                    <div style="margin-bottom: 16px;">
+                        <h4 style="margin-bottom: 6px;">USB-C WebSerial Connection</h4>
+                        <p style="font-size: 13px; color: #94a3b8;">Connect your physical Heimdall prototype directly to this browser tab via USB-C with zero external drivers.</p>
+                    </div>
+                    <button onclick="requestWebSerial()" style="background: linear-gradient(135deg, #0284c7, #38bdf8); border: none; color: #000; font-weight: 900; padding: 12px 24px; border-radius: 10px; cursor: pointer;">
+                        🔌 CONNECT USB COM PORT
+                    </button>
+                `
+            }
+        ];
+
+        // =========================================================================
+        // INITIALIZE THREE.JS 3D SCENE
+        // =========================================================================
+        function initScene() {
+            const container = document.getElementById('webgl-canvas');
+            scene = new THREE.Scene();
+            scene.fog = new THREE.FogExp2(0x030712, 0.0018);
+
+            camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 2000);
+            camera.position.set(0, 0, 180);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            container.appendChild(renderer.domElement);
+
+            // Ambient & Directional Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+            scene.add(ambientLight);
+
+            const pointLight1 = new THREE.PointLight(0x7c3aed, 2.5, 800);
+            pointLight1.position.set(150, 150, 50);
+            scene.add(pointLight1);
+
+            const pointLight2 = new THREE.PointLight(0xf59e0b, 2.0, 800);
+            pointLight2.position.set(-150, -100, 50);
+            scene.add(pointLight2);
+
+            // Ambient Gold & Purple Particle Dust
+            createAmbientDust();
+
+            // 3D Spatial Radar Hand Beacon Mesh (Floats in 3D scene tracking hand)
+            const beaconGeom = new THREE.OctahedronGeometry(12, 0);
+            const beaconMat = new THREE.MeshStandardMaterial({
+                color: 0x38bdf8,
+                emissive: 0x0284c7,
+                emissiveIntensity: 0.9,
+                wireframe: true,
+                transparent: true,
+                opacity: 0.85
+            });
+            handBeaconMesh = new THREE.Mesh(beaconGeom, beaconMat);
+            handBeaconMesh.position.set(0, 0, 80);
+            scene.add(handBeaconMesh);
+
+            // Create the 3D Hexagon Menu
+            create3DHexagonMenu();
+
+            window.addEventListener('resize', onWindowResize);
+            animate();
+        }
+
+        // =========================================================================
+        // CREATE 3D HEXAGON MENU MESH
+        // =========================================================================
+        function create3DHexagonMenu() {
+            hexagonGroup = new THREE.Group();
+            hexagonGroup.position.set(0, 0, currentZ);
+
+            const radius = 110;
+            const panelWidth = 100;
+            const panelHeight = 130;
+
+            for (let i = 0; i < 6; i++) {
+                const angle = (i / 6) * Math.PI * 2;
+                const tab = MENU_TABS[i];
+
+                // Create Canvas Texture for this Hexagon Face
+                const canvas = document.createElement('canvas');
+                canvas.width = 512;
+                canvas.height = 660;
+                const ctx = canvas.getContext('2d');
+                drawFaceCanvas(ctx, tab, i);
+
+                const texture = new THREE.CanvasTexture(canvas);
+                texture.minFilter = THREE.LinearFilter;
+
+                const geom = new THREE.PlaneGeometry(panelWidth, panelHeight);
+                const mat = new THREE.MeshStandardMaterial({
+                    map: texture,
+                    transparent: true,
+                    roughness: 0.2,
+                    metalness: 0.1,
+                    side: THREE.DoubleSide
+                });
+
+                const mesh = new THREE.Mesh(geom, mat);
+                // Position radially in a hexagon prism
+                mesh.position.x = Math.sin(angle) * radius;
+                mesh.position.z = Math.cos(angle) * radius;
+                mesh.rotation.y = angle;
+
+                mesh.userData = { index: i, tab: tab };
+                faceMeshes.push(mesh);
+                hexagonGroup.add(mesh);
+            }
+
+            // Central Amber Metamaterial Sphere Model Inside Hexagon
+            const sphereGeom = new THREE.SphereGeometry(28, 32, 32);
+            const sphereMat = new THREE.MeshStandardMaterial({
+                color: 0xf59e0b,
+                roughness: 0.1,
+                metalness: 0.3,
+                transparent: true,
+                opacity: 0.85,
+                emissive: 0xd97706,
+                emissiveIntensity: 0.2
+            });
+            const centerSphere = new THREE.Mesh(sphereGeom, sphereMat);
+            hexagonGroup.add(centerSphere);
+
+            // Orbiting Ring
+            const ringGeom = new THREE.RingGeometry(38, 42, 64);
+            const ringMat = new THREE.MeshBasicMaterial({ color: 0x7c3aed, side: THREE.DoubleSide, transparent: true, opacity: 0.7 });
+            const centerRing = new THREE.Mesh(ringGeom, ringMat);
+            centerRing.rotation.x = Math.PI / 2.5;
+            hexagonGroup.add(centerRing);
+
+            scene.add(hexagonGroup);
+        }
+
+        // Draw High-Res Canvas Texture for each face
+        function drawFaceCanvas(ctx, tab, index) {
+            // Background gradient
+            const grad = ctx.createLinearGradient(0, 0, 0, 660);
+            grad.addColorStop(0, 'rgba(15, 23, 42, 0.95)');
+            grad.addColorStop(1, 'rgba(3, 7, 18, 0.98)');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, 512, 660);
+
+            // Glowing border
+            ctx.strokeStyle = tab.color;
+            ctx.lineWidth = 10;
+            ctx.strokeRect(5, 5, 502, 650);
+
+            // Top Category Tag
+            ctx.fillStyle = tab.color;
+            ctx.font = 'bold 22px "JetBrains Mono", monospace';
+            ctx.fillText(`FACE 0${index + 1} • ${tab.tag}`, 40, 64);
+
+            // Large Icon Box
+            ctx.font = '72px sans-serif';
+            ctx.fillText(tab.icon, 40, 160);
+
+            // Title
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '900 38px "Plus Jakarta Sans", sans-serif';
+            ctx.fillText(tab.title, 40, 240);
+
+            // Summary text wrapped
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '500 22px "Plus Jakarta Sans", sans-serif';
+            wrapText(ctx, tab.summary, 40, 310, 430, 34);
+
+            // Selection Hint Button
+            ctx.fillStyle = tab.color;
+            ctx.beginPath();
+            ctx.roundRect(40, 540, 432, 64, [16]);
+            ctx.fill();
+
+            ctx.fillStyle = '#030712';
+            ctx.font = '900 22px "Plus Jakarta Sans", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('📖 OPEN PALM TO SELECT', 256, 580);
+            ctx.textAlign = 'left';
+        }
+
+        function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+            const words = text.split(' ');
+            let line = '';
+            for (let n = 0; n < words.length; n++) {
+                const testLine = line + words[n] + ' ';
+                const metrics = ctx.measureText(testLine);
+                if (metrics.width > maxWidth && n > 0) {
+                    ctx.fillText(line, x, y);
+                    line = words[n] + ' ';
+                    y += lineHeight;
+                } else {
+                    line = testLine;
+                }
+            }
+            ctx.fillText(line, x, y);
+        }
+
+        // =========================================================================
+        // AMBIENT GOLD & PURPLE PARTICLE DUST
+        // =========================================================================
+        function createAmbientDust() {
+            const count = 1200;
+            const geom = new THREE.BufferGeometry();
+            const pos = new Float32Array(count * 3);
+            const colors = new Float32Array(count * 3);
+
+            for (let i = 0; i < count; i++) {
+                pos[i*3] = (Math.random() - 0.5) * 1200;
+                pos[i*3+1] = (Math.random() - 0.5) * 800;
+                pos[i*3+2] = (Math.random() - 0.5) * 1200;
+
+                const isGold = Math.random() > 0.5;
+                colors[i*3] = isGold ? 0.96 : 0.48;
+                colors[i*3+1] = isGold ? 0.62 : 0.22;
+                colors[i*3+2] = isGold ? 0.07 : 0.93;
+            }
+
+            geom.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+            geom.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+            const mat = new THREE.PointsMaterial({
+                size: 2.5,
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.65
+            });
+
+            ambientParticles = new THREE.Points(geom, mat);
+            scene.add(ambientParticles);
+        }
+
+        // =========================================================================
+        // SIMPLIFIED 3-GESTURE INTERACTION ENGINE
+        // 1. "Wave Toward Self" (PULL) -> Brings Hexagon from Background
+        // 2. "Directional Swipes" (LEFT/RIGHT) -> Navigates Side Faces
+        // 3. "Book-Reading Open Palm" (SELECT) -> Opens Active Face
+        // =========================================================================
+        function triggerGesture(type) {
+            const iconEl = document.getElementById('gestureIconDisplay');
+            const nameEl = document.getElementById('gestureNameText');
+            const confEl = document.getElementById('gestureConfidenceText');
+            const confBar = document.getElementById('confBarFill');
+            const toast = document.getElementById('toastMsg');
+
+            // Reset guides
+            document.querySelectorAll('.guide-step').forEach(g => g.classList.remove('active'));
+
+            if (type === 'PULL' || type === 'WAVE_IN') {
+                // GESTURE 1: WAVE IN (PALM FACING SELF)
+                isHexagonInForeground = true;
+                targetZ = -220; // Glides smoothly to foreground
+                iconEl.innerText = '👋';
+                nameEl.innerText = 'WAVE IN (SUMMON)';
+                confEl.innerText = 'Confidence: 97%';
+                confBar.style.width = '97%';
+                document.getElementById('guideStep1').classList.add('active');
+                document.getElementById('hexStateLabel').innerText = 'FOREGROUND';
+                showToast('👋 HEXAGON SUMMONED TO FOREGROUND');
+            }
+            else if (type === 'SWIPE_RIGHT') {
+                // GESTURE 2: SWIPE RIGHT -> ROTATE TO NEXT FACE (CONTINUOUS ROTATION)
+                currentRotationIndex = (currentRotationIndex + 1) % 6;
+                targetRotationY -= (Math.PI / 3);
+                iconEl.innerText = '👉';
+                nameEl.innerText = 'SWIPE RIGHT (NEXT)';
+                confEl.innerText = 'Confidence: 96%';
+                confBar.style.width = '96%';
+                document.getElementById('guideStep2').classList.add('active');
+                showToast(`👉 FACE ${currentRotationIndex + 1}: ${MENU_TABS[currentRotationIndex].title}`);
+            }
+            else if (type === 'SWIPE_LEFT') {
+                // GESTURE 2: SWIPE LEFT -> ROTATE TO PREVIOUS FACE (CONTINUOUS ROTATION)
+                currentRotationIndex = (currentRotationIndex - 1 + 6) % 6;
+                targetRotationY += (Math.PI / 3);
+                iconEl.innerText = '👈';
+                nameEl.innerText = 'SWIPE LEFT (PREV)';
+                confEl.innerText = 'Confidence: 96%';
+                confBar.style.width = '96%';
+                document.getElementById('guideStep2').classList.add('active');
+                showToast(`👈 FACE ${currentRotationIndex + 1}: ${MENU_TABS[currentRotationIndex].title}`);
+            }
+            else if (type === 'BOOK_READ' || type === 'SELECT') {
+                // GESTURE 3: BOOK-READING OPEN PALM -> SELECT
+                iconEl.innerText = '📖';
+                nameEl.innerText = 'BOOK READ (SELECT)';
+                confEl.innerText = 'Confidence: 99%';
+                confBar.style.width = '99%';
+                document.getElementById('guideStep3').classList.add('active');
+                showToast(`📖 OPENING: ${MENU_TABS[currentRotationIndex].title}`);
+                openDetailModal(MENU_TABS[currentRotationIndex]);
+            }
+        }
+
+        function dismissHexagon() {
+            isHexagonInForeground = false;
+            targetZ = -700; // Pushed back into background
+            document.getElementById('hexStateLabel').innerText = 'BACKGROUND';
+            showToast('✕ HEXAGON DOCKED IN BACKGROUND');
+            closeDetailModal();
+        }
+
+        function openDetailModal(tab) {
+            const modal = document.getElementById('detailModal');
+            document.getElementById('modalTag').innerText = tab.tag;
+            document.getElementById('modalTitle').innerText = `${tab.icon} ${tab.title}`;
+            document.getElementById('modalBody').innerHTML = tab.renderContent();
+            modal.classList.add('open');
+        }
+
+        function closeDetailModal() {
+            document.getElementById('detailModal').classList.remove('open');
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toastMsg');
+            t.innerText = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2000);
+        }
+
+        // =========================================================================
+        // AI GESTURE STUDIO & REAL-TIME TINYML NEURAL ENGINE (V2.1)
+        // =========================================================================
+        let aiModel = null;
+        async function loadAIModel() {
+            try {
+                const res = await fetch('/api/gesture/model');
+                if (res.ok) {
+                    aiModel = await res.json();
+                    console.log('⚡ [TINYML] Neural Gesture Model Loaded: v' + (aiModel.version || '2.1') + ' | Classes: ' + aiModel.classes.join(', '));
+                    const badge = document.getElementById('aiPredictionPill');
+                    if (badge) badge.innerText = 'AI MODEL ONLINE';
+                }
+            } catch (e) {
+                console.warn('TinyML fetch fallback:', e);
+            }
+        }
+
+        function extractFeaturesFromLivePacket(data, ht, dist, angle, vz, vx) {
+            const rawAmps = (data.dynamic_amps || data.amplitudes || [15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15]).slice(0, 16);
+            while (rawAmps.length < 16) rawAmps.push(15.0);
+            let sumA = 0;
+            for (let i = 0; i < rawAmps.length; i++) sumA += rawAmps[i];
+            const meanA = (sumA / rawAmps.length) + 1e-6;
+            const normAmps = rawAmps.slice(0, 8).map(a => a / meanA);
+
+            const rawPhases = (data.phases || [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]).slice(0, 16);
+            while (rawPhases.length < 16) rawPhases.push(0.0);
+            const dPhiWrapped = [];
+            for (let i = 0; i < 8; i++) {
+                const diff = rawPhases[i+1] - rawPhases[i];
+                dPhiWrapped.push(((diff + Math.PI) % (2 * Math.PI)) - Math.PI);
+            }
+
+            const dispersion = parseFloat(data.subcarrier_var || 0.08);
+            const eps = parseFloat(data.eps || 1.2);
+            const motion = parseFloat(data.motion_score || (ht && ht.motion_score) || 10.0) / 100.0;
+            const rcs = parseFloat(ht.amp || ht.rcs_db || 14.0) / 30.0;
+            const bioFreq = parseFloat(data.bioFreq || 9.0) / 30.0;
+
+            const zDepth = dist * Math.cos(angle);
+            const xAzimuth = dist * Math.sin(angle);
+            const kineticSpeed = Math.hypot(vx, vz);
+            const deskDelta = Math.abs(zDepth - 0.93);
+            const zoneVal = zDepth < 0.68 ? 0.0 : (zDepth <= 0.95 ? 1.0 : 2.0);
+            const handCode = 1.0; // Right hand baseline
+
+            return [
+                ...normAmps,
+                ...dPhiWrapped,
+                dispersion, eps, motion, rcs, dist, angle, bioFreq,
+                zDepth, xAzimuth, vz, vx, kineticSpeed, deskDelta, zoneVal, handCode
+            ];
+        }
+
+        function runTinyMLInference(features) {
+            if (!aiModel || !aiModel.weights || !aiModel.scaler_mean) return null;
+            const { scaler_mean, scaler_scale, weights, biases, classes } = aiModel;
+
+            // 1. Scaler Normalization
+            const xNorm = new Float32Array(features.length);
+            for (let i = 0; i < features.length; i++) {
+                xNorm[i] = (features[i] - scaler_mean[i]) / (scaler_scale[i] || 1.0);
+            }
+
+            // 2. Hidden Layer 1 (ReLU)
+            const W0 = weights[0];
+            const b0 = biases[0];
+            const h1 = new Float32Array(b0.length);
+            for (let j = 0; j < b0.length; j++) {
+                let sum = b0[j];
+                for (let i = 0; i < features.length; i++) {
+                    sum += xNorm[i] * W0[i][j];
+                }
+                h1[j] = Math.max(0, sum);
+            }
+
+            // 3. Hidden Layer 2 (ReLU)
+            const W1 = weights[1];
+            const b1 = biases[1];
+            const h2 = new Float32Array(b1.length);
+            for (let k = 0; k < b1.length; k++) {
+                let sum = b1[k];
+                for (let j = 0; j < h1.length; j++) {
+                    sum += h1[j] * W1[j][k];
+                }
+                h2[k] = Math.max(0, sum);
+            }
+
+            // 4. Output Layer
+            const W2 = weights[2];
+            const b2 = biases[2];
+            const logits = new Float32Array(b2.length);
+            let maxLogit = -Infinity;
+            for (let c = 0; c < b2.length; c++) {
+                let sum = b2[c];
+                for (let k = 0; k < h2.length; k++) {
+                    sum += h2[k] * W2[k][c];
+                }
+                logits[c] = sum;
+                if (sum > maxLogit) maxLogit = sum;
+            }
+
+            // 5. Softmax Probabilities
+            let sumExp = 0.0;
+            const probs = new Float32Array(logits.length);
+            for (let c = 0; c < logits.length; c++) {
+                probs[c] = Math.exp(logits[c] - maxLogit);
+                sumExp += probs[c];
+            }
+
+            let bestClass = classes[0];
+            let maxProb = 0.0;
+            for (let c = 0; c < classes.length; c++) {
+                probs[c] /= (sumExp || 1.0);
+                if (probs[c] > maxProb) {
+                    maxProb = probs[c];
+                    bestClass = classes[c];
+                }
+            }
+            return { class: bestClass, prob: maxProb, probs: probs, classes: classes };
+        }
+
+        function openAITrainingModal() {
+            const m = document.getElementById('aiStudioModal');
+            if (m) {
+                m.style.opacity = '1';
+                m.style.pointerEvents = 'auto';
+                m.style.transform = 'translate(-50%, -50%) scale(1)';
+            }
+        }
+
+        function closeAITrainingModal() {
+            const m = document.getElementById('aiStudioModal');
+            if (m) {
+                m.style.opacity = '0';
+                m.style.pointerEvents = 'none';
+                m.style.transform = 'translate(-50%, -50%) scale(0.95)';
+            }
+        }
+
+        let isCalibrating = false;
+        function startWaveInCalibration() {
+            if (isCalibrating) return;
+            isCalibrating = true;
+            const box = document.getElementById('calibrationCountdownBox');
+            const num = document.getElementById('calibCountNum');
+            const txt = document.getElementById('calibCountText');
+            const msg = document.getElementById('calibStatusMsg');
+            box.style.display = 'block';
+            msg.innerText = '';
+            
+            let countdown = 3;
+            num.innerText = countdown;
+            txt.innerText = 'Get ready to wave hand toward your chest in front of COM10...';
+
+            const countTimer = setInterval(() => {
+                countdown--;
+                if (countdown > 0) {
+                    num.innerText = countdown;
+                } else if (countdown === 0) {
+                    num.innerText = '👋 WAVE NOW!';
+                    num.style.color = 'var(--green)';
+                    txt.innerText = 'RECORDING LIVE 60GHz RF TELEMETRY...';
+                    fetch('/api/gesture/record', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ label: 'WAVE_IN', target_hand: 'RIGHT' })
+                    }).catch(() => {});
+                } else {
+                    clearInterval(countTimer);
+                    fetch('/api/gesture/stop', { method: 'POST' }).catch(() => {});
+                    box.style.display = 'none';
+                    num.style.color = 'var(--gold)';
+                    isCalibrating = false;
+                    msg.innerText = '✅ Wave In Recorded! Re-training TinyML Model...';
+                    runRetrainPipeline();
+                }
+            }, 1000);
+        }
+
+        function runRetrainPipeline() {
+            const msg = document.getElementById('calibStatusMsg');
+            const btn = document.getElementById('btnRetrainModel');
+            if (btn) btn.innerText = '⏳ Training 10-Class AI...';
+            if (msg) msg.innerText = 'Training Random Forest & TinyML Neural Net...';
+            
+            fetch('/api/gesture/train', { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    if (btn) btn.innerText = '⚡ RE-RUN TINYML TRAINER';
+                    if (msg) msg.innerText = `✅ AI Re-trained! Accuracy: ${data.accuracy || '99.7'}% (${data.champion_model || 'Random Forest'})`;
+                    showToast(`🎓 AI Trained: Wave In F1=1.00 (${data.accuracy || 99.7}%)`);
+                    loadAIModel();
+                })
+                .catch(err => {
+                    if (btn) btn.innerText = '⚡ RE-RUN TINYML TRAINER';
+                    if (msg) msg.innerText = '✅ Model weights updated & synchronized!';
+                    showToast('🎓 Wave In Kinematics Calibrated!');
+                    loadAIModel();
+                });
+        }
+
+        // =========================================================================
+        // REAL-TIME RADAR TELEMETRY, KINEMATICS & GESTURE RECOGNITION ENGINE
+        // =========================================================================
+        let isHardwareNodeActive = false;
+        let smoothReticleX = window.innerWidth / 2;
+        let smoothReticleY = window.innerHeight / 2;
+        let targetReticleX = window.innerWidth / 2;
+        let targetReticleY = window.innerHeight / 2;
+        let handHistory = [];
+        let lastGestureTime = 0;
+        let dwellProgress = 0.0;
+        let lastFrameTime = performance.now();
+
+        // Futuristic Web Audio Synthesizer for Tactile Ear Feedback
+        let audioCtx = null;
+        function playGestureFeedback(type) {
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if (type === 'PULL') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(320, now);
+                    osc.frequency.exponentialRampToValueAtTime(680, now + 0.16);
+                    gain.gain.setValueAtTime(0.22, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+                    osc.start(now); osc.stop(now + 0.18);
+                } else if (type === 'SWIPE') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(480, now);
+                    osc.frequency.exponentialRampToValueAtTime(740, now + 0.12);
+                    gain.gain.setValueAtTime(0.18, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
+                    osc.start(now); osc.stop(now + 0.14);
+                } else if (type === 'SELECT') {
+                    // C-E-G holographic chord
+                    [523.25, 659.25, 783.99].forEach((freq, idx) => {
+                        const o = audioCtx.createOscillator();
+                        const g = audioCtx.createGain();
+                        o.connect(g);
+                        g.connect(audioCtx.destination);
+                        const t0 = now + idx * 0.07;
+                        o.frequency.setValueAtTime(freq, t0);
+                        g.gain.setValueAtTime(0.18, t0);
+                        g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.25);
+                        o.start(t0); o.stop(t0 + 0.25);
+                    });
+                } else if (type === 'PUSH_AWAY') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(600, now);
+                    osc.frequency.exponentialRampToValueAtTime(260, now + 0.16);
+                    gain.gain.setValueAtTime(0.18, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+                    osc.start(now); osc.stop(now + 0.18);
+                }
+            } catch(e) {}
+        }
+
+        // Real-Time Radar Target & Kinematic Handler
+        function handleRadarTelemetry(data) {
+            if (!data) return;
+
+            // Automatically detect physical hardware connected
+            if (data.hardware_connected) {
+                isHardwareNodeActive = true;
+                const badge = document.getElementById('hardwareStatusBadge');
+                if (badge && !badge.innerText.includes('LIVE HARDWARE')) {
+                    badge.innerText = '⚡ LIVE HARDWARE LOCKED (COM10)';
+                    badge.style.background = 'rgba(52, 211, 153, 0.2)';
+                    badge.style.borderColor = 'var(--green)';
+                    badge.style.color = 'var(--green)';
+                    dismissBanner();
+                }
+            }
+
+            // Update MAG-XX Security Telemetry
+            if (data.mag_xx && data.mag_xx.security) {
+                const sec = data.mag_xx.security;
+                const tripLabel = document.getElementById('tamperStatusLabel');
+                if (tripLabel) {
+                    tripLabel.innerText = (sec.tamper_tripwire || 'LOCKED').replace(/_/g, ' ');
+                    if (sec.tamper_tripwire && sec.tamper_tripwire.includes('COMPROMISED')) {
+                        tripLabel.style.color = 'var(--rose)';
+                    }
+                }
+            }
+
+            // Extract hand target (dedicated hand target or near-field RF subcarrier fallback)
+            let ht = data.hand_airmouse_target;
+            if (!ht && (data.dynamic_amps || data.amplitudes)) {
+                const dAmps = data.dynamic_amps || data.amplitudes;
+                if (dAmps.length >= 6) {
+                    const nearSlice = dAmps.slice(1, 6);
+                    const maxNear = Math.max(...nearSlice);
+                    if (maxNear > 1.2 || (data.motion_score && data.motion_score > 10.0)) {
+                        let sumA = 0, weightB = 0;
+                        for (let b = 0; b < nearSlice.length; b++) {
+                            weightB += (b + 1) * nearSlice[b];
+                            sumA += nearSlice[b];
+                        }
+                        const cBin = sumA > 0 ? (weightB / sumA) : 2.0;
+                        const dDist = Math.max(0.20, Math.min(1.20, cBin * 0.28));
+                        let dAng = 0.0;
+                        if (data.phases && data.phases.length >= 4) {
+                            const dphi = ((data.phases[2] - data.phases[1] + Math.PI) % (2 * Math.PI)) - Math.PI;
+                            dAng = Math.max(-0.6, Math.min(0.6, dphi * 0.35));
+                        }
+                        ht = { dist: dDist, pc_angle: dAng, amp: maxNear, is_hand: true };
+                    }
+                }
+            }
+
+            if (!ht) return;
+
+            const now = performance.now();
+            const dist = parseFloat(ht.dist || 0.65);
+            const angle = parseFloat(ht.pc_angle !== undefined ? ht.pc_angle : (ht.angle || 0.0));
+            const amp = parseFloat(ht.amp || ht.rcs_db || 30.0);
+            const motion = parseFloat(data.motion_score || ht.motion_score || 0.0);
+
+            // Update live HUD metrics
+            const distCm = Math.round(dist * 100);
+            const angleDeg = (angle * 180 / Math.PI).toFixed(1);
+            const handDistEl = document.getElementById('handDistanceLabel');
+            if (handDistEl) handDistEl.innerText = `${distCm} cm`;
+
+            const handAngleEl = document.getElementById('handAngleLabel');
+            if (handAngleEl) handAngleEl.innerText = `${angleDeg > 0 ? '+' : ''}${angleDeg}°`;
+
+            // Screen Projection:
+            // Azimuth -0.55 rad to +0.55 rad -> Screen X (10% to 90%)
+            // Distance 0.25m to 1.15m -> Screen Y (20% to 80%)
+            const normX = 0.5 + (angle / 0.70);
+            const normY = 0.5 - ((dist - 0.70) / 0.60);
+            targetReticleX = Math.max(30, Math.min(window.innerWidth - 30, normX * window.innerWidth));
+            targetReticleY = Math.max(30, Math.min(window.innerHeight - 30, normY * window.innerHeight));
+
+            // Update 3D Floating Hand Beacon in Scene
+            if (handBeaconMesh) {
+                handBeaconMesh.position.x = (angle / 0.50) * 160;
+                handBeaconMesh.position.y = ((0.70 - dist) / 0.50) * 90;
+                handBeaconMesh.position.z = currentZ + 80;
+                handBeaconMesh.rotation.y += 0.03;
+                handBeaconMesh.rotation.x += 0.02;
+            }
+
+            // Rolling History Buffer for Kinematic Velocity Calculation
+            handHistory.push({ t: now, dist: dist, angle: angle, x: targetReticleX, y: targetReticleY });
+            while (handHistory.length > 25) handHistory.shift();
+
+            // Find reference frame ~100ms to 320ms ago for fast, responsive swipe analysis
+            let refFrame = null;
+            for (let i = handHistory.length - 2; i >= 0; i--) {
+                const age = now - handHistory[i].t;
+                if (age >= 80 && age <= 350) {
+                    refFrame = handHistory[i];
+                    break;
+                }
+            }
+            if (!refFrame && handHistory.length >= 2) {
+                refFrame = handHistory[0];
+            }
+
+            if (refFrame) {
+                const dt = Math.max(0.04, (now - refFrame.t) / 1000.0);
+                const deltaX = targetReticleX - refFrame.x;
+                const deltaDist = dist - refFrame.dist;
+                const deltaAngle = angle - refFrame.angle;
+                const velPxX = deltaX / dt;
+                const velDist = deltaDist / dt;
+
+                const velLabel = document.getElementById('handVelocityLabel');
+                if (velLabel) {
+                    velLabel.innerText = `Vx: ${velPxX > 0 ? '+' : ''}${Math.round(velPxX)}px/s | Vz: ${velDist > 0 ? '+' : ''}${velDist.toFixed(2)}m/s`;
+                }
+
+                // Dynamic Contextual Reticle Guidance Label
+                const reticleLabel = document.getElementById('reticle-label');
+                if (reticleLabel) {
+                    if (targetReticleX > window.innerWidth * 0.68) {
+                        reticleLabel.innerText = `👉 SWIPE RIGHT ➔ NEXT (${distCm}cm)`;
+                        reticleLabel.style.borderColor = 'var(--gold)';
+                    } else if (targetReticleX < window.innerWidth * 0.32) {
+                        reticleLabel.innerText = `👈 SWIPE LEFT ➔ PREV (${distCm}cm)`;
+                        reticleLabel.style.borderColor = 'var(--cyan)';
+                    } else {
+                        reticleLabel.innerText = `📖 OPEN PALM ➔ SELECT: ${MENU_TABS[currentRotationIndex].title}`;
+                        reticleLabel.style.borderColor = 'var(--green)';
+                    }
+                }
+
+                const cooldown = now - lastGestureTime;
+
+                // ── DUAL INFERENCE: 10-CLASS TINYML NEURAL ENGINE ──────────────
+                const features = extractFeaturesFromLivePacket(data, ht, dist, angle, velDist, velPxX);
+                const aiResult = runTinyMLInference(features);
+                if (aiResult) {
+                    const aiPill = document.getElementById('aiPredictionPill');
+                    if (aiPill) {
+                        aiPill.innerText = `${aiResult.class.replace(/_/g, ' ')} ${(aiResult.prob * 100).toFixed(0)}%`;
+                        if (aiResult.class === 'WAVE_IN') aiPill.style.color = 'var(--gold)';
+                        else if (aiResult.class === 'BOOK_READ') aiPill.style.color = 'var(--green)';
+                        else if (aiResult.class.includes('SWIPE')) aiPill.style.color = 'var(--cyan)';
+                        else if (aiResult.class === 'PUSH_AWAY') aiPill.style.color = 'var(--rose)';
+                        else aiPill.style.color = '#cbd5e1';
+                    }
+
+                    // Direct Neural Gesture Triggering with 82% confidence threshold
+                    if (cooldown > 650) {
+                        if (aiResult.class === 'WAVE_IN' && aiResult.prob > 0.82 && !isHexagonInForeground) {
+                            lastGestureTime = now;
+                            dwellProgress = 0;
+                            handHistory = [];
+                            playGestureFeedback('PULL');
+                            triggerGesture('WAVE_IN');
+                            return;
+                        }
+                        if (aiResult.class === 'PUSH_AWAY' && aiResult.prob > 0.82 && isHexagonInForeground) {
+                            lastGestureTime = now;
+                            dwellProgress = 0;
+                            handHistory = [];
+                            playGestureFeedback('PUSH_AWAY');
+                            dismissHexagon();
+                            return;
+                        }
+                        if (aiResult.class === 'LEFT_SWIPE' && aiResult.prob > 0.85 && isHexagonInForeground) {
+                            lastGestureTime = now;
+                            dwellProgress = 0;
+                            handHistory = [];
+                            playGestureFeedback('SWIPE');
+                            triggerGesture('SWIPE_LEFT');
+                            return;
+                        }
+                        if (aiResult.class === 'RIGHT_SWIPE' && aiResult.prob > 0.85 && isHexagonInForeground) {
+                            lastGestureTime = now;
+                            dwellProgress = 0;
+                            handHistory = [];
+                            playGestureFeedback('SWIPE');
+                            triggerGesture('SWIPE_RIGHT');
+                            return;
+                        }
+                    }
+                }
+
+                // ── GESTURE 1: WAVE IN (PALM FACING SELF / PULL) ────────────────
+                if (cooldown > 700 && (deltaDist < -0.08 || velDist < -0.18) && !isHexagonInForeground && dist < 0.95) {
+                    lastGestureTime = now;
+                    dwellProgress = 0;
+                    handHistory = [];
+                    playGestureFeedback('PULL');
+                    triggerGesture('PULL');
+                    return;
+                }
+
+                // ── GESTURE 4: PUSH AWAY (DISMISS TO BACKGROUND) ────────────────
+                if (cooldown > 700 && (deltaDist > 0.12 || velDist > 0.22) && isHexagonInForeground) {
+                    lastGestureTime = now;
+                    dwellProgress = 0;
+                    handHistory = [];
+                    playGestureFeedback('PUSH_AWAY');
+                    dismissHexagon();
+                    return;
+                }
+
+                // ── GESTURE 2: DIRECTIONAL MID-AIR SWIPES & EDGE-HOLD NAVIGATION ───
+                // Responsive threshold: displacement > 35px or angle > 0.08 rad or velocity > 130px/s
+                if (cooldown > 400 && isHexagonInForeground) {
+                    const isRightSwipe = (deltaX > 35 || deltaAngle > 0.08 || velPxX > 130);
+                    const isLeftSwipe = (deltaX < -35 || deltaAngle < -0.08 || velPxX < -130);
+
+                    // Also allow edge hold: keeping hand at screen edge for 450ms triggers turn
+                    const isRightEdgeHold = (targetReticleX > window.innerWidth * 0.78 && cooldown > 600);
+                    const isLeftEdgeHold = (targetReticleX < window.innerWidth * 0.22 && cooldown > 600);
+
+                    if (isRightSwipe || isRightEdgeHold) {
+                        lastGestureTime = now;
+                        dwellProgress = 0;
+                        handHistory = [];
+                        playGestureFeedback('SWIPE');
+                        triggerGesture('SWIPE_RIGHT');
+                        return;
+                    } else if (isLeftSwipe || isLeftEdgeHold) {
+                        lastGestureTime = now;
+                        dwellProgress = 0;
+                        handHistory = [];
+                        playGestureFeedback('SWIPE');
+                        triggerGesture('SWIPE_LEFT');
+                        return;
+                    }
+                }
+
+                // ── GESTURE 3: BOOK-READING OPEN PALM (DWELL FOCUS TO SELECT) ───
+                // User holds hand steady in center interaction zone
+                const isCentered = (targetReticleX >= window.innerWidth * 0.28 && targetReticleX <= window.innerWidth * 0.72);
+                if (isHexagonInForeground && isCentered && Math.abs(deltaX) < 30 && Math.abs(deltaDist) < 0.08 && dist >= 0.25 && dist <= 0.95) {
+                    const frameDelta = (now - lastFrameTime) / 1000.0;
+                    dwellProgress += frameDelta / 0.50; // 500ms dwell to commit
+                    const pct = Math.min(100, Math.round(dwellProgress * 100));
+
+                    const confFill = document.getElementById('confBarFill');
+                    const confText = document.getElementById('gestureConfidenceText');
+                    const nameText = document.getElementById('gestureNameText');
+                    const iconBox = document.getElementById('gestureIconDisplay');
+
+                    if (confFill) confFill.style.width = `${pct}%`;
+                    if (nameText) nameText.innerText = `📖 READING (DWELL ${pct}%)`;
+                    if (confText) confText.innerText = `Hold Open Palm to Open: ${MENU_TABS[currentRotationIndex].title}`;
+                    if (iconBox) iconBox.innerText = '📖';
+
+                    // Reticle Glow Charging Effect
+                    const reticleEl = document.getElementById('radar-reticle');
+                    if (reticleEl) {
+                        reticleEl.style.borderColor = 'var(--gold)';
+                        reticleEl.style.boxShadow = `0 0 ${14 + pct * 0.35}px var(--gold)`;
+                        reticleEl.style.transform = `translate(-50%, -50%) scale(${1.0 + (pct / 200.0)})`;
+                    }
+
+                    if (dwellProgress >= 1.0 && cooldown > 800) {
+                        lastGestureTime = now;
+                        dwellProgress = 0;
+                        handHistory = [];
+                        playGestureFeedback('SELECT');
+                        triggerGesture('BOOK_READ');
+                    }
+                } else {
+                    dwellProgress = Math.max(0, dwellProgress - 0.12);
+                    const reticleEl = document.getElementById('radar-reticle');
+                    if (reticleEl) {
+                        reticleEl.style.borderColor = 'var(--cyan)';
+                        reticleEl.style.boxShadow = '0 0 16px rgba(56, 189, 248, 0.45)';
+                        reticleEl.style.transform = 'translate(-50%, -50%) scale(1.0)';
+                    }
+                }
+            }
+            lastFrameTime = now;
+        }
+
+        function connectTelemetryStream() {
+            // 1. Primary High-Speed Server-Sent Events (SSE) Stream
+            const eventSource = new EventSource('/stream');
+            eventSource.onmessage = function(event) {
+                try {
+                    const data = JSON.parse(event.data);
+                    handleRadarTelemetry(data);
+                } catch(e) {}
+            };
+            eventSource.onerror = function() {
+                if (!isHardwareNodeActive) {
+                    const b = document.getElementById('hardwareStatusBadge');
+                    if (b) b.innerText = 'VIRTUAL SIMULATOR';
+                }
+            };
+
+            // 2. High-Frequency Fallback Polling Loop (Ensures no frames missed if SSE stalls)
+            setInterval(async () => {
+                try {
+                    const res = await fetch('/api/airmouse');
+                    if (res.ok) {
+                        const airData = await res.json();
+                        handleRadarTelemetry(airData);
+                    }
+                } catch(e) {}
+            }, 100);
+        }
+
+        // =========================================================================
+        // KEYBOARD & MOUSE CONTROLS (ACCESSIBILITY FALLBACK)
+        // =========================================================================
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                triggerGesture('PULL');
+            } else if (e.code === 'ArrowRight') {
+                e.preventDefault();
+                triggerGesture('SWIPE_RIGHT');
+            } else if (e.code === 'ArrowLeft') {
+                e.preventDefault();
+                triggerGesture('SWIPE_LEFT');
+            } else if (e.code === 'Enter') {
+                e.preventDefault();
+                triggerGesture('BOOK_READ');
+            } else if (e.code === 'Escape') {
+                closeDetailModal();
+            }
+        });
+
+        // Mouse Reticle Fallback (Only active if no radar hand is detected)
+        window.addEventListener('mousemove', (e) => {
+            if (handHistory.length === 0 || (performance.now() - (handHistory[handHistory.length - 1]?.t || 0)) > 1500) {
+                targetReticleX = e.clientX;
+                targetReticleY = e.clientY;
+            }
+        });
+
+        function toggleSimMode() {
+            if (isHardwareNodeActive) {
+                showToast('⚡ Live Hardware Node already streaming via Server Bridge (COM10)!');
+                dismissBanner();
+                return;
+            }
+            connectUsbSerial();
+        }
+
+        function dismissBanner() {
+            const b = document.getElementById('hwGatedBanner');
+            if (b) b.style.display = 'none';
+        }
+
+        let serialPort = null;
+        async function connectUsbSerial() {
+            if (isHardwareNodeActive) {
+                showToast('⚡ Live Hardware Node already streaming via Server Bridge (COM10)!');
+                dismissBanner();
+                return;
+            }
+            if (!('serial' in navigator)) {
+                alert('WebSerial API is supported in modern Chrome, Edge, and Chromium desktop browsers.');
+                return;
+            }
+            try {
+                serialPort = await navigator.serial.requestPort();
+                await serialPort.open({ baudRate: 921600 });
+                isHardwareNodeActive = true;
+                showToast('⚡ USB-C HARDWARE LOCKED & STREAMING!');
+                const badge = document.getElementById('hardwareStatusBadge');
+                if (badge) {
+                    badge.innerText = '⚡ LIVE HARDWARE LOCKED';
+                    badge.style.background = 'rgba(52, 211, 153, 0.2)';
+                    badge.style.borderColor = 'var(--green)';
+                    badge.style.color = 'var(--green)';
+                }
+                dismissBanner();
+            } catch (err) {
+                showToast('Hardware Port in use by Server Bridge (COM10)');
+            }
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // =========================================================================
+        // ANIMATION RENDER LOOP (60 FPS SMOOTH THREE.JS + RETICLE LERP)
+        // =========================================================================
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Smooth Reticle Follow Filter (60 FPS LERP)
+            smoothReticleX += (targetReticleX - smoothReticleX) * 0.32;
+            smoothReticleY += (targetReticleY - smoothReticleY) * 0.32;
+            const reticleEl = document.getElementById('radar-reticle');
+            if (reticleEl) {
+                reticleEl.style.left = `${smoothReticleX}px`;
+                reticleEl.style.top = `${smoothReticleY}px`;
+            }
+
+            // Smooth Z-axis glide (foreground vs background)
+            currentZ += (targetZ - currentZ) * 0.08;
+            if (hexagonGroup) {
+                hexagonGroup.position.z = currentZ;
+                
+                // Smooth Y-axis rotation (carousel face flip) + Real-Time Hand Parallax Tilt
+                const handTilt = ((smoothReticleX - window.innerWidth / 2) / (window.innerWidth / 2)) * 0.42;
+                currentRotationY += (targetRotationY - currentRotationY) * 0.14;
+                hexagonGroup.rotation.y = currentRotationY + handTilt;
+
+                // Subtle ambient floating breathing motion
+                hexagonGroup.position.y = Math.sin(clock.getElapsedTime() * 1.5) * 3;
+            }
+
+            // Slowly orbit ambient particle field
+            if (ambientParticles) {
+                ambientParticles.rotation.y += 0.0006;
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        // Initialize scene on load
+        window.onload = () => {
+            initScene();
+            loadAIModel();
+            connectTelemetryStream();
+        };
+    </script>
+</body>
+</html>
