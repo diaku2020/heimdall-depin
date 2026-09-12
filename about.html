@@ -2125,7 +2125,7 @@
         "@type": "Offer",
         "url": "https://heimdallnode.com/about",
         "priceCurrency": "USD",
-        "price": "450.00",
+        "price": "100.00",
         "availability": "https://schema.org/PreOrder"
       }
     }
@@ -3429,7 +3429,7 @@
                 </button>
                 <button class="payment-rail-btn" id="btnPayRnr" onclick="togglePaymentRail('RNR')">
                     <span>⚡ Pay with $RNR</span>
-                    <span class="discount-badge">15% OFF ($380)</span>
+                    <span class="discount-badge">15% OFF ($85)</span>
                 </button>
             </div>
 
@@ -3451,7 +3451,7 @@
                     <span>→</span>
                 </a>
                 <button onclick="payWithRnrDirect()" class="btn-order-glow" id="btnPayWithRnrDirect" style="display: none; background: linear-gradient(135deg, #059669, #047857); box-shadow: 0 10px 30px rgba(5,150,105,0.4);">
-                    <span>⚡ Pay 7,600 $RNR on Base ($380 • 15% OFF)</span>
+                    <span>⚡ Pay 1,700 $RNR on Base ($85 • 15% OFF)</span>
                     <span>→</span>
                 </button>
                 <a href="/airmouse/" style="background: rgba(255,255,255,0.12); color: #fff; padding: 18px 32px; border-radius: 9999px; text-decoration: none; font-weight: 800; border: 1px solid rgba(255,255,255,0.25); display: inline-flex; align-items: center; gap: 8px;">
@@ -3601,8 +3601,8 @@
             } else {
                 btnRnr.classList.add('active');
                 btnUsd.classList.remove('active');
-                const tokensNeeded = Math.round(380 / RNR_PRICE_USD_BENCHMARK).toLocaleString();
-                if (headline) headline.innerHTML = `Pay in <strong>$RNR on Base</strong>: <span style="color: #34d399; font-weight: 900; font-size: 18px;">$380.00 USD</span> <span style="background: #059669; color: #fff; font-size: 11px; padding: 2px 8px; border-radius: 9999px; margin-left: 6px;">SAVE $70 (15% OFF)</span>`;
+                const tokensNeeded = Math.round(85 / RNR_PRICE_USD_BENCHMARK).toLocaleString();
+                if (headline) headline.innerHTML = `Pay in <strong>$RNR on Base</strong>: <span style="color: #34d399; font-weight: 900; font-size: 18px;">$85.00 USD</span> <span style="background: #059669; color: #fff; font-size: 11px; padding: 2px 8px; border-radius: 9999px; margin-left: 6px;">SAVE $15 (15% OFF)</span>`;
                 if (subtext) subtext.innerHTML = `Estimated: <strong>${tokensNeeded} $RNR</strong> (calculated at live DEX pool rate). 50% of your tokens are burned forever, 50% recycled to active node miners!`;
                 if (mainBtn) mainBtn.style.display = 'none';
                 if (directRnrBtn) {
@@ -3613,27 +3613,27 @@
             if (actionBtn) {
                 actionBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }
-} $RNR on Base ($380 • 15% OFF)</span> <span>→</span>`;
+} $RNR on Base ($85 • 15% OFF)</span> <span>→</span>`;
                 }
             }
         }
 
         async function payWithRnrDirect() {
             const btn = document.getElementById('btnPayWithRnrDirect');
-            if (btn) btn.innerHTML = '<span>⚡ Processing 7,600 $RNR Transfer...</span>';
+            if (btn) btn.innerHTML = '<span>⚡ Processing 1,700 $RNR Transfer...</span>';
 
             await new Promise(r => setTimeout(r, 800));
 
             if (typeof window.ethereum !== 'undefined') {
                 try {
                     const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-                    if (btn) btn.innerHTML = `<span>✓ 7,600 $RNR Confirmed! Prototype Reserved</span>`;
+                    if (btn) btn.innerHTML = `<span>✓ 1,700 $RNR Confirmed! Prototype Reserved</span>`;
                 } catch (e) {
                     console.error('Wallet error:', e);
-                    if (btn) btn.innerHTML = `<span>⚡ Pay 7,600 $RNR on Base ($380 • 15% OFF)</span> <span>→</span>`;
+                    if (btn) btn.innerHTML = `<span>⚡ Pay 1,700 $RNR on Base ($85 • 15% OFF)</span> <span>→</span>`;
                 }
             } else {
-                if (btn) btn.innerHTML = `<span>✓ 7,600 $RNR Transferred (3,800 Burned 🔥)! Prototype Reserved</span>`;
+                if (btn) btn.innerHTML = `<span>✓ 1,700 $RNR Transferred (850 Burned 🔥)! Prototype Reserved</span>`;
             }
         }
 
