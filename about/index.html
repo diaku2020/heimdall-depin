@@ -2106,8 +2106,8 @@
         }
 
     </style>
-    <!-- Gumroad Overlay Checkout Script -->
-    <script src="https://gumroad.com/js/gumroad.js"></script>
+    <!-- Base L2 Native Checkout -->
+    
 </head>
 <body>
 
@@ -2117,7 +2117,7 @@
     <div class="top-banner">
         <span class="badge">GENESIS BUNDLE</span>
         <span>Every Pre-Order Includes a <strong>Free Assembled Prototype Node</strong> Hand-Crafted &amp; Dispatched in ~30 Days (+ Shipping) to Begin Mining Early!</span>
-        <a href="https://mrregist.gumroad.com/l/Heimdall" target="_blank" rel="noopener noreferrer">Claim Pre-Order →</a>
+        <a href="#" onclick="openBaseCheckout(event)" target="_blank" rel="noopener noreferrer">Claim Pre-Order →</a>
     </div>
 
     <!-- Main Navigation -->
@@ -2184,7 +2184,7 @@
         </p>
 
         <div class="hero-cta-group">
-            <a href="https://mrregist.gumroad.com/l/Heimdall" target="_blank" rel="noopener noreferrer" class="btn-hero-main">
+            <a href="#" onclick="openBaseCheckout(event)" target="_blank" rel="noopener noreferrer" class="btn-hero-main">
                 <span>⚡ Pre-Order Hardware ($450) &amp; Get Free Prototype</span>
                 <span>→</span>
             </a>
@@ -2281,7 +2281,7 @@
                             <span><strong>Base L2 DePIN Mining:</strong> Stream real encrypted telemetry to earn Proof-of-Uptime $RNR tokens backed by the genesis crypto treasury.</span>
                         </li>
                     </ul>
-                    <a href="https://mrregist.gumroad.com/l/Heimdall" target="_blank" rel="noopener noreferrer" class="action-btn btn-hw-claim">
+                    <a href="#" onclick="openBaseCheckout(event)" target="_blank" rel="noopener noreferrer" class="action-btn btn-hw-claim">
                         <span>Pre-Order &amp; Claim Prototype Node ($450)</span>
                         <span>→</span>
                     </a>
@@ -2403,7 +2403,7 @@
 
                 <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center;">
                     <span style="font-size: 11px; font-weight: 700; color: var(--text-muted);">U.S. PATENT PENDING • RANDRTECH LABS</span>
-                    <a href="https://mrregist.gumroad.com/l/Heimdall" target="_blank" rel="noopener noreferrer" style="font-size: 12px; font-weight: 800; color: var(--purple-primary); text-decoration: none;">Reserve Your Node →</a>
+                    <a href="#" onclick="openBaseCheckout(event)" target="_blank" rel="noopener noreferrer" style="font-size: 12px; font-weight: 800; color: var(--purple-primary); text-decoration: none;">Reserve Your Node →</a>
                 </div>
             </div>
         </div>
@@ -3298,7 +3298,7 @@
                     </a>
 
                     <!-- Direct Hardware Pre-Order -->
-                    <a href="https://mrregist.gumroad.com/l/Heimdall" target="_blank" class="founder-social-pill" style="background: var(--purple-primary); color: #fff; border-color: var(--purple-primary); font-weight: 800;">
+                    <a href="#" onclick="openBaseCheckout(event)" target="_blank" class="founder-social-pill" style="background: var(--purple-primary); color: #fff; border-color: var(--purple-primary); font-weight: 800;">
                         <span>⚡</span> <span>Pre-Order Node ($450 • Free Shipping)</span>
                     </a>
                 </div>
@@ -3389,7 +3389,7 @@
             <!-- Direct Checkout CTA (Positioned Immediately Under Selector) -->
             <div id="checkoutActionContainer" style="margin: 20px auto 28px; text-align: center;">
                 <div style="display: flex; justify-content: center; gap: 16px; flex-wrap: wrap;">
-                <a href="https://mrregist.gumroad.com/l/Heimdall" class="btn-order-glow gumroad-button" id="mainPreorderBtn" target="_blank">
+                <a href="#" onclick="openBaseCheckout(event)" class="btn-order-glow" id="mainPreorderBtn" target="_blank">
                     <span id="mainPreorderBtnText">⚡ Claim Pre-Order &amp; Prototype ($450 • Free Shipping)</span>
                     <span>→</span>
                 </a>
@@ -3447,7 +3447,7 @@
                 <a href="/intro">Opening Particles</a>
                 <a href="/airmouse/">Air Mouse Studio <span style="font-size: 10px; opacity: 0.75; font-weight: 700; background: rgba(0,0,0,0.2); padding: 1px 6px; border-radius: 4px;">🖥️ PC</span></a>
                 <a href="/spatial/">3D Dollhouse <span style="font-size: 10px; opacity: 0.75; font-weight: 700; background: rgba(0,0,0,0.2); padding: 1px 6px; border-radius: 4px;">🖥️ PC</span></a>
-                <a href="https://mrregist.gumroad.com/l/Heimdall" target="_blank" rel="noopener noreferrer">Pre-Order</a>
+                <a href="#" onclick="openBaseCheckout(event)" target="_blank" rel="noopener noreferrer">Pre-Order</a>
                 <a href="https://basescan.org/token/0x452Ca685eF98C01e36E8Be33ae111146CB7891aD" target="_blank">BaseScan</a>
             </div>
         </div>
@@ -4027,8 +4027,8 @@
         document.addEventListener('DOMContentLoaded', () => {
             const mainBtn = document.getElementById('mainPreorderBtn');
             if (mainBtn) {
-                mainBtn.setAttribute('href', 'https://mrregist.gumroad.com/l/Heimdall');
-                mainBtn.classList.add('gumroad-button');
+                mainBtn.setAttribute('href', '#'); mainBtn.onclick = openBaseCheckout;
+                
             }
         });
 
@@ -4077,8 +4077,8 @@
                 </div>
 
                 <div style="margin-bottom: 12px; text-align: center;">
-                    <a href="https://mrregist.gumroad.com/l/Heimdall" target="_blank" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 14px; background: #ff90e8; color: #000; border: 2px solid #000; border-radius: 12px; font-size: 14px; font-weight: 900; text-decoration: none; box-shadow: 3px 3px 0px #000;">
-                        <span>⚡ Instant Checkout via Gumroad ($450 • Free Shipping)</span>
+                    <a href="#" onclick="openBaseCheckout(event)" target="_blank" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 14px; background: #ff90e8; color: #000; border: 2px solid #000; border-radius: 12px; font-size: 14px; font-weight: 900; text-decoration: none; box-shadow: 3px 3px 0px #000;">
+                        <span>⚡ Pay with Base L2 ($100 • 0% Fee)</span>
                         <span>→</span>
                     </a>
                 </div>
@@ -4093,6 +4093,276 @@
             </div>
         </div>
     </div>
+
+
+<!-- ========================================================================= -->
+<!-- NATIVE BASE L2 CHECKOUT PORTAL (0% FEES • ZERO INTERMEDIARIES) -->
+<!-- ========================================================================= -->
+<div id="baseCheckoutModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(2,6,23,0.88); z-index: 999999; align-items: center; justify-content: center; backdrop-filter: blur(10px); padding: 16px; box-sizing: border-box;">
+    <div style="background: #0f172a; border: 1px solid rgba(124, 58, 237, 0.5); border-radius: 24px; width: 100%; max-width: 500px; padding: 28px; box-shadow: 0 25px 60px rgba(0,0,0,0.7), 0 0 50px rgba(124, 58, 237, 0.25); position: relative; font-family: 'Plus Jakarta Sans', -apple-system, sans-serif; color: #f8fafc; max-height: 92vh; overflow-y: auto;">
+        
+        <button onclick="closeBaseCheckout()" style="position: absolute; top: 18px; right: 18px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; font-size: 20px; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s;">&times;</button>
+        
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+            <span style="background: rgba(0, 82, 255, 0.15); border: 1px solid #0052ff; color: #60a5fa; font-size: 10px; font-weight: 800; padding: 3px 10px; border-radius: 20px; letter-spacing: 1px; text-transform: uppercase;">⚡ Base L2 Native</span>
+            <span style="color: #10b981; font-size: 11px; font-weight: 700;">● 0% Platform Fee</span>
+        </div>
+        
+        <h2 style="font-size: 22px; font-weight: 900; color: #fff; margin: 0 0 4px 0; letter-spacing: -0.5px;">Checkout • Heimdall V1 Node</h2>
+        <p style="font-size: 12px; color: #94a3b8; margin: 0 0 16px 0;">Camera-Free Edge AI mmWave Radar Sentry + 21M $RNR DePIN Node.</p>
+        
+        <!-- Order Summary Pill -->
+        <div style="background: rgba(124, 58, 237, 0.08); border: 1px solid rgba(124, 58, 237, 0.25); padding: 14px 16px; border-radius: 14px; margin-bottom: 16px;">
+            <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px;">
+                <span style="color: #cbd5e1; font-weight: 600;">Hardware Allocation (Batch 1)</span>
+                <span style="color: #fff; font-weight: 800;">$100.00 USD</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px;">
+                <span style="color: #cbd5e1; font-weight: 600;">Worldwide Tracked Shipping</span>
+                <span style="color: #10b981; font-weight: 800;">FREE</span>
+            </div>
+            <div style="border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 8px; margin-top: 6px; display: flex; justify-content: space-between; font-size: 11px; color: #fbbf24;">
+                <span>🏛️ 17% Physical Gold &amp; BTC Sweep:</span>
+                <span>$17.00 auto-allocated</span>
+            </div>
+        </div>
+
+        <!-- Token Selector -->
+        <div style="margin-bottom: 16px;">
+            <label style="display: block; color: #cbd5e1; font-size: 11px; font-weight: 800; letter-spacing: 0.5px; margin-bottom: 8px; text-transform: uppercase;">Select Payment Token on Base</label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+                <button type="button" id="tokenOptUSDC" onclick="selectPayToken('USDC')" style="background: rgba(0, 82, 255, 0.2); border: 2px solid #0052ff; color: #fff; padding: 10px 6px; border-radius: 10px; cursor: pointer; font-family: inherit; font-size: 12px; font-weight: 800; display: flex; flex-direction: column; align-items: center; gap: 3px; transition: 0.2s;">
+                    <span>💵 100 USDC</span>
+                    <span style="font-size: 9px; color: #60a5fa; font-weight: 600;">Recommended</span>
+                </button>
+                <button type="button" id="tokenOptETH" onclick="selectPayToken('ETH')" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); color: #cbd5e1; padding: 10px 6px; border-radius: 10px; cursor: pointer; font-family: inherit; font-size: 12px; font-weight: 800; display: flex; flex-direction: column; align-items: center; gap: 3px; transition: 0.2s;">
+                    <span>⚡ ~0.038 ETH</span>
+                    <span style="font-size: 9px; color: #94a3b8; font-weight: 600;">Native Base</span>
+                </button>
+                <button type="button" id="tokenOptRNR" onclick="selectPayToken('RNR')" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); color: #cbd5e1; padding: 10px 6px; border-radius: 10px; cursor: pointer; font-family: inherit; font-size: 12px; font-weight: 800; display: flex; flex-direction: column; align-items: center; gap: 3px; transition: 0.2s;">
+                    <span>🔥 1,700 RNR</span>
+                    <span style="font-size: 9px; color: #a855f7; font-weight: 600;">15% Off</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Shipping Form -->
+        <div style="margin-bottom: 18px;">
+            <label style="display: block; color: #cbd5e1; font-size: 11px; font-weight: 800; letter-spacing: 0.5px; margin-bottom: 8px; text-transform: uppercase;">Shipping Information (Encrypted)</label>
+            <input type="text" id="baseCustName" placeholder="Full Recipient Name" required style="width: 100%; box-sizing: border-box; padding: 11px 13px; border-radius: 10px; border: 1px solid #334155; background: #1e293b; color: #fff; margin-bottom: 8px; font-size: 13px; font-family: inherit; outline: none;">
+            <input type="email" id="baseCustEmail" placeholder="Email Address (Tracking updates)" required style="width: 100%; box-sizing: border-box; padding: 11px 13px; border-radius: 10px; border: 1px solid #334155; background: #1e293b; color: #fff; margin-bottom: 8px; font-size: 13px; font-family: inherit; outline: none;">
+            <textarea id="baseCustAddress" placeholder="Street Address, City, State/Province, Postal Code, Country" required rows="2" style="width: 100%; box-sizing: border-box; padding: 11px 13px; border-radius: 10px; border: 1px solid #334155; background: #1e293b; color: #fff; font-size: 13px; font-family: inherit; outline: none; resize: none;"></textarea>
+        </div>
+
+        <!-- Pay Button -->
+        <button id="btnBasePay" onclick="executeBasePayment()" style="width: 100%; padding: 15px; border-radius: 14px; background: linear-gradient(135deg, #0052ff 0%, #0033cc 100%); color: #fff; font-size: 15px; font-weight: 900; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 10px 25px rgba(0, 82, 255, 0.4); transition: 0.2s;">
+            <svg width="22" height="22" viewBox="0 0 111 111" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="55.5" cy="55.5" r="55.5" fill="#fff"/>
+                <path d="M55.5 88C73.4493 88 88 73.4493 88 55.5C88 37.5507 73.4493 23 55.5 23C38.3072 23 24.2384 36.3392 23.0825 53.2258H65.8065V57.7742H23.0825C24.2384 74.6608 38.3072 88 55.5 88Z" fill="#0052FF"/>
+            </svg>
+            <span id="btnBasePayLabel">Pay 100 USDC on Base</span>
+        </button>
+
+        <!-- Status & Confirmation Message -->
+        <div id="basePayStatus" style="display: none; margin-top: 14px; padding: 14px; border-radius: 12px; font-size: 12px; font-weight: 700; line-height: 1.5; text-align: center;"></div>
+        
+        <div style="margin-top: 16px; display: flex; justify-content: space-between; align-items: center; font-size: 10px; color: #64748b;">
+            <span>Merchant: <a href="https://basescan.org/address/0x1645A30517ec189fAa5ae1d85AABE38eE85d00F9" target="_blank" style="color: #60a5fa; text-decoration: none;">0x1645...00F9</a></span>
+            <span>Network: Base Mainnet (Chain ID 8453)</span>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+<script>
+    const MERCHANT_RECEIVER = "0x1645A30517ec189fAa5ae1d85AABE38eE85d00F9";
+    const USDC_CONTRACT_BASE = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
+    const BASE_CHAIN_HEX = "0x2105";
+    let selectedToken = 'USDC';
+
+    const ERC20_ABI = [
+        "function transfer(address to, uint256 amount) returns (bool)",
+        "function decimals() view returns (uint8)",
+        "function balanceOf(address account) view returns (uint256)"
+    ];
+
+    function openBaseCheckout(e) {
+        if(e) e.preventDefault();
+        const modal = document.getElementById('baseCheckoutModal');
+        if(modal) modal.style.display = 'flex';
+    }
+
+    function closeBaseCheckout() {
+        const modal = document.getElementById('baseCheckoutModal');
+        if(modal) modal.style.display = 'none';
+    }
+
+    function selectPayToken(tok) {
+        selectedToken = tok;
+        const uBtn = document.getElementById('tokenOptUSDC');
+        const eBtn = document.getElementById('tokenOptETH');
+        const rBtn = document.getElementById('tokenOptRNR');
+        const payLbl = document.getElementById('btnBasePayLabel');
+
+        [uBtn, eBtn, rBtn].forEach(b => {
+            b.style.background = "rgba(255,255,255,0.03)";
+            b.style.border = "1px solid rgba(255,255,255,0.1)";
+            b.style.color = "#cbd5e1";
+        });
+
+        if(tok === 'USDC') {
+            uBtn.style.background = "rgba(0, 82, 255, 0.2)";
+            uBtn.style.border = "2px solid #0052ff";
+            uBtn.style.color = "#fff";
+            payLbl.innerText = "Pay 100 USDC on Base";
+        } else if(tok === 'ETH') {
+            eBtn.style.background = "rgba(0, 82, 255, 0.2)";
+            eBtn.style.border = "2px solid #0052ff";
+            eBtn.style.color = "#fff";
+            payLbl.innerText = "Pay ~0.038 ETH on Base";
+        } else if(tok === 'RNR') {
+            rBtn.style.background = "rgba(168, 85, 247, 0.2)";
+            rBtn.style.border = "2px solid #a855f7";
+            rBtn.style.color = "#fff";
+            payLbl.innerText = "Pay 1,700 $RNR on Base (15% Off)";
+        }
+    }
+
+    async function executeBasePayment() {
+        const name = document.getElementById('baseCustName').value.trim();
+        const email = document.getElementById('baseCustEmail').value.trim();
+        const addr = document.getElementById('baseCustAddress').value.trim();
+        const btn = document.getElementById('btnBasePay');
+        const status = document.getElementById('basePayStatus');
+
+        if(!name || !email || !addr) {
+            alert('Please fill out your recipient name, email, and shipping address before paying.');
+            return;
+        }
+
+        if (typeof window.ethereum === 'undefined') {
+            alert('No Web3 wallet detected! Please open this page in Coinbase Wallet, MetaMask, Rainbow, or a Web3-compatible browser.');
+            return;
+        }
+
+        try {
+            btn.disabled = true;
+            btn.style.opacity = '0.7';
+            btn.innerHTML = '<span>Connecting to Base L2...</span>';
+            status.style.display = 'none';
+
+            // 1. Request Accounts
+            await window.ethereum.request({ method: 'eth_requestAccounts' });
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            
+            // 2. Ensure network is Base Mainnet (8453)
+            const network = await provider.getNetwork();
+            if (network.chainId !== 8453) {
+                try {
+                    await window.ethereum.request({
+                        method: 'wallet_switchEthereumChain',
+                        params: [{ chainId: BASE_CHAIN_HEX }],
+                    });
+                } catch (switchError) {
+                    if (switchError.code === 4902) {
+                        await window.ethereum.request({
+                            method: 'wallet_addEthereumChain',
+                            params: [{
+                                chainId: BASE_CHAIN_HEX,
+                                chainName: 'Base Mainnet',
+                                nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+                                rpcUrls: ['https://mainnet.base.org'],
+                                blockExplorerUrls: ['https://basescan.org']
+                            }],
+                        });
+                    } else {
+                        throw switchError;
+                    }
+                }
+            }
+
+            const signer = provider.getSigner();
+            const userAddress = await signer.getAddress();
+
+            btn.innerHTML = '<span>Awaiting Wallet Signature...</span>';
+
+            let tx;
+            if (selectedToken === 'USDC') {
+                const usdcContract = new ethers.Contract(USDC_CONTRACT_BASE, ERC20_ABI, signer);
+                const amount = ethers.utils.parseUnits("100.0", 6);
+                tx = await usdcContract.transfer(MERCHANT_RECEIVER, amount);
+            } else if (selectedToken === 'ETH') {
+                const amount = ethers.utils.parseEther("0.038");
+                tx = await signer.sendTransaction({
+                    to: MERCHANT_RECEIVER,
+                    value: amount
+                });
+            } else if (selectedToken === 'RNR') {
+                const rnrAddress = "0x452Ca685eF98C01e36E8Be33ae111146CB7891aD";
+                const rnrContract = new ethers.Contract(rnrAddress, ERC20_ABI, signer);
+                const amount = ethers.utils.parseUnits("1700.0", 18);
+                tx = await rnrContract.transfer(MERCHANT_RECEIVER, amount);
+            }
+
+            btn.innerHTML = '<span>Confirming on Base Block...</span>';
+            
+            try {
+                fetch('/api/order', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: name,
+                        email: email,
+                        shipping_address: addr,
+                        wallet: userAddress,
+                        tx_hash: tx.hash,
+                        token: selectedToken,
+                        amount: selectedToken === 'USDC' ? 100 : (selectedToken === 'ETH' ? 0.038 : 1700),
+                        item: 'Heimdall V1 Node (Batch 1 Allocation)'
+                    })
+                }).catch(() => {});
+            } catch(e) {}
+
+            status.style.display = 'block';
+            status.style.background = 'rgba(16, 185, 129, 0.15)';
+            status.style.border = '1px solid #10b981';
+            status.style.color = '#34d399';
+            status.innerHTML = `
+                <div style="font-size:15px; font-weight:900; margin-bottom:4px;">🎉 PAYMENT CONFIRMED ON BASE!</div>
+                <div>Your Heimdall V1 Node is reserved.</div>
+                <div style="margin-top:6px; font-size:11px; word-break:break-all;">
+                    Tx Hash: <a href="https://basescan.org/tx/${tx.hash}" target="_blank" style="color:#60a5fa; text-decoration:underline;">${tx.hash}</a>
+                </div>
+            `;
+
+            btn.innerHTML = '<span>✓ Order Reserved</span>';
+            btn.style.background = '#10b981';
+
+        } catch (err) {
+            console.error(err);
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            btn.innerHTML = '<span>Retry Payment on Base</span>';
+            status.style.display = 'block';
+            status.style.background = 'rgba(239, 68, 68, 0.15)';
+            status.style.border = '1px solid #ef4444';
+            status.style.color = '#f87171';
+            status.innerText = err.message ? (err.message.includes("rejected") ? "Transaction cancelled by user." : err.message.slice(0, 90) + "...") : "Payment failed. Check your wallet balance on Base.";
+        }
+    }
+
+    // Attach to any button on the page that mentions preorder, order, or gumroad
+    document.addEventListener("DOMContentLoaded", () => {
+        document.querySelectorAll('a[href*="gumroad.com"], a.btn-hw-claim, a.btn-hero-main, a.btn-order-glow').forEach(el => {
+            el.removeAttribute('target');
+            el.href = "#";
+            el.onclick = openBaseCheckout;
+            if(el.innerText.toLowerCase().includes("gumroad")) {
+                el.innerText = "Pay $100 with Base (USDC / ETH)";
+            }
+        });
+    });
+</script>
 
 </body>
 </html>
