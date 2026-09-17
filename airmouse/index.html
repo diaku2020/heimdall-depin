@@ -1818,30 +1818,56 @@
         }
 
         function connectTelemetryStream() {
-            // 1. Primary High-Speed Server-Sent Events (SSE) Stream
-            const eventSource = new EventSource('/stream');
-            eventSource.onmessage = function(event) {
-                try {
-                    const data = JSON.parse(event.data);
-                    handleRadarTelemetry(data);
-                } catch(e) {}
-            };
-            eventSource.onerror = function() {
-                if (!isHardwareNodeActive) {
-                    const b = document.getElementById('hardwareStatusBadge');
-                    if (b) b.innerText = 'VIRTUAL SIMULATOR';
-                }
-            };
+            // Check if running in production web demo
+            const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            if (!isLocal) {
+                // Production web mode: Run virtual simulator directly without hammering origin server
+                console.log("[Heimdall] Web demo active. Running in Virtual Simulator mode.");
+                const b = document.getElementById('hardwareStatusBadge');
+                if (b) b.innerText = 'VIRTUAL SIMULATOR';
+                return;
+            }
 
-            // 2. High-Frequency Fallback Polling Loop (Ensures no frames missed if SSE stalls)
-            setInterval(async () => {
+            let failCount = 0;
+            let eventSource = null;
+            try {
+                eventSource = new EventSource('/stream');
+                eventSource.onmessage = function(event) {
+                    try {
+                        const data = JSON.parse(event.data);
+                        handleRadarTelemetry(data);
+                    } catch(e) {}
+                };
+                eventSource.onerror = function() {
+                    failCount++;
+                    if (!isHardwareNodeActive) {
+                        const b = document.getElementById('hardwareStatusBadge');
+                        if (b) b.innerText = 'VIRTUAL SIMULATOR';
+                    }
+                    if (failCount >= 3 && eventSource) {
+                        eventSource.close();
+                        eventSource = null;
+                    }
+                };
+            } catch(e) {}
+
+            // High-Frequency Fallback Polling Loop (Stops immediately if local server not found)
+            let pollTimer = setInterval(async () => {
+                if (failCount >= 3) {
+                    clearInterval(pollTimer);
+                    return;
+                }
                 try {
                     const res = await fetch('/api/airmouse');
                     if (res.ok) {
                         const airData = await res.json();
                         handleRadarTelemetry(airData);
+                    } else {
+                        failCount++;
                     }
-                } catch(e) {}
+                } catch(e) {
+                    failCount++;
+                }
             }, 100);
         }
 
