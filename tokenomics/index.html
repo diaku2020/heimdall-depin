@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>$RNR Tokenomics &amp; Utica Sovereign Vault • Base Mainnet</title>
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700;800&family=Space+Grotesk:wght@500;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-page: #030712;
+            --bg-card: rgba(15, 23, 42, 0.75);
+            --bg-card-hover: rgba(30, 41, 59, 0.85);
+            --border-card: rgba(56, 189, 248, 0.2);
+            --border-glow: rgba(56, 189, 248, 0.4);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --cyan-primary: #38bdf8;
+            --cyan-glow: rgba(56, 189, 248, 0.35);
+            --green-primary: #10b981;
+            --gold-primary: #fbbf24;
+            --purple-primary: #7c3aed;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-page);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Ambient Glow Background */
+        .ambient-bg {
+            position: fixed;
+            inset: 0;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(56, 189, 248, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(124, 58, 237, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.04) 0%, transparent 50%),
+                #030712;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Navigation Header */
+        header.site-header {
+            position: sticky;
+            top: 0;
+            z-index: 9999;
+            background: rgba(3, 7, 18, 0.85);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(56, 189, 248, 0.15);
+            padding: 12px 24px;
+        }
+
+        .nav-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: #ffffff;
+        }
+
+        .brand-logo-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 16px;
+            color: #030712;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+        }
+
+        .brand-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 900;
+            font-size: 18px;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .network-badge {
+            font-size: 9px;
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            color: #10b981;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            letter-spacing: 0.5px;
+        }
+
+        .pulse-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #10b981;
+            box-shadow: 0 0 8px #10b981;
+        }
+
+        /* Nav Menu & Dropdowns */
+        .nav-menu {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            list-style: none;
+        }
+
+        .nav-item {
+            position: relative;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 8px 12px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #cbd5e1;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .nav-link:hover, .nav-item.active .nav-link {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .chevron {
+            font-size: 9px;
+            opacity: 0.6;
+            transition: transform 0.2s;
+        }
+
+        .nav-item:hover .chevron {
+            transform: rotate(180deg);
+        }
+
+        /* Dropdown Menu */
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            margin-top: 6px;
+            background: rgba(15, 23, 42, 0.96);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            backdrop-filter: blur(16px);
+            border-radius: 14px;
+            padding: 8px;
+            min-width: 250px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.8), 0 0 25px rgba(56, 189, 248, 0.15);
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            z-index: 10000;
+        }
+
+        .nav-item:hover .dropdown-menu {
+            display: flex;
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(56, 189, 248, 0.12);
+        }
+
+        .dropdown-item-icon {
+            font-size: 16px;
+            width: 24px;
+            text-align: center;
+        }
+
+        .dropdown-item-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .dropdown-item-title {
+            font-size: 12px;
+            font-weight: 800;
+            color: #ffffff;
+        }
+
+        .dropdown-item-sub {
+            font-size: 10px;
+            color: #94a3b8;
+        }
+
+        /* Header Actions */
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-header-api {
+            background: rgba(56, 189, 248, 0.12);
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            color: #38bdf8;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-header-api:hover {
+            background: #38bdf8;
+            color: #030712;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+        }
+
+        .btn-header-order {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: #ffffff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 900;
+            text-decoration: none;
+            transition: all 0.2s;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-header-order:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
+        }
+
+        /* Layout & Common Content Classes */
+        .page-wrapper {
+            flex: 1;
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 40px 24px;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .page-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(56, 189, 248, 0.1);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            color: #38bdf8;
+            padding: 4px 14px;
+            border-radius: 9999px;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            margin-bottom: 14px;
+        }
+
+        .page-title {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 38px;
+            font-weight: 900;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+            line-height: 1.2;
+            margin-bottom: 12px;
+        }
+
+        .page-subtitle {
+            font-size: 15px;
+            color: #94a3b8;
+            max-width: 720px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 24px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: 18px;
+            padding: 28px;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .card:hover {
+            border-color: var(--border-glow);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 20px rgba(56, 189, 248, 0.1);
+        }
+
+        /* Footer */
+        footer.site-footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            background: #02040a;
+            padding: 40px 24px;
+            margin-top: auto;
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .footer-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: #94a3b8;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover {
+            color: #38bdf8;
+        }
+
+        @media (max-width: 860px) {
+            .nav-menu { display: none; }
+            .page-title { font-size: 28px; }
+        }
+    </style>
+
+</head>
+<body>
+    <div class="ambient-bg"></div>
+    
+    <header class="site-header">
+        <div class="nav-container">
+            <a href="/" class="nav-brand">
+                <div class="brand-logo-icon">◈</div>
+                <div class="brand-title">
+                    HEIMDALL
+                    <span class="network-badge"><span class="pulse-dot"></span> BASE MAINNET</span>
+                </div>
+            </a>
+
+            <ul class="nav-menu">
+                <!-- Dropdown 1: Hardware & Store -->
+                <li class="nav-item ">
+                    <a href="/nodes/" class="nav-link">Hardware Store <span class="chevron">▼</span></a>
+                    <div class="dropdown-menu">
+                        <a href="/nodes/" class="dropdown-item">
+                            <span class="dropdown-item-icon">🏙️</span>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-item-title">Utica Community Node</span>
+                                <span class="dropdown-item-sub">$10.00 • 100% Vault Recycled</span>
+                            </div>
+                        </a>
+                        <a href="/nodes/" class="dropdown-item">
+                            <span class="dropdown-item-icon">⚡</span>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-item-title">Commercial Radar Spire</span>
+                                <span class="dropdown-item-sub">$300.00 • 17% Gold & BTC Peg</span>
+                            </div>
+                        </a>
+                        <a href="/nodes/#civic-care" class="dropdown-item">
+                            <span class="dropdown-item-icon">🏛️</span>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-item-title">Civic Care Grant</span>
+                                <span class="dropdown-item-sub">100% Free for Utica Seniors & Impaired</span>
+                            </div>
+                        </a>
+                    </div>
+                </li>
+
+                <!-- Dropdown 2: Wave Intelligence -->
+                <li class="nav-item ">
+                    <a href="/wave-cloud/" class="nav-link">Wave Intelligence <span class="chevron">▼</span></a>
+                    <div class="dropdown-menu">
+                        <a href="/wave-cloud/" class="dropdown-item">
+                            <span class="dropdown-item-icon">🌐</span>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-item-title">Wave Computing Cloud</span>
+                                <span class="dropdown-item-sub">Analog Superposition APIs</span>
+                            </div>
+                        </a>
+                        <a href="/sim/" target="_blank" class="dropdown-item">
+                            <span class="dropdown-item-icon">🖥️</span>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-item-title">Wave Computer Sim (WGC)</span>
+                                <span class="dropdown-item-sub">2D Field Solver & STL Compiler</span>
+                            </div>
+                        </a>
+                        <a href="javascript:openApiKeyModal()" class="dropdown-item">
+                            <span class="dropdown-item-icon">🔑</span>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-item-title">Get Free Sandbox Key</span>
+                                <span class="dropdown-item-sub">Instant live API token</span>
+                            </div>
+                        </a>
+                        <a href="/spatial/" class="dropdown-item">
+                            <span class="dropdown-item-icon">🏠</span>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-item-title">3D Spatial Radar Mapper</span>
+                                <span class="dropdown-item-sub">Point cloud room telemetry</span>
+                            </div>
+                        </a>
+                        <a href="/airmouse/" class="dropdown-item">
+                            <span class="dropdown-item-icon">✋</span>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-item-title">Virtual Studio AirMouse</span>
+                                <span class="dropdown-item-sub">Micro-Doppler gesture tracking</span>
+                            </div>
+                        </a>
+                    </div>
+                </li>
+
+                <!-- Dropdown 3: Tokenomics & Vault -->
+                <li class="nav-item active">
+                    <a href="/tokenomics/" class="nav-link">Ecosystem & Vault <span class="chevron">▼</span></a>
+                    <div class="dropdown-menu">
+                        <a href="/tokenomics/" class="dropdown-item">
+                            <span class="dropdown-item-icon">🪙</span>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-item-title">$RNR Tokenomics</span>
+                                <span class="dropdown-item-sub">21M Supply • Proof-of-Uptime</span>
+                            </div>
+                        </a>
+                        <a href="https://basescan.org/address/0xAce4362d791800c4729bC16A3A6a5d1359EC8926" target="_blank" class="dropdown-item">
+                            <span class="dropdown-item-icon">🏛️</span>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-item-title">Utica Community Vault</span>
+                                <span class="dropdown-item-sub">35,000 $RNR Locked on BaseScan</span>
+                            </div>
+                        </a>
+                        <a href="https://dexscreener.com/base/0x40cfd1595ebd596deaa1feb9aa73d09d05441400" target="_blank" class="dropdown-item">
+                            <span class="dropdown-item-icon">📊</span>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-item-title">DexScreener Live Swaps</span>
+                                <span class="dropdown-item-sub">Uniswap V3 Pool @ $0.0200 USD</span>
+                            </div>
+                        </a>
+                    </div>
+                </li>
+
+                <!-- Dropdown 4: Technology & About -->
+                <li class="nav-item ">
+                    <a href="/technology/" class="nav-link">Research & Story <span class="chevron">▼</span></a>
+                    <div class="dropdown-menu">
+                        <a href="/technology/" class="dropdown-item">
+                            <span class="dropdown-item-icon">🔬</span>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-item-title">Scientific Proof & Physics</span>
+                                <span class="dropdown-item-sub">Sub-THz radar & dielectric lens</span>
+                            </div>
+                        </a>
+                        <a href="/about/" class="dropdown-item">
+                            <span class="dropdown-item-icon">👤</span>
+                            <div class="dropdown-item-text">
+                                <span class="dropdown-item-title">Founder Story</span>
+                                <span class="dropdown-item-sub">Imani Rivers-Regist & RandRTech</span>
+                            </div>
+                        </a>
+                    </div>
+                </li>
+            </ul>
+
+            <div class="nav-actions">
+                <button onclick="openApiKeyModal()" class="btn-header-api">⚡ Free API Key</button>
+                <a href="/nodes/" class="btn-header-order">🛒 Order ($10 / $300)</a>
+            </div>
+        </div>
+    </header>
+    
+
+    <main class="page-wrapper">
+        <div class="page-header">
+            <span class="page-badge">BASE MAINNET VERIFIED • HARD-ASSET BACKED</span>
+            <h1 class="page-title">The $RNR Token &amp; Sovereign Vault.</h1>
+            <p class="page-subtitle">
+                A fixed 21,000,000 token supply on Base L2, backed by 17% automatic routing into physical Gold (PAXG) and Bitcoin (cbBTC), powering the Utica DePIN mesh.
+            </p>
+        </div>
+
+        <!-- Live Contract Suite Cards -->
+        <div class="card-grid" style="margin-bottom: 40px;">
+            <div class="card">
+                <div>
+                    <div style="font-size: 11px; font-weight: 800; color: #10b981; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">TOKEN CORE</div>
+                    <h3 style="font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 8px;">RandRTech ($RNR) V2</h3>
+                    <p style="font-size: 12px; color: #94a3b8; line-height: 1.5; margin-bottom: 14px;">Official verified Base Mainnet contract. Fixed 21,000,000 max supply.</p>
+                    <code style="font-size: 11px; color: #38bdf8; background: #030712; padding: 6px 8px; border-radius: 6px; display: block; overflow-x: auto; margin-bottom: 16px;">0xC45D0C71dFB5D637A7Fe1FCA9067B3E46CB87431</code>
+                </div>
+                <a href="https://basescan.org/token/0xC45D0C71dFB5D637A7Fe1FCA9067B3E46CB87431" target="_blank" style="text-align: center; background: rgba(56, 189, 248, 0.15); border: 1px solid #38bdf8; color: #38bdf8; padding: 10px; border-radius: 8px; font-weight: 800; font-size: 12px; text-decoration: none;">View on BaseScan ↗</a>
+            </div>
+
+            <div class="card" style="border-color: rgba(245, 158, 11, 0.35);">
+                <div>
+                    <div style="font-size: 11px; font-weight: 800; color: #fbbf24; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">MUNICIPAL TREASURY</div>
+                    <h3 style="font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 8px;">Utica Community Vault V2</h3>
+                    <p style="font-size: 12px; color: #94a3b8; line-height: 1.5; margin-bottom: 14px;">Holds 35,000 $RNR locked on Base Mainnet to subsidize free senior and community nodes.</p>
+                    <code style="font-size: 11px; color: #fbbf24; background: #030712; padding: 6px 8px; border-radius: 6px; display: block; overflow-x: auto; margin-bottom: 16px;">0xAce4362d791800c4729bC16A3A6a5d1359EC8926</code>
+                </div>
+                <a href="https://basescan.org/address/0xAce4362d791800c4729bC16A3A6a5d1359EC8926" target="_blank" style="text-align: center; background: rgba(245, 158, 11, 0.15); border: 1px solid #f59e0b; color: #fbbf24; padding: 10px; border-radius: 8px; font-weight: 800; font-size: 12px; text-decoration: none;">View Vault on BaseScan ↗</a>
+            </div>
+
+            <div class="card" style="border-color: rgba(16, 185, 129, 0.35);">
+                <div>
+                    <div style="font-size: 11px; font-weight: 800; color: #10b981; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">DEX LIQUIDITY</div>
+                    <h3 style="font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 8px;">Uniswap V3 WETH/$RNR</h3>
+                    <p style="font-size: 12px; color: #94a3b8; line-height: 1.5; margin-bottom: 14px;">Live decentralized trading pair on Base Mainnet at $0.0200 USD base valuation.</p>
+                    <code style="font-size: 11px; color: #10b981; background: #030712; padding: 6px 8px; border-radius: 6px; display: block; overflow-x: auto; margin-bottom: 16px;">0x40cfD1595ebD596deaA1FEB9aa73D09d05441400</code>
+                </div>
+                <a href="https://dexscreener.com/base/0x40cfd1595ebd596deaa1feb9aa73d09d05441400" target="_blank" style="text-align: center; background: rgba(16, 185, 129, 0.15); border: 1px solid #10b981; color: #10b981; padding: 10px; border-radius: 8px; font-weight: 800; font-size: 12px; text-decoration: none;">Trade on DexScreener ↗</a>
+            </div>
+        </div>
+
+        <!-- Token Allocation Breakdown -->
+        <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 32px; margin-bottom: 40px;">
+            <h3 style="font-size: 20px; font-weight: 900; color: #fff; margin-bottom: 16px;">Transparent Token Allocation (21,000,000 $RNR Total)</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+                <div style="background: rgba(0,0,0,0.4); padding: 16px; border-radius: 12px; border-left: 4px solid #10b981;">
+                    <div style="font-size: 11px; color: #94a3b8; font-weight: 700;">DePIN MINING REWARDS</div>
+                    <div style="font-size: 24px; font-weight: 900; color: #10b981; margin: 4px 0;">14,700,000</div>
+                    <div style="font-size: 11px; color: #cbd5e1;">70% locked in distributor contract</div>
+                </div>
+                <div style="background: rgba(0,0,0,0.4); padding: 16px; border-radius: 12px; border-left: 4px solid #7c3aed;">
+                    <div style="font-size: 11px; color: #94a3b8; font-weight: 700;">FOUNDER &amp; TEAM VESTING</div>
+                    <div style="font-size: 24px; font-weight: 900; color: #c084fc; margin: 4px 0;">6,260,000</div>
+                    <div style="font-size: 11px; color: #cbd5e1;">29.8% locked in 2-year linear vesting</div>
+                </div>
+                <div style="background: rgba(0,0,0,0.4); padding: 16px; border-radius: 12px; border-left: 4px solid #fbbf24;">
+                    <div style="font-size: 11px; color: #94a3b8; font-weight: 700;">UTICA COMMUNITY VAULT</div>
+                    <div style="font-size: 24px; font-weight: 900; color: #fbbf24; margin: 4px 0;">35,000</div>
+                    <div style="font-size: 11px; color: #cbd5e1;">Sovereign municipal hardware reserve</div>
+                </div>
+                <div style="background: rgba(0,0,0,0.4); padding: 16px; border-radius: 12px; border-left: 4px solid #38bdf8;">
+                    <div style="font-size: 11px; color: #94a3b8; font-weight: 700;">UNISWAP V3 LIQUIDITY</div>
+                    <div style="font-size: 24px; font-weight: 900; color: #38bdf8; margin: 4px 0;">5,000</div>
+                    <div style="font-size: 11px; color: #cbd5e1;">Initial circulating market pool</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reserve Router 17% Sweep -->
+        <div style="background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(15, 23, 42, 0.9) 100%); border: 1px solid rgba(245, 158, 11, 0.35); border-radius: 20px; padding: 32px;">
+            <div style="font-size: 11px; font-weight: 800; color: #fbbf24; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">AUTOMATIC HARD-ASSET BACKING</div>
+            <h3 style="font-size: 22px; font-weight: 900; color: #fff; margin-bottom: 10px;">The 17% Gold (PAXG) &amp; Bitcoin (cbBTC) Sweep</h3>
+            <p style="font-size: 14px; color: #cbd5e1; line-height: 1.6; margin-bottom: 16px;">
+                Every commercial hardware node purchase ($300) automatically routes <strong>$51.00 (17%)</strong> through our Reserve Router (<code style="color: #fbbf24;">0x7FBf5F7364412f14D535c40d4DBf2Df95fCD6D4e</code>) into audited physical Gold tokens (PAXG) and Coinbase Wrapped Bitcoin (cbBTC) deposited directly into the Utica Community Vault.
+            </p>
+            <div style="font-size: 12px; color: #10b981; font-weight: 700;">
+                ✓ Creates an unshakeable hard-asset floor underneath the network's digital tokenomics.
+            </div>
+        </div>
+    </main>
+
+    
+<!-- API KEY MODAL -->
+<div id="apiKeyModal" style="display: none; position: fixed; inset: 0; z-index: 999999; background: rgba(3, 7, 18, 0.88); backdrop-filter: blur(12px); align-items: center; justify-content: center; padding: 20px;">
+    <div style="background: linear-gradient(135deg, #0f172a 0%, #030712 100%); border: 1px solid rgba(56, 189, 248, 0.35); box-shadow: 0 25px 60px rgba(0,0,0,0.8), 0 0 40px rgba(56, 189, 248, 0.2); border-radius: 20px; max-width: 580px; width: 100%; padding: 32px; color: #f8fafc; position: relative; max-height: 90vh; overflow-y: auto;">
+        
+        <button onclick="closeApiKeyModal()" style="position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #94a3b8; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center;">&times;</button>
+        
+        <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.35); color: #38bdf8; padding: 4px 12px; border-radius: 9999px; font-size: 10px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; margin-bottom: 12px;">
+            <span style="width: 6px; height: 6px; border-radius: 50%; background: #00ff88; box-shadow: 0 0 8px #00ff88;"></span>
+            INSTANT DEVELOPER SANDBOX
+        </div>
+
+        <h3 style="font-family: 'Space Grotesk', sans-serif; font-size: 24px; font-weight: 900; color: #ffffff; margin-bottom: 8px;">
+            Get Free Wave Intelligence API Key
+        </h3>
+        <p style="font-size: 13px; color: #94a3b8; line-height: 1.5; margin-bottom: 20px;">
+            Immediate access to the Utica Wave-Geometry Computing Mesh. Run analog wavefield simulations, test spatial presence endpoints, and export custom STL metamaterials.
+        </p>
+
+        <div id="modalFormSection" style="display: flex; flex-direction: column; gap: 14px;">
+            <div>
+                <label style="display: block; font-size: 11px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Developer Email</label>
+                <input type="email" id="devInputEmail" placeholder="developer@domain.com" style="width: 100%; background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 10px; padding: 12px; color: #ffffff; font-family: monospace; font-size: 13px; outline: none;">
+            </div>
+            <div>
+                <label style="display: block; font-size: 11px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Project / Dev Handle (Optional)</label>
+                <input type="text" id="devInputProject" placeholder="e.g. Utica Autonomous Corridor" style="width: 100%; background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 10px; padding: 12px; color: #ffffff; font-family: monospace; font-size: 13px; outline: none;">
+            </div>
+            <button onclick="submitGenerateApiKey()" style="width: 100%; background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%); border: none; border-radius: 12px; padding: 14px; color: #030712; font-weight: 900; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 20px rgba(56, 189, 248, 0.4); margin-top: 6px;">
+                ⚡ Generate Instant Sandbox Key
+            </button>
+        </div>
+
+        <div id="modalResultSection" style="display: none; flex-direction: column; gap: 16px;">
+            <div style="background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 12px; padding: 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <span style="font-size: 10px; font-weight: 800; color: #10b981; letter-spacing: 1px; text-transform: uppercase;">ACTIVE SANDBOX KEY</span>
+                    <span style="font-size: 10px; color: #94a3b8;">Rate limit: 60 req/min</span>
+                </div>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <input type="text" id="generatedApiKeyBox" readonly value="" style="flex: 1; background: #030712; border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 8px; padding: 10px 12px; color: #00ff88; font-family: monospace; font-size: 13px; font-weight: bold; outline: none;">
+                    <button onclick="copyGeneratedApiKey()" id="btnCopyKey" style="background: rgba(56, 189, 248, 0.2); border: 1px solid #38bdf8; color: #38bdf8; padding: 10px 14px; border-radius: 8px; font-weight: 700; font-size: 12px; cursor: pointer; white-space: nowrap;">Copy</button>
+                </div>
+            </div>
+
+            <div style="background: #030712; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 14px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <span style="font-size: 10px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">cURL Test Request</span>
+                    <button onclick="copyCodeSnippet()" id="btnCopySnippet" style="background: transparent; border: none; color: #38bdf8; font-size: 11px; cursor: pointer; font-family: monospace;">copy snippet</button>
+                </div>
+                <pre id="codeSnippetBox" style="font-family: monospace; font-size: 11px; color: #e2e8f0; line-height: 1.5; overflow-x: auto; margin: 0;"></pre>
+            </div>
+
+            <a id="modalSimLaunchBtn" href="/sim/" target="_blank" style="background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%); color: #030712; text-decoration: none; padding: 14px 16px; border-radius: 12px; text-align: center; font-weight: 900; font-size: 13px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; box-shadow: 0 4px 20px rgba(56, 189, 248, 0.35);">
+                <span>🚀 Launch Wave Computer (WGC IDE)</span>
+                <span style="font-size: 10px; opacity: 0.85; font-weight: 600;">2D Wavefield Solver • Cavity Q-Scan • STL Generator</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openApiKeyModal() {
+        const m = document.getElementById('apiKeyModal');
+        if (m) m.style.display = 'flex';
+    }
+    function closeApiKeyModal() {
+        const m = document.getElementById('apiKeyModal');
+        if (m) m.style.display = 'none';
+    }
+    function submitGenerateApiKey() {
+        const randHex = Array.from(crypto.getRandomValues(new Uint8Array(6))).map(b => b.toString(16).padStart(2, '0')).join('');
+        const apiKey = 'hmd_sandbox_live_' + randHex;
+        document.getElementById('generatedApiKeyBox').value = apiKey;
+        try { localStorage.setItem('heimdall_sandbox_key', apiKey); } catch(e){}
+        
+        const curlText = 'curl -X POST https://api.heimdallnode.com/v1/wave/eigenmode \\\n' +
+                         '  -H "Authorization: Bearer ' + apiKey + '" \\\n' +
+                         '  -H "Content-Type: application/json" \\\n' +
+                         '  -d '{"frequency_ghz": 2.4, "cavity_dim_mm": [17, 24, 5.2]}'';
+        document.getElementById('codeSnippetBox').innerText = curlText;
+
+        const launchBtn = document.getElementById('modalSimLaunchBtn');
+        if (launchBtn) launchBtn.href = '/sim/?key=' + encodeURIComponent(apiKey);
+
+        document.getElementById('modalFormSection').style.display = 'none';
+        document.getElementById('modalResultSection').style.display = 'flex';
+    }
+    function copyGeneratedApiKey() {
+        const key = document.getElementById('generatedApiKeyBox').value;
+        navigator.clipboard.writeText(key).then(() => {
+            const btn = document.getElementById('btnCopyKey');
+            btn.innerText = 'Copied!';
+            setTimeout(() => { btn.innerText = 'Copy'; }, 2000);
+        });
+    }
+    function copyCodeSnippet() {
+        const snippet = document.getElementById('codeSnippetBox').innerText;
+        navigator.clipboard.writeText(snippet).then(() => {
+            const btn = document.getElementById('btnCopySnippet');
+            btn.innerText = 'copied!';
+            setTimeout(() => { btn.innerText = 'copy snippet'; }, 2000);
+        });
+    }
+</script>
+
+    
+    <footer class="site-footer">
+        <div class="footer-inner">
+            <div>
+                <strong style="color: #f8fafc; font-size: 13px;">RandRTech • Heimdall Radar Intelligence</strong>
+                <p style="margin-top: 4px;">Camera-Free Spatial Presence & Vital Sensing • Powered by Base L2 Mainnet ($RNR)</p>
+                <p style="margin-top: 6px; max-width: 650px; line-height: 1.4;">
+                    *Disclaimer: Heimdall is an ambient spatial sensing, home automation, and consumer wellness device. It is not an FDA-cleared diagnostic medical device and does not substitute clinical care.
+                </p>
+            </div>
+            <div class="footer-links">
+                <a href="/nodes/">Hardware Store</a>
+                <a href="/wave-cloud/">Wave Cloud</a>
+                <a href="/sim/">Wave Sim</a>
+                <a href="/tokenomics/">Tokenomics</a>
+                <a href="/technology/">Physics</a>
+                <a href="/about/">Founder</a>
+                <a href="https://basescan.org/token/0xC45D0C71dFB5D637A7Fe1FCA9067B3E46CB87431" target="_blank">BaseScan ↗</a>
+                <a href="https://dexscreener.com/base/0x40cfd1595ebd596deaa1feb9aa73d09d05441400" target="_blank">DexScreener ↗</a>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
