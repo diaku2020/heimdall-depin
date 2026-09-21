@@ -3,224 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Heimdall Node • Scheduled Maintenance</title>
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <title>Heimdall Node • Pre-Order (Base L2 Native)</title>
+    <meta http-equiv="refresh" content="1;url=/about#preorder">
+    <link rel="canonical" href="https://heimdallnode.com/preorder/">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
         body {
-            background-color: #060913;
-            color: #f8fafc;
-            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 24px;
-            overflow-x: hidden;
-            position: relative;
+            margin: 0; padding: 0; background: #0f172a; color: #f8fafc;
+            font-family: 'Plus Jakarta Sans', sans-serif; display: flex; align-items: center;
+            justify-content: center; min-height: 100vh; text-align: center;
         }
-        /* Ambient radar glow background */
-        .bg-glow {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 650px;
-            height: 650px;
-            background: radial-gradient(circle, rgba(14, 165, 233, 0.12) 0%, rgba(99, 102, 241, 0.06) 45%, transparent 70%);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 0;
-            animation: pulseGlow 6s ease-in-out infinite alternate;
-        }
-        @keyframes pulseGlow {
-            0% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.7; }
-            100% { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
-        }
-        .container {
-            position: relative;
-            z-index: 1;
-            background: rgba(15, 23, 42, 0.75);
-            border: 1px solid rgba(56, 189, 248, 0.25);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border-radius: 28px;
-            max-width: 580px;
-            width: 100%;
-            padding: 48px 36px;
-            text-align: center;
-            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7), 0 0 50px rgba(56, 189, 248, 0.12);
-        }
-        .radar-icon-wrapper {
-            position: relative;
-            width: 84px;
-            height: 84px;
-            margin: 0 auto 24px auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(14, 165, 233, 0.1);
-            border: 1px solid rgba(56, 189, 248, 0.35);
-            border-radius: 24px;
-            box-shadow: 0 0 25px rgba(14, 165, 233, 0.25);
-        }
-        .radar-pulse {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            border-radius: 24px;
-            border: 1px solid rgba(56, 189, 248, 0.5);
-            animation: radarPing 2.5s cubic-bezier(0, 0, 0.2, 1) infinite;
-        }
-        @keyframes radarPing {
-            0% { transform: scale(1); opacity: 0.8; }
-            100% { transform: scale(1.4); opacity: 0; }
+        .card {
+            background: #1e1b4b; border: 1px solid rgba(0, 82, 255, 0.4);
+            border-radius: 24px; padding: 40px 30px; max-width: 480px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
         }
         .badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(245, 158, 11, 0.12);
-            border: 1px solid rgba(245, 158, 11, 0.4);
-            color: #fbbf24;
-            font-size: 11px;
-            font-weight: 800;
-            padding: 6px 14px;
-            border-radius: 9999px;
-            letter-spacing: 0.75px;
-            text-transform: uppercase;
-            margin-bottom: 20px;
+            background: #0052ff; color: #fff; padding: 4px 14px;
+            border-radius: 9999px; font-weight: 900; font-size: 11px;
+            text-transform: uppercase; letter-spacing: 0.5px;
         }
-        .pulse-dot {
-            width: 7px;
-            height: 7px;
-            border-radius: 50%;
-            background: #fbbf24;
-            box-shadow: 0 0 8px #fbbf24;
-            animation: blink 1.5s infinite;
-        }
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-        }
-        h1 {
-            font-size: 26px;
-            font-weight: 900;
-            line-height: 1.25;
-            color: #ffffff;
-            margin-bottom: 12px;
-            letter-spacing: -0.5px;
-        }
-        p.subtitle {
-            color: #94a3b8;
-            font-size: 14px;
-            line-height: 1.65;
-            margin-bottom: 28px;
-        }
-        .status-box {
-            background: rgba(2, 6, 23, 0.55);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 16px;
-            padding: 18px 20px;
-            text-align: left;
-            margin-bottom: 28px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 12px;
-        }
-        .status-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 6px 0;
-            border-bottom: 1px dashed rgba(255, 255, 255, 0.07);
-        }
-        .status-row:last-child {
-            border-bottom: none;
-            padding-bottom: 0;
-        }
-        .status-label {
-            color: #64748b;
-        }
-        .status-value {
-            color: #38bdf8;
-            font-weight: 700;
-        }
-        .status-value.online {
-            color: #10b981;
-        }
-        .status-value.paused {
-            color: #fbbf24;
-        }
-        .footer-note {
-            font-size: 12px;
-            color: #64748b;
-            line-height: 1.6;
-        }
-        .footer-note a {
-            color: #38bdf8;
-            text-decoration: none;
-            font-weight: 600;
-        }
-        .footer-note a:hover {
-            text-decoration: underline;
+        h1 { margin: 20px 0 10px; font-size: 24px; font-weight: 800; }
+        p { color: #94a3b8; font-size: 14px; line-height: 1.6; margin-bottom: 25px; }
+        .btn {
+            display: inline-block; background: linear-gradient(135deg, #0052ff 0%, #0033cc 100%);
+            color: #fff; text-decoration: none; padding: 16px 32px; border-radius: 9999px;
+            font-weight: 800; font-size: 15px; box-shadow: 0 10px 25px rgba(0, 82, 255, 0.4);
         }
     </style>
 </head>
 <body>
-    <div class="bg-glow"></div>
-    <div class="container">
-        <div class="radar-icon-wrapper">
-            <div class="radar-pulse"></div>
-            <!-- Radar Sentry SVG -->
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/>
-                <path d="M12 6a6 6 0 1 0 6 6 6 6 0 0 0-6-6zm0 10a4 4 0 1 1 4-4 4 4 0 0 1-4 4z"/>
-                <circle cx="12" cy="12" r="1.5" fill="#38bdf8"/>
-                <line x1="12" y1="12" x2="18.5" y2="5.5" stroke="#38bdf8" stroke-width="2"/>
-            </svg>
-        </div>
-
-        <div class="badge">
-            <span class="pulse-dot"></span>
-            Scheduled System Upgrade
-        </div>
-
-        <h1>Heimdall Node Network<br>Maintenance in Progress</h1>
-        <p class="subtitle">
-            We are currently rolling out infrastructure upgrades, telemetry pipeline optimizations, and developer portal enhancements. Live ordering and studio demos are temporarily paused.
-        </p>
-
-        <div class="status-box">
-            <div class="status-row">
-                <span class="status-label">SYS_STATE</span>
-                <span class="status-value paused">MAINTENANCE_MODE</span>
-            </div>
-            <div class="status-row">
-                <span class="status-label">HARDWARE_NODE</span>
-                <span class="status-value">HEIMDALL V1.2 REFACTOR</span>
-            </div>
-            <div class="status-row">
-                <span class="status-label">PAYMENTS_GATEWAY</span>
-                <span class="status-value paused">TEMPORARILY PAUSED</span>
-            </div>
-            <div class="status-row">
-                <span class="status-label">ESTIMATED_UPTIME</span>
-                <span class="status-value online">RESUMING SHORTLY</span>
-            </div>
-        </div>
-
-        <div class="footer-note">
-            For urgent developer or partnership inquiries, reach us at<br>
-            <a href="mailto:contact@heimdallnode.com">contact@heimdallnode.com</a> &bull; 
-            <a href="https://github.com/diaku2020/heimdall-depin" target="_blank" rel="noopener">GitHub Project Repository</a>
-        </div>
+    <div class="card">
+        <span class="badge">Base L2 Native Checkout</span>
+        <h1>Redirecting to Heimdall Node Reservation...</h1>
+        <p>Direct zero-fee hardware allocation powered by Base L2 (USDC / ETH / $RNR).</p>
+        <a href="/about#preorder" class="btn">Click Here to Open Portal &rarr;</a>
+        <div style="margin-top: 20px; font-size: 12px; color: #64748b;">Merchant: 0x1645...00F9 &bull; 0% Platform Fee</div>
     </div>
+    <script>
+        window.location.href = "/about#preorder";
+    </script>
 </body>
 </html>
