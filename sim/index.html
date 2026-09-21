@@ -268,6 +268,43 @@
 </head>
 <body>
 
+    <!-- ========================================================================= -->
+    <!-- HEIMDALL DEVELOPER API KEY GATE OVERLAY -->
+    <!-- ========================================================================= -->
+    <div id="authGateOverlay" style="display: none; position: fixed; inset: 0; z-index: 99999; background: rgba(3, 7, 18, 0.92); backdrop-filter: blur(16px); align-items: center; justify-content: center; padding: 20px;">
+        <div style="background: linear-gradient(135deg, #0f172a 0%, #030712 100%); border: 1px solid rgba(56, 189, 248, 0.35); box-shadow: 0 25px 60px rgba(0,0,0,0.9), 0 0 50px rgba(56, 189, 248, 0.2); border-radius: 20px; max-width: 520px; width: 100%; padding: 36px; text-align: center; color: #f8fafc;">
+            
+            <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.35); color: #f87171; padding: 4px 14px; border-radius: 9999px; font-size: 10px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; margin-bottom: 16px;">
+                <span style="width: 6px; height: 6px; border-radius: 50%; background: #ef4444; box-shadow: 0 0 8px #ef4444;"></span>
+                API KEY AUTHORIZATION REQUIRED
+            </div>
+
+            <h2 style="font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 22px; font-weight: 900; color: #ffffff; margin-bottom: 10px; letter-spacing: -0.5px;">
+                Heimdall Wave Computer (WGC IDE)
+            </h2>
+            
+            <p style="font-size: 13px; color: #94a3b8; line-height: 1.6; margin-bottom: 24px;">
+                Access to the 2D electromagnetic wavefield solver and STL compiler requires an active Developer Sandbox API Key.
+            </p>
+
+            <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+                <input type="text" id="gateKeyInput" placeholder="Paste key (e.g. hmd_sandbox_live_...)" style="width: 100%; background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 10px; padding: 12px 14px; color: #00ff88; font-family: monospace; font-size: 13px; font-weight: bold; outline: none; text-align: center;">
+                <button onclick="submitGateKey()" style="width: 100%; background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%); border: none; border-radius: 10px; padding: 12px; color: #030712; font-weight: 900; font-size: 13px; cursor: pointer; box-shadow: 0 4px 15px rgba(56, 189, 248, 0.4); transition: all 0.2s;">
+                    ⚡ Unlock Wave Computer
+                </button>
+            </div>
+
+            <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 16px; font-size: 12px; color: #94a3b8;">
+                Don't have an API key yet?<br>
+                <a href="/about#wave-cloud" style="color: #38bdf8; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; margin-top: 6px;">
+                    Get Free Sandbox Key on About Page &rarr;
+                </a>
+            </div>
+
+        </div>
+    </div>
+
+
     <div id="canvas-container">
         <!-- Pure 2D HTML Canvas for Reliability -->
         <canvas id="waveCanvas"></canvas>
@@ -1044,6 +1081,61 @@ ${data.stl_path}`
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
     }
+
+
+    // --- Developer API Key Authentication Gate ---
+    let activeDevKey = null;
+
+    function checkAuthGate() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const queryKey = urlParams.get('key');
+        let storedKey = null;
+        try { storedKey = localStorage.getItem('heimdall_sandbox_key'); } catch(e){}
+
+        const candidateKey = queryKey || storedKey;
+        if (candidateKey && (candidateKey.startsWith('hmd_') || candidateKey.length >= 8)) {
+            unlockGate(candidateKey);
+        } else {
+            // Show Gate
+            const gate = document.getElementById('authGateOverlay');
+            if (gate) gate.style.display = 'flex';
+        }
+    }
+
+    function unlockGate(key) {
+        activeDevKey = key;
+        try { localStorage.setItem('heimdall_sandbox_key', key); } catch(e){}
+        const gate = document.getElementById('authGateOverlay');
+        if (gate) gate.style.display = 'none';
+
+        // Update HUD
+        const hud = document.querySelector('.hud-overlay');
+        if (hud) {
+            let keyEl = document.getElementById('hud-dev-key');
+            if (!keyEl) {
+                keyEl = document.createElement('div');
+                keyEl.id = 'hud-dev-key';
+                keyEl.style.color = '#00ff88';
+                keyEl.style.fontSize = '10px';
+                keyEl.style.marginTop = '4px';
+                hud.appendChild(keyEl);
+            }
+            keyEl.innerText = 'DEV KEY: ' + key.substring(0, 18) + '... (AUTHORIZED)';
+        }
+    }
+
+    window.submitGateKey = function() {
+        const val = (document.getElementById('gateKeyInput').value || '').trim();
+        if (val.length < 6) {
+            alert('Please enter a valid Heimdall Developer Key (e.g. hmd_sandbox_live_...)');
+            return;
+        }
+        unlockGate(val);
+    };
+
+    // Run auth gate check on startup
+    window.addEventListener('DOMContentLoaded', checkAuthGate);
+    checkAuthGate();
 
 </script>
 </body>
