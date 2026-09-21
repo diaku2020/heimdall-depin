@@ -3301,6 +3301,29 @@
                 </p>
             </div>
 
+                        <!-- ========================================================================= -->
+            <!-- UTICA CIVIC CARE & ACCESSIBILITY SUBSIDY PROGRAM BANNER -->
+            <!-- ========================================================================= -->
+            <div style="background: linear-gradient(135deg, rgba(6, 78, 59, 0.85) 0%, rgba(15, 23, 42, 0.95) 100%); border: 2px solid #10b981; border-radius: 20px; padding: 28px 32px; margin-bottom: 32px; box-shadow: 0 15px 35px rgba(16, 185, 129, 0.15); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+                <div style="max-width: 680px;">
+                    <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(16, 185, 129, 0.25); border: 1px solid #10b981; color: #34d399; font-size: 10px; font-weight: 800; padding: 4px 12px; border-radius: 9999px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">
+                        <span>🏛️</span> 100% VAULT SUBSIDIZED • FREE FOR UTICA RESIDENTS
+                    </div>
+                    <h3 style="font-size: 22px; font-weight: 900; color: #ffffff; margin-bottom: 8px;">
+                        Utica Civic Care &amp; Accessibility Program
+                    </h3>
+                    <p style="font-size: 13.5px; color: #cbd5e1; line-height: 1.6; margin: 0;">
+                        Are you or a loved one an <strong>elderly, mobility-impaired, visually/hearing impaired, or handicapped Utica resident</strong>? The Utica Community Sovereign Vault (<code style="color: #6ee7b7; font-family: monospace;">0xAce4...926</code>) releases 200 $RNR to sponsor 100% of your node hardware. Enjoy zero cameras, 24/7 ambient fall detection, and vital monitoring with <strong>zero out-of-pocket cost</strong>.
+                    </p>
+                </div>
+                <div>
+                    <button onclick="openCareGrantModal()" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; border: none; padding: 16px 28px; border-radius: 14px; font-weight: 900; font-size: 14px; cursor: pointer; box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4); display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; white-space: nowrap;">
+                        <span>📋 Apply for Free Senior / Care Node</span>
+                        <span>→</span>
+                    </button>
+                </div>
+            </div>
+
             <!-- Product Switcher Cards -->
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px; margin-bottom: 36px;">
                 
@@ -3907,6 +3930,128 @@
             const btn = document.getElementById('btnCopySnippet');
             btn.innerText = 'copied!';
             setTimeout(() => { btn.innerText = 'copy snippet'; }, 2000);
+        });
+    }
+</script>
+
+
+<!-- ========================================================================= -->
+<!-- UTICA CIVIC CARE & ACCESSIBILITY GRANT MODAL -->
+<!-- ========================================================================= -->
+<div id="careGrantModal" style="display: none; position: fixed; inset: 0; z-index: 999999; background: rgba(3, 7, 18, 0.88); backdrop-filter: blur(12px); align-items: center; justify-content: center; padding: 20px;">
+    <div style="background: linear-gradient(135deg, #0f172a 0%, #030712 100%); border: 1px solid rgba(16, 185, 129, 0.4); box-shadow: 0 25px 60px rgba(0,0,0,0.9), 0 0 50px rgba(16, 185, 129, 0.2); border-radius: 20px; max-width: 580px; width: 100%; padding: 32px; color: #f8fafc; position: relative; max-height: 90vh; overflow-y: auto;">
+        
+        <button onclick="closeCareGrantModal()" style="position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #94a3b8; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">&times;</button>
+        
+        <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.35); color: #34d399; padding: 4px 12px; border-radius: 9999px; font-size: 10px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px;">
+            <span>🏛️</span> UTICA SOVEREIGN VAULT CIVIC GRANT
+        </div>
+
+        <h3 style="font-size: 22px; font-weight: 900; color: #ffffff; margin-bottom: 6px;">
+            Free Node Application • Civic Care
+        </h3>
+        <p style="font-size: 13px; color: #94a3b8; line-height: 1.5; margin-bottom: 20px;">
+            Complete this 1-minute form. The Utica Community Vault will release 200 $RNR to sponsor your pre-flashed node with zero cameras and free local delivery.
+        </p>
+
+        <form id="careGrantForm" onsubmit="handleCareGrantSubmit(event)" style="display: flex; flex-direction: column; gap: 14px;">
+            <div>
+                <label style="display: block; font-size: 11px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Resident / Caregiver Name *</label>
+                <input type="text" id="careName" required placeholder="e.g. Mary & Robert Rossi (or Caregiver Name)" style="width: 100%; background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 10px; padding: 12px; color: #ffffff; font-size: 13px; outline: none;">
+            </div>
+
+            <div>
+                <label style="display: block; font-size: 11px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Utica Street Address * (For Local Mesh &amp; Delivery)</label>
+                <input type="text" id="careAddress" required placeholder="e.g. 1420 Genesee St, Utica, NY 13502" style="width: 100%; background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 10px; padding: 12px; color: #ffffff; font-size: 13px; outline: none;">
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div>
+                    <label style="display: block; font-size: 11px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Contact Phone *</label>
+                    <input type="tel" id="carePhone" required placeholder="(315) 555-0192" style="width: 100%; background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 10px; padding: 12px; color: #ffffff; font-size: 13px; outline: none;">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 11px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Contact Email</label>
+                    <input type="email" id="careEmail" placeholder="caregiver@example.com" style="width: 100%; background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 10px; padding: 12px; color: #ffffff; font-size: 13px; outline: none;">
+                </div>
+            </div>
+
+            <div>
+                <label style="display: block; font-size: 11px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Primary Care &amp; Accessibility Need *</label>
+                <select id="careCategory" required style="width: 100%; background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 10px; padding: 12px; color: #ffffff; font-size: 13px; outline: none;">
+                    <option value="Senior Citizen Living Solo (Fall Detection)">Senior Citizen Living Solo (Fall Detection)</option>
+                    <option value="Mobility Impaired / Wheelchair / Handicapped">Mobility Impaired / Wheelchair / Handicapped</option>
+                    <option value="Visually or Hearing Impaired Resident">Visually or Hearing Impaired Resident</option>
+                    <option value="Family Caregiver / Chronic Medical Monitoring">Family Caregiver / Chronic Medical Monitoring</option>
+                    <option value="Other Community Hardship Need">Other Community Hardship Need</option>
+                </select>
+            </div>
+
+            <div>
+                <label style="display: block; font-size: 11px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Additional Notes (Optional)</label>
+                <textarea id="careNotes" rows="2" placeholder="Any specific porch / delivery instructions or vital monitoring preferences..." style="width: 100%; background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 10px; padding: 12px; color: #ffffff; font-size: 13px; outline: none; font-family: inherit; resize: vertical;"></textarea>
+            </div>
+
+            <button type="submit" id="btnSubmitCareGrant" style="width: 100%; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; border: none; padding: 16px; border-radius: 12px; font-weight: 900; font-size: 14px; cursor: pointer; box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4); margin-top: 6px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <span>⚡ Submit Free Node Grant Application</span>
+                <span>→</span>
+            </button>
+        </form>
+
+        <div id="careSuccessMsg" style="display: none; margin-top: 20px; background: rgba(16, 185, 129, 0.15); border: 2px solid #10b981; border-radius: 14px; padding: 20px; text-align: center;">
+            <div style="font-size: 32px; margin-bottom: 8px;">🎉</div>
+            <h4 style="font-size: 18px; font-weight: 900; color: #34d399; margin-bottom: 6px;">Grant Application Received!</h4>
+            <p style="font-size: 13px; color: #cbd5e1; line-height: 1.5; margin: 0;">
+                Your application has been logged to the <strong>Utica Sovereign Vault Grant Desk</strong>. An email notification has been dispatched to our local coordination team. We will review your Utica address sector and reach out to deliver your pre-flashed node!
+            </p>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    function openCareGrantModal() {
+        const modal = document.getElementById('careGrantModal');
+        if (modal) modal.style.display = 'flex';
+    }
+
+    function closeCareGrantModal() {
+        const modal = document.getElementById('careGrantModal');
+        if (modal) modal.style.display = 'none';
+    }
+
+    function handleCareGrantSubmit(e) {
+        e.preventDefault();
+        const btn = document.getElementById('btnSubmitCareGrant');
+        btn.innerText = 'Transmitting to Vault Desk...';
+        btn.disabled = true;
+
+        const payload = {
+            resident_name: document.getElementById('careName').value,
+            utica_address: document.getElementById('careAddress').value,
+            phone: document.getElementById('carePhone').value,
+            email: document.getElementById('careEmail').value || 'Not provided',
+            category: document.getElementById('careCategory').value,
+            notes: document.getElementById('careNotes').value || 'None',
+            program: 'Utica Civic Care & Accessibility Subsidy Program (Free Node via Vault)'
+        };
+
+        // Send via FormSubmit to contact@heimdallnode.com
+        fetch('https://formsubmit.co/ajax/contact@heimdallnode.com', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                _subject: '🏛️ FREE NODE GRANT APPLICATION: ' + payload.resident_name + ' (' + payload.category + ')',
+                ...payload
+            })
+        })
+        .catch(err => console.log('Notice:', err))
+        .finally(() => {
+            document.getElementById('careGrantForm').style.display = 'none';
+            document.getElementById('careSuccessMsg').style.display = 'block';
         });
     }
 </script>
