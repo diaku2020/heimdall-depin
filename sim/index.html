@@ -346,12 +346,14 @@
         </div>
 
         <div class="panel">
-            <div class="panel-title">GEOMETRIC LIBRARY</div>
+            <div class="panel-title">CANVAS CONTROLS</div>
             <div class="btn-grid">
-                <button class="btn" onclick="loadPreset('DETECT')">PRESENCE DETECT (Standing Wave)</button>
-                <button class="btn" onclick="loadPreset('BRANCH')">BRANCH (Interference Logic)</button>
-                <button class="btn" onclick="loadPreset('MEMORY')">MEMORY (Resonant Loop)</button>
-                <button class="btn" onclick="clearNodes()" style="margin-top: 8px; border-color: #f59e0b; color: #f59e0b; background: rgba(245, 158, 11, 0.15);">CLEAR FIELD</button>
+                <button class="btn" onclick="addNode(-5, 0, { type: 'SOURCE' })" style="border-color: #38bdf8; color: #38bdf8; background: rgba(56, 189, 248, 0.15);">+ ADD SOURCE EMITTER</button>
+                <button class="btn" onclick="addNode(5, 0, { type: 'RECEIVER' })" style="border-color: #00ff88; color: #00ff88; background: rgba(0, 255, 136, 0.15);">+ ADD RECEIVER NODE</button>
+                <button class="btn" onclick="clearNodes()" style="border-color: #f59e0b; color: #f59e0b; background: rgba(245, 158, 11, 0.15); margin-top: 4px;">CLEAR FIELD</button>
+            </div>
+            <div style="font-size: 11px; color: #94a3b8; line-height: 1.4; margin-top: 6px;">
+                Click anywhere on the field to place nodes. Drag to reposition.
             </div>
         </div>
 
@@ -669,39 +671,8 @@
     
     window.clearNodes = clearNodes;
 
-    window.loadPreset = function(type) {
-        clearNodes();
-        if (type === 'DETECT') {
-            addNode(-8, 0, { phase: 0 });
-            addNode(8, 0, { phase: 180 });
-            addNode(0, 0, { type: 'RECEIVER' });
-        } else if (type === 'BRANCH') {
-            addNode(-10, -5, { phase: 0 });
-            addNode(-10, 5, { phase: 90 });
-            addNode(0, 0, { type: 'RECEIVER' });
-            addNode(10, 0, { type: 'RECEIVER' });
-        } else if (type === 'MEMORY') {
-            // 13-node Chiral Resonant Loop (as defined in the patent)
-            for(let i=0; i<13; i++) {
-                const a = (i/13) * Math.PI * 2;
-                addNode(Math.cos(a)*8, Math.sin(a)*8, { phase: (i/13)*360 });
-            }
-            // Readout node in the center of the trap
-            addNode(0, 0, { type: 'RECEIVER' });
-        }
-    }
-
-    window.executeHardware = function() {
-        statusInd.innerText = "POSTING TO HARDWARE...";
-        statusInd.style.color = "#38bdf8";
-        
-        const payload = {
-            timestamp: Date.now(),
-            node_count: nodes.length,
-            nodes: nodes.map(n => ({
-                x: n.x, y: n.y, type: n.type, amp: n.amplitude, phase: n.phase, freq: n.frequency, chirality: n.chirality
-            }))
-        };
+    // Presets removed for proprietary hardware programming
+    window.loadPreset = function() {};
         
         const telemReadout = document.getElementById('telemetry-readout');
 
@@ -1011,7 +982,8 @@ ${data.stl_path}`
     }
     
     // Initial setup
-    loadPreset('DETECT');
+    // Field starts blank
+    clearNodes();
     renderWaveField();
 
 
