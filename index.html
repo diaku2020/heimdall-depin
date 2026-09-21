@@ -3,224 +3,951 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Heimdall Node • Scheduled Maintenance</title>
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Plus+Jakarta+Sans:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <title>HEIMDALL | Opening Screen</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
+            user-select: none;
         }
-        body {
-            background-color: #060913;
-            color: #f8fafc;
-            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 24px;
-            overflow-x: hidden;
-            position: relative;
-        }
-        /* Ambient radar glow background */
-        .bg-glow {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 650px;
-            height: 650px;
-            background: radial-gradient(circle, rgba(14, 165, 233, 0.12) 0%, rgba(99, 102, 241, 0.06) 45%, transparent 70%);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 0;
-            animation: pulseGlow 6s ease-in-out infinite alternate;
-        }
-        @keyframes pulseGlow {
-            0% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.7; }
-            100% { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
-        }
-        .container {
-            position: relative;
-            z-index: 1;
-            background: rgba(15, 23, 42, 0.75);
-            border: 1px solid rgba(56, 189, 248, 0.25);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border-radius: 28px;
-            max-width: 580px;
-            width: 100%;
-            padding: 48px 36px;
-            text-align: center;
-            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7), 0 0 50px rgba(56, 189, 248, 0.12);
-        }
-        .radar-icon-wrapper {
-            position: relative;
-            width: 84px;
-            height: 84px;
-            margin: 0 auto 24px auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(14, 165, 233, 0.1);
-            border: 1px solid rgba(56, 189, 248, 0.35);
-            border-radius: 24px;
-            box-shadow: 0 0 25px rgba(14, 165, 233, 0.25);
-        }
-        .radar-pulse {
-            position: absolute;
+        html, body {
             width: 100%;
             height: 100%;
-            border-radius: 24px;
-            border: 1px solid rgba(56, 189, 248, 0.5);
-            animation: radarPing 2.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+            overflow: hidden;
+            background-color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
         }
-        @keyframes radarPing {
-            0% { transform: scale(1); opacity: 0.8; }
-            100% { transform: scale(1.4); opacity: 0; }
+
+        #webgl-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            background: radial-gradient(circle at 50% 45%, #ffffff 0%, #faf5ff 55%, #f5f3ff 100%);
         }
-        .badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(245, 158, 11, 0.12);
-            border: 1px solid rgba(245, 158, 11, 0.4);
-            color: #fbbf24;
-            font-size: 11px;
-            font-weight: 800;
-            padding: 6px 14px;
-            border-radius: 9999px;
-            letter-spacing: 0.75px;
-            text-transform: uppercase;
-            margin-bottom: 20px;
+
+        /* Ambient luxury HUD overlays */
+        .overlay-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 36px 48px;
         }
-        .pulse-dot {
-            width: 7px;
-            height: 7px;
-            border-radius: 50%;
-            background: #fbbf24;
-            box-shadow: 0 0 8px #fbbf24;
-            animation: blink 1.5s infinite;
-        }
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-        }
-        h1 {
-            font-size: 26px;
-            font-weight: 900;
-            line-height: 1.25;
-            color: #ffffff;
-            margin-bottom: 12px;
-            letter-spacing: -0.5px;
-        }
-        p.subtitle {
-            color: #94a3b8;
-            font-size: 14px;
-            line-height: 1.65;
-            margin-bottom: 28px;
-        }
-        .status-box {
-            background: rgba(2, 6, 23, 0.55);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 16px;
-            padding: 18px 20px;
-            text-align: left;
-            margin-bottom: 28px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 12px;
-        }
-        .status-row {
+
+        .brand-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 6px 0;
-            border-bottom: 1px dashed rgba(255, 255, 255, 0.07);
+            opacity: 0;
+            animation: fadeIn 2s ease 1s forwards;
         }
-        .status-row:last-child {
-            border-bottom: none;
-            padding-bottom: 0;
+
+        .tagline {
+            font-size: 11px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: #7c3aed;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
-        .status-label {
-            color: #64748b;
+        .tagline::before {
+            content: "";
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #d97706, #7c3aed);
+            display: inline-block;
         }
-        .status-value {
-            color: #38bdf8;
+
+        .net-tag {
+            font-size: 10px;
+            font-family: monospace;
             font-weight: 700;
+            color: #b45309;
+            background: rgba(245, 158, 11, 0.12);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            padding: 4px 10px;
+            border-radius: 20px;
+            letter-spacing: 1px;
         }
-        .status-value.online {
-            color: #10b981;
+
+        .footer-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            pointer-events: auto;
+            opacity: 0;
+            animation: fadeIn 2s ease 3s forwards;
         }
-        .status-value.paused {
-            color: #fbbf24;
+
+        .phase-indicator {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            font-size: 11px;
+            font-family: monospace;
+            color: #6b7280;
+            letter-spacing: 1px;
         }
-        .footer-note {
-            font-size: 12px;
-            color: #64748b;
-            line-height: 1.6;
+        .phase-name {
+            font-size: 13px;
+            font-weight: 800;
+            color: #1f2937;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
-        .footer-note a {
-            color: #38bdf8;
+        .phase-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #d97706;
+            box-shadow: 0 0 10px rgba(217, 119, 6, 0.6);
+            animation: pulse 1.5s infinite alternate;
+        }
+
+        .action-cluster {
+            display: flex;
+            gap: 14px;
+            align-items: center;
+        }
+
+        .btn-enter {
+            background: linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #d97706 100%);
+            color: #ffffff;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(124, 58, 237, 0.25), 0 4px 12px rgba(217, 119, 6, 0.2);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
             text-decoration: none;
-            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
-        .footer-note a:hover {
-            text-decoration: underline;
+        .btn-enter:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 15px 35px rgba(124, 58, 237, 0.35), 0 6px 16px rgba(217, 119, 6, 0.3);
+        }
+
+        .btn-replay {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(124, 58, 237, 0.25);
+            color: #581c87;
+            padding: 14px 20px;
+            border-radius: 30px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            backdrop-filter: blur(8px);
+            transition: all 0.2s;
+        }
+        .btn-replay:hover {
+            background: #f5f3ff;
+            border-color: #7c3aed;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pulse {
+            from { opacity: 0.4; transform: scale(0.85); }
+            to { opacity: 1; transform: scale(1.2); }
         }
     </style>
+
+    <script>
+        // Keyboard & click navigation to explore
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowRight') {
+                window.location.href = '/about';
+            }
+        });
+    </script>
+
+
+    <!-- SEO: JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org/",
+      "@type": "Product",
+      "name": "Heimdall Spatial Radar Node",
+      "image": "https://heimdallnode.com/heimdall_prototype_studio.jpg",
+      "description": "Camera-free spatial sensing & DePIN ambient vital intelligence. Mine $RNR on Base L2.",
+      "brand": {
+        "@type": "Brand",
+        "name": "RandRTech"
+      },
+      "offers": {
+        "@type": "Offer",
+        "url": "https://heimdallnode.com/about",
+        "priceCurrency": "USD",
+        "price": "100.00",
+        "availability": "https://schema.org/PreOrder"
+      }
+    }
+    </script>
+    <meta name="keywords" content="DePIN, Spatial Radar, mmWave Radar, Base L2, Crypto Mining, Smart Home Privacy, Vital Monitoring, $RNR Token, Edge AI, RISC-V, ESP32">
+
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
 </head>
 <body>
-    <div class="bg-glow"></div>
-    <div class="container">
-        <div class="radar-icon-wrapper">
-            <div class="radar-pulse"></div>
-            <!-- Radar Sentry SVG -->
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/>
-                <path d="M12 6a6 6 0 1 0 6 6 6 6 0 0 0-6-6zm0 10a4 4 0 1 1 4-4 4 4 0 0 1-4 4z"/>
-                <circle cx="12" cy="12" r="1.5" fill="#38bdf8"/>
-                <line x1="12" y1="12" x2="18.5" y2="5.5" stroke="#38bdf8" stroke-width="2"/>
-            </svg>
+
+    <div id="webgl-canvas"></div>
+
+    <div class="overlay-layer">
+        <div class="brand-header">
+            <div class="tagline">RANDRTECH • DEPIN CONTINUOUS RADAR INTELLIGENCE</div>
+            <div class="net-tag">BASE L2 MAINNET</div>
         </div>
 
-        <div class="badge">
-            <span class="pulse-dot"></span>
-            Scheduled System Upgrade
-        </div>
+        <div class="footer-controls">
+            <div class="phase-indicator">
+                <div class="phase-name">
+                    <span class="phase-dot" id="phaseDot"></span>
+                    <span id="phaseText">CLUSTER SYNCHRONIZATION</span>
+                </div>
+                <div>STATE: <span id="timeStateText" style="color: #7c3aed; font-weight: bold;">0.0s</span></div>
+            </div>
 
-        <h1>Heimdall Node Network<br>Maintenance in Progress</h1>
-        <p class="subtitle">
-            We are currently rolling out infrastructure upgrades, telemetry pipeline optimizations, and developer portal enhancements. Live ordering and studio demos are temporarily paused.
-        </p>
-
-        <div class="status-box">
-            <div class="status-row">
-                <span class="status-label">SYS_STATE</span>
-                <span class="status-value paused">MAINTENANCE_MODE</span>
+            <div class="action-cluster">
+                <button class="btn-replay" onclick="replayAnimation()">⟳ REPLAY INTRO</button>
+                <a href="/about" class="btn-enter">
+                    <span>EXPLORE HEIMDALL</span>
+                    <span>→</span>
+                </a>
             </div>
-            <div class="status-row">
-                <span class="status-label">HARDWARE_NODE</span>
-                <span class="status-value">HEIMDALL V1.2 REFACTOR</span>
-            </div>
-            <div class="status-row">
-                <span class="status-label">PAYMENTS_GATEWAY</span>
-                <span class="status-value paused">TEMPORARILY PAUSED</span>
-            </div>
-            <div class="status-row">
-                <span class="status-label">ESTIMATED_UPTIME</span>
-                <span class="status-value online">RESUMING SHORTLY</span>
-            </div>
-        </div>
-
-        <div class="footer-note">
-            For urgent developer or partnership inquiries, reach us at<br>
-            <a href="mailto:contact@heimdallnode.com">contact@heimdallnode.com</a> &bull; 
-            <a href="https://github.com/diaku2020/heimdall-depin" target="_blank" rel="noopener">GitHub Project Repository</a>
         </div>
     </div>
+
+    <script>
+        // ---------------------------------------------------------------------------------
+        // HEIMDALL KINEMATIC PARTICLE SEQUENCE (THREE.JS)
+        // 1. Organic fluctuation (gold & purple particles drift)
+        // 2. Coherent clustering towards letter typography coordinates
+        // 3. Solidification into the word "HEIMDALL"
+        // 4. Forward camera/text translation towards the viewer
+        // 5. Orbiting swirling particle halo ribbon (Gold & Purple braids)
+        // ---------------------------------------------------------------------------------
+
+        let scene, camera, renderer;
+        let textParticles, haloParticles, ambientDust;
+        let clock = new THREE.Clock();
+        let animStartTime = 0;
+
+        const TOTAL_TEXT_PARTICLES = 16000;
+        const TOTAL_HALO_PARTICLES = 3200;
+        const TOTAL_AMBIENT_PARTICLES = 1600;
+
+        // Particle position arrays & attributes
+        let textGeom, haloGeom, ambientGeom;
+        let textOrigins = [];      // Dispersed fluctuating origins
+        let textTargets = [];      // Exact "HEIMDALL" letter coordinates
+        let textCurrentPos = [];   // Dynamic positions buffer
+        let textColors = [];       // Gold & Purple colors
+        let textVelocities = [];   // Organic drift factors
+
+        let haloAngles = [];
+        let haloSpeeds = [];
+        let haloRadii = [];
+        let haloColors = [];
+        let haloPhaseOffsets = [];
+
+        // Animation Timeline Settings (Seconds)
+        const T_CLUSTER_START = 2.0;    // Starts converging from dispersed state
+        const T_CLUSTER_END   = 5.0;    // Fully assembled into "HEIMDALL"
+        const T_MOVE_FORWARD  = 5.2;    // Glides forward in 3D towards the viewer
+        const T_HALO_IGNITE   = 3.8;    // Swirling halo ribbon begins orbiting
+
+        function createCircleTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 64;
+            canvas.height = 64;
+            const ctx = canvas.getContext('2d');
+
+            const grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 30);
+            grad.addColorStop(0, 'rgba(255, 255, 255, 1.0)');
+            grad.addColorStop(0.72, 'rgba(255, 255, 255, 1.0)');
+            grad.addColorStop(0.92, 'rgba(255, 255, 255, 0.55)');
+            grad.addColorStop(1, 'rgba(255, 255, 255, 0.0)');
+
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, 64, 64);
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        // Generate high-density precise typography target coordinates for "HEIMDALL"
+        function generateTypographyTargets() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 1600;
+            canvas.height = 400;
+            const ctx = canvas.getContext('2d');
+
+            ctx.fillStyle = '#000000';
+            ctx.font = '900 170px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.letterSpacing = '14px';
+            ctx.fillText('HEIMDALL', 800, 200);
+
+            const imgData = ctx.getImageData(0, 0, 1600, 400).data;
+            const validPixels = [];
+
+            // Sample pixels with ultra-crisp 2px resolution
+            for (let y = 0; y < 400; y += 2) {
+                for (let x = 0; x < 1600; x += 2) {
+                    const idx = (y * 1600 + x) * 4;
+                    if (imgData[idx + 3] > 120) {
+                        validPixels.push({
+                            x: (x - 800) * 0.025,
+                            y: -(y - 200) * 0.025,
+                            z: (Math.random() - 0.5) * 0.04 // ultra-tight flat depth plane
+                        });
+                    }
+                }
+            }
+
+            // Shuffle valid pixels for uniform assembly
+            for (let i = validPixels.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [validPixels[i], validPixels[j]] = [validPixels[j], validPixels[i]];
+            }
+
+            return validPixels;
+        }
+
+        function init() {
+            const container = document.getElementById('webgl-canvas');
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+
+            scene = new THREE.Scene();
+            scene.background = null; // transparent to show luxury white CSS radial gradient
+
+            camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 1000);
+            camera.position.set(0, 0, 36);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(width, height);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            container.appendChild(renderer.domElement);
+
+            const particleTexture = createCircleTexture();
+
+            // -------------------------------------------------------------
+            // 1. Text Particles (Fluctuate -> Cluster -> Solidify "HEIMDALL")
+            // -------------------------------------------------------------
+            const sampledTargets = generateTypographyTargets();
+            const N = Math.min(TOTAL_TEXT_PARTICLES, sampledTargets.length);
+
+            textGeom = new THREE.BufferAttribute(new Float32Array(N * 3), 3);
+            const textPosArray = new Float32Array(N * 3);
+            const textColorsArray = new Float32Array(N * 3);
+
+            // Palette Definition for White Canvas
+            // Gold colors: Deep amber, metallic gold, solar yellow
+            const goldPalette = [
+                new THREE.Color(0xd97706),
+                new THREE.Color(0xf59e0b),
+                new THREE.Color(0xb45309),
+                new THREE.Color(0xeab308),
+                new THREE.Color(0xffd700)
+            ];
+
+            // Purple colors: Deep amethyst, regal purple, neon violet
+            const purplePalette = [
+                new THREE.Color(0x7c3aed),
+                new THREE.Color(0x9333ea),
+                new THREE.Color(0x6b21a8),
+                new THREE.Color(0xa855f7),
+                new THREE.Color(0x581c87)
+            ];
+
+            for (let i = 0; i < N; i++) {
+                // Initial dispersed fluctuating cloud
+                const spreadRadius = 45;
+                const ox = (Math.random() - 0.5) * spreadRadius;
+                const oy = (Math.random() - 0.5) * spreadRadius * 0.65;
+                const oz = (Math.random() - 0.5) * 35;
+                textOrigins.push(new THREE.Vector3(ox, oy, oz));
+
+                // Target position on "HEIMDALL"
+                const t = sampledTargets[i];
+                textTargets.push(new THREE.Vector3(t.x, t.y, t.z));
+
+                // Current pos
+                textPosArray[i * 3]     = ox;
+                textPosArray[i * 3 + 1] = oy;
+                textPosArray[i * 3 + 2] = oz;
+
+                // Drift frequencies
+                textVelocities.push({
+                    freqX: 1.2 + Math.random() * 2.0,
+                    freqY: 0.9 + Math.random() * 1.8,
+                    freqZ: 1.5 + Math.random() * 2.2,
+                    amp: 0.6 + Math.random() * 1.2,
+                    phase: Math.random() * Math.PI * 2
+                });
+
+                // Colors: 50% Gold, 50% Purple with harmonic gradients
+                const isGold = (i % 2 === 0) || Math.random() > 0.5;
+                const col = isGold
+                    ? goldPalette[Math.floor(Math.random() * goldPalette.length)]
+                    : purplePalette[Math.floor(Math.random() * purplePalette.length)];
+
+                textColorsArray[i * 3]     = col.r;
+                textColorsArray[i * 3 + 1] = col.g;
+                textColorsArray[i * 3 + 2] = col.b;
+            }
+
+            const textBufferGeom = new THREE.BufferGeometry();
+            textBufferGeom.setAttribute('position', new THREE.BufferAttribute(textPosArray, 3));
+            textBufferGeom.setAttribute('color', new THREE.BufferAttribute(textColorsArray, 3));
+
+            const textMaterial = new THREE.PointsMaterial({
+                size: 0.30,
+                vertexColors: true,
+                map: particleTexture,
+                transparent: true,
+                opacity: 0.95,
+                depthWrite: false,
+                blending: THREE.NormalBlending
+            });
+
+            textParticles = new THREE.Points(textBufferGeom, textMaterial);
+            scene.add(textParticles);
+
+            // -------------------------------------------------------------
+            // 2. Swirling Dual-Braided Particle Halo (Gold + Purple)
+            // -------------------------------------------------------------
+            const haloBufferGeom = new THREE.BufferGeometry();
+            const haloPosArray = new Float32Array(TOTAL_HALO_PARTICLES * 3);
+            const haloColorsArray = new Float32Array(TOTAL_HALO_PARTICLES * 3);
+
+            for (let i = 0; i < TOTAL_HALO_PARTICLES; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                haloAngles.push(angle);
+                haloSpeeds.push(0.9 + Math.random() * 0.7);
+                haloRadii.push({
+                    rx: 15.5 + Math.random() * 4.5,
+                    ry: 4.8 + Math.random() * 2.2,
+                    rz: 6.5 + Math.random() * 3.5,
+                    tube: 0.4 + Math.random() * 1.4
+                });
+                haloPhaseOffsets.push(Math.random() * Math.PI * 2);
+
+                // Alternating braided colors
+                const isGold = i % 2 === 0;
+                const c = isGold
+                    ? goldPalette[Math.floor(Math.random() * goldPalette.length)]
+                    : purplePalette[Math.floor(Math.random() * purplePalette.length)];
+
+                haloColorsArray[i * 3]     = c.r;
+                haloColorsArray[i * 3 + 1] = c.g;
+                haloColorsArray[i * 3 + 2] = c.b;
+
+                haloPosArray[i * 3]     = 0;
+                haloPosArray[i * 3 + 1] = 0;
+                haloPosArray[i * 3 + 2] = -500; // Start hidden
+            }
+
+            haloBufferGeom.setAttribute('position', new THREE.BufferAttribute(haloPosArray, 3));
+            haloBufferGeom.setAttribute('color', new THREE.BufferAttribute(haloColorsArray, 3));
+
+            const haloMaterial = new THREE.PointsMaterial({
+                size: 0.72,
+                vertexColors: true,
+                map: particleTexture,
+                transparent: true,
+                opacity: 0.0,
+                depthWrite: false,
+                blending: THREE.NormalBlending
+            });
+
+            haloParticles = new THREE.Points(haloBufferGeom, haloMaterial);
+            scene.add(haloParticles);
+
+            // -------------------------------------------------------------
+            // 3. Ambient Drifting Stardust
+            // -------------------------------------------------------------
+            const ambGeom = new THREE.BufferGeometry();
+            const ambPos = new Float32Array(TOTAL_AMBIENT_PARTICLES * 3);
+            const ambCol = new Float32Array(TOTAL_AMBIENT_PARTICLES * 3);
+
+            for (let i = 0; i < TOTAL_AMBIENT_PARTICLES; i++) {
+                ambPos[i * 3]     = (Math.random() - 0.5) * 60;
+                ambPos[i * 3 + 1] = (Math.random() - 0.5) * 35;
+                ambPos[i * 3 + 2] = (Math.random() - 0.5) * 30;
+
+                const c = (i % 2 === 0)
+                    ? goldPalette[Math.floor(Math.random() * goldPalette.length)]
+                    : purplePalette[Math.floor(Math.random() * purplePalette.length)];
+
+                ambCol[i * 3]     = c.r;
+                ambCol[i * 3 + 1] = c.g;
+                ambCol[i * 3 + 2] = c.b;
+            }
+
+            ambGeom.setAttribute('position', new THREE.BufferAttribute(ambPos, 3));
+            ambGeom.setAttribute('color', new THREE.BufferAttribute(ambCol, 3));
+
+            const ambMat = new THREE.PointsMaterial({
+                size: 0.35,
+                vertexColors: true,
+                map: particleTexture,
+                transparent: true,
+                opacity: 0.45,
+                depthWrite: false,
+                blending: THREE.NormalBlending
+            });
+
+            ambientDust = new THREE.Points(ambGeom, ambMat);
+            scene.add(ambientDust);
+
+            window.addEventListener('resize', onWindowResize);
+            animStartTime = performance.now() / 1000;
+            animate();
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function smoothstep(min, max, value) {
+            const x = Math.max(0, Math.min(1, (value - min) / (max - min)));
+            return x * x * (3 - 2 * x);
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const now = performance.now() / 1000;
+            const elapsed = now - animStartTime;
+
+            // HUD UI State Updates
+            const timeSpan = document.getElementById('timeStateText');
+            if (timeSpan) timeSpan.innerText = `${elapsed.toFixed(1)}s`;
+
+            const phaseTxt = document.getElementById('phaseText');
+            const phaseDot = document.getElementById('phaseDot');
+
+            if (elapsed < T_CLUSTER_START) {
+                if (phaseTxt) phaseTxt.innerText = "ORGANIC FLUCTUATION";
+                if (phaseDot) phaseDot.style.background = "#d97706";
+            } else if (elapsed < T_CLUSTER_END) {
+                if (phaseTxt) phaseTxt.innerText = "COHERENT CLUSTERING → HEIMDALL";
+                if (phaseDot) phaseDot.style.background = "#7c3aed";
+            } else if (elapsed < T_MOVE_FORWARD + 2.0) {
+                if (phaseTxt) phaseTxt.innerText = "FORWARD PERSPECTIVE & SOLIDIFICATION";
+                if (phaseDot) phaseDot.style.background = "#9333ea";
+            } else {
+                if (phaseTxt) phaseTxt.innerText = "HALO SWIRL STABILIZED • READY";
+                if (phaseDot) phaseDot.style.background = "#10b981";
+            }
+
+            // -------------------------------------------------------------
+            // 1. Text Particles Animation (Fluctuation -> Clustering -> Solidify)
+            // -------------------------------------------------------------
+            const textPosAttr = textParticles.geometry.attributes.position;
+            const textPositions = textPosAttr.array;
+            const clusterProgress = smoothstep(T_CLUSTER_START, T_CLUSTER_END, elapsed);
+
+            // Forward translation calculation ("the name move forward on the screen")
+            let forwardZ = 0;
+            if (elapsed > T_MOVE_FORWARD) {
+                const fwdProgress = smoothstep(T_MOVE_FORWARD, T_MOVE_FORWARD + 2.8, elapsed);
+                // Moves forward from Z = 0 to Z = 11.5 closer to the camera
+                forwardZ = fwdProgress * 11.5;
+            }
+
+            // Subtle dynamic tilt to reveal 3D volume
+            const subtleTiltY = Math.sin(elapsed * 0.6) * 0.08;
+            const subtleTiltX = Math.cos(elapsed * 0.5) * 0.04;
+
+            textParticles.position.z = forwardZ;
+            textParticles.rotation.y = subtleTiltY;
+            textParticles.rotation.x = subtleTiltX;
+
+            for (let i = 0; i < textOrigins.length; i++) {
+                const orig = textOrigins[i];
+                const targ = textTargets[i];
+                const vel  = textVelocities[i];
+
+                // Exact zero residual jitter when fully clustered for razor-sharp letters
+                const residual = Math.max(0, 1.0 - clusterProgress);
+                const flucAmp = Math.pow(residual, 2.2) * vel.amp;
+                const flucX = Math.sin(elapsed * vel.freqX + vel.phase) * flucAmp * 2.2;
+                const flucY = Math.cos(elapsed * vel.freqY + vel.phase) * flucAmp * 1.8;
+                const flucZ = Math.sin(elapsed * vel.freqZ + vel.phase) * flucAmp * 2.5;
+
+                // Subtle crystalline twinkle without blur
+                const shimmer = (clusterProgress > 0.95) ? Math.sin(elapsed * 5.0 + i * 0.2) * 0.006 : 0;
+
+                // Position interpolation
+                const curX = orig.x + (targ.x - orig.x) * clusterProgress + flucX + shimmer;
+                const curY = orig.y + (targ.y - orig.y) * clusterProgress + flucY + shimmer;
+                const curZ = orig.z + (targ.z - orig.z) * clusterProgress + flucZ;
+
+                textPositions[i * 3]     = curX;
+                textPositions[i * 3 + 1] = curY;
+                textPositions[i * 3 + 2] = curZ;
+            }
+            textPosAttr.needsUpdate = true;
+
+            // Particle size: tightens into crisp micro-gems when clustered
+            textParticles.material.size = 0.28 + (1.0 - clusterProgress) * 0.16;
+
+            // -------------------------------------------------------------
+            // 2. Swirling Halo Ribbon Animation (Gold & Purple Braids)
+            // -------------------------------------------------------------
+            const haloPosAttr = haloParticles.geometry.attributes.position;
+            const haloPositions = haloPosAttr.array;
+
+            if (elapsed > T_HALO_IGNITE) {
+                const haloFadeIn = smoothstep(T_HALO_IGNITE, T_HALO_IGNITE + 2.0, elapsed);
+                haloParticles.material.opacity = haloFadeIn * 0.88;
+
+                // Center halo around the forward-moving "HEIMDALL"
+                haloParticles.position.z = forwardZ;
+                haloParticles.rotation.y = subtleTiltY * 1.2;
+
+                const tiltAngleX = 0.42; // ~24 deg tilt for orbit
+                const cosTilt = Math.cos(tiltAngleX);
+                const sinTilt = Math.sin(tiltAngleX);
+
+                for (let i = 0; i < TOTAL_HALO_PARTICLES; i++) {
+                    // Update orbital angle
+                    const speed = haloSpeeds[i];
+                    const curAngle = haloAngles[i] + (elapsed - T_HALO_IGNITE) * speed * 1.6;
+                    const r = haloRadii[i];
+                    const ph = haloPhaseOffsets[i];
+
+                    // Toroidal / helical braid calculation around the word
+                    const tubeOffset = Math.sin(curAngle * 4.0 + ph) * r.tube;
+                    const rawX = (r.rx + tubeOffset) * Math.cos(curAngle);
+                    const rawY = (r.ry + tubeOffset) * Math.sin(curAngle);
+                    const rawZ = Math.cos(curAngle * 2.0 + ph) * r.rz;
+
+                    // Apply tilted plane rotation so halo dramatically wraps around the text
+                    const rotX = rawX;
+                    const rotY = rawY * cosTilt - rawZ * sinTilt;
+                    const rotZ = rawY * sinTilt + rawZ * cosTilt;
+
+                    haloPositions[i * 3]     = rotX;
+                    haloPositions[i * 3 + 1] = rotY;
+                    haloPositions[i * 3 + 2] = rotZ;
+                }
+                haloPosAttr.needsUpdate = true;
+            } else {
+                haloParticles.material.opacity = 0;
+            }
+
+            // -------------------------------------------------------------
+            // 3. Ambient Dust Drift
+            // -------------------------------------------------------------
+            if (ambientDust) {
+                ambientDust.rotation.y = elapsed * 0.02;
+                ambientDust.rotation.x = Math.sin(elapsed * 0.015) * 0.05;
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        function replayAnimation() {
+            animStartTime = performance.now() / 1000;
+        }
+
+        window.onload = init;
+    </script>
+
+<!-- ========================================================================= -->
+<!-- NATIVE BASE L2 CHECKOUT PORTAL (0% FEES • ZERO INTERMEDIARIES) -->
+<!-- ========================================================================= -->
+<div id="baseCheckoutModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(2,6,23,0.88); z-index: 999999; align-items: center; justify-content: center; backdrop-filter: blur(10px); padding: 16px; box-sizing: border-box;">
+    <div style="background: #0f172a; border: 1px solid rgba(124, 58, 237, 0.5); border-radius: 24px; width: 100%; max-width: 500px; padding: 28px; box-shadow: 0 25px 60px rgba(0,0,0,0.7), 0 0 50px rgba(124, 58, 237, 0.25); position: relative; font-family: 'Plus Jakarta Sans', -apple-system, sans-serif; color: #f8fafc; max-height: 92vh; overflow-y: auto;">
+        
+        <button onclick="closeBaseCheckout()" style="position: absolute; top: 18px; right: 18px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; font-size: 20px; width: 34px; height: 34px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s;">&times;</button>
+        
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+            <span style="background: rgba(0, 82, 255, 0.15); border: 1px solid #0052ff; color: #60a5fa; font-size: 10px; font-weight: 800; padding: 3px 10px; border-radius: 20px; letter-spacing: 1px; text-transform: uppercase;">⚡ Base L2 Native</span>
+            <span style="color: #10b981; font-size: 11px; font-weight: 700;">● 0% Platform Fee</span>
+        </div>
+        
+        <h2 style="font-size: 22px; font-weight: 900; color: #fff; margin: 0 0 4px 0; letter-spacing: -0.5px;">Checkout • Heimdall V1 Node</h2>
+        <p style="font-size: 12px; color: #94a3b8; margin: 0 0 16px 0;">Camera-Free Edge AI mmWave Radar Sentry + 21M $RNR DePIN Node.</p>
+        
+        <!-- Order Summary Pill -->
+        <div style="background: rgba(124, 58, 237, 0.08); border: 1px solid rgba(124, 58, 237, 0.25); padding: 14px 16px; border-radius: 14px; margin-bottom: 16px;">
+            <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px;">
+                <span style="color: #cbd5e1; font-weight: 600;">Hardware Allocation (Batch 1)</span>
+                <span style="color: #fff; font-weight: 800;">$100.00 USD</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 6px;">
+                <span style="color: #cbd5e1; font-weight: 600;">Worldwide Tracked Shipping</span>
+                <span style="color: #10b981; font-weight: 800;">FREE</span>
+            </div>
+            <div style="border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 8px; margin-top: 6px; display: flex; justify-content: space-between; font-size: 11px; color: #fbbf24;">
+                <span>🏛️ 17% Physical Gold &amp; BTC Sweep:</span>
+                <span>$17.00 auto-allocated</span>
+            </div>
+        </div>
+
+        <!-- Token Selector -->
+        <div style="margin-bottom: 16px;">
+            <label style="display: block; color: #cbd5e1; font-size: 11px; font-weight: 800; letter-spacing: 0.5px; margin-bottom: 8px; text-transform: uppercase;">Select Payment Token on Base</label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+                <button type="button" id="tokenOptUSDC" onclick="selectPayToken('USDC')" style="background: rgba(0, 82, 255, 0.2); border: 2px solid #0052ff; color: #fff; padding: 10px 6px; border-radius: 10px; cursor: pointer; font-family: inherit; font-size: 12px; font-weight: 800; display: flex; flex-direction: column; align-items: center; gap: 3px; transition: 0.2s;">
+                    <span>💵 100 USDC</span>
+                    <span style="font-size: 9px; color: #60a5fa; font-weight: 600;">Recommended</span>
+                </button>
+                <button type="button" id="tokenOptETH" onclick="selectPayToken('ETH')" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); color: #cbd5e1; padding: 10px 6px; border-radius: 10px; cursor: pointer; font-family: inherit; font-size: 12px; font-weight: 800; display: flex; flex-direction: column; align-items: center; gap: 3px; transition: 0.2s;">
+                    <span>⚡ ~0.038 ETH</span>
+                    <span style="font-size: 9px; color: #94a3b8; font-weight: 600;">Native Base</span>
+                </button>
+                <button type="button" id="tokenOptRNR" onclick="selectPayToken('RNR')" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); color: #cbd5e1; padding: 10px 6px; border-radius: 10px; cursor: pointer; font-family: inherit; font-size: 12px; font-weight: 800; display: flex; flex-direction: column; align-items: center; gap: 3px; transition: 0.2s;">
+                    <span>🔥 1,700 RNR</span>
+                    <span style="font-size: 9px; color: #a855f7; font-weight: 600;">15% Off</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Shipping Form -->
+        <div style="margin-bottom: 18px;">
+            <label style="display: block; color: #cbd5e1; font-size: 11px; font-weight: 800; letter-spacing: 0.5px; margin-bottom: 8px; text-transform: uppercase;">Shipping Information (Encrypted)</label>
+            <input type="text" id="baseCustName" placeholder="Full Recipient Name" required style="width: 100%; box-sizing: border-box; padding: 11px 13px; border-radius: 10px; border: 1px solid #334155; background: #1e293b; color: #fff; margin-bottom: 8px; font-size: 13px; font-family: inherit; outline: none;">
+            <input type="email" id="baseCustEmail" placeholder="Email Address (Tracking updates)" required style="width: 100%; box-sizing: border-box; padding: 11px 13px; border-radius: 10px; border: 1px solid #334155; background: #1e293b; color: #fff; margin-bottom: 8px; font-size: 13px; font-family: inherit; outline: none;">
+            <textarea id="baseCustAddress" placeholder="Street Address, City, State/Province, Postal Code, Country" required rows="2" style="width: 100%; box-sizing: border-box; padding: 11px 13px; border-radius: 10px; border: 1px solid #334155; background: #1e293b; color: #fff; font-size: 13px; font-family: inherit; outline: none; resize: none;"></textarea>
+        </div>
+
+        <!-- Pay Button -->
+        <button id="btnBasePay" onclick="executeBasePayment()" style="width: 100%; padding: 15px; border-radius: 14px; background: linear-gradient(135deg, #0052ff 0%, #0033cc 100%); color: #fff; font-size: 15px; font-weight: 900; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 10px 25px rgba(0, 82, 255, 0.4); transition: 0.2s;">
+            <svg width="22" height="22" viewBox="0 0 111 111" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="55.5" cy="55.5" r="55.5" fill="#fff"/>
+                <path d="M55.5 88C73.4493 88 88 73.4493 88 55.5C88 37.5507 73.4493 23 55.5 23C38.3072 23 24.2384 36.3392 23.0825 53.2258H65.8065V57.7742H23.0825C24.2384 74.6608 38.3072 88 55.5 88Z" fill="#0052FF"/>
+            </svg>
+            <span id="btnBasePayLabel">Pay 100 USDC on Base</span>
+        </button>
+
+        <!-- Status & Confirmation Message -->
+        <div id="basePayStatus" style="display: none; margin-top: 14px; padding: 14px; border-radius: 12px; font-size: 12px; font-weight: 700; line-height: 1.5; text-align: center;"></div>
+        
+        <div style="margin-top: 16px; display: flex; justify-content: space-between; align-items: center; font-size: 10px; color: #64748b;">
+            <span>Merchant: <a href="https://basescan.org/address/0x1645A30517ec189fAa5ae1d85AABE38eE85d00F9" target="_blank" style="color: #60a5fa; text-decoration: none;">0x1645...00F9</a></span>
+            <span>Network: Base Mainnet (Chain ID 8453)</span>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+<script>
+    const MERCHANT_RECEIVER = "0x1645A30517ec189fAa5ae1d85AABE38eE85d00F9";
+    const USDC_CONTRACT_BASE = "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
+    const BASE_CHAIN_HEX = "0x2105";
+    let selectedToken = 'USDC';
+
+    const ERC20_ABI = [
+        "function transfer(address to, uint256 amount) returns (bool)",
+        "function decimals() view returns (uint8)",
+        "function balanceOf(address account) view returns (uint256)"
+    ];
+
+    function openBaseCheckout(e) {
+        if(e) e.preventDefault();
+        const modal = document.getElementById('baseCheckoutModal');
+        if(modal) modal.style.display = 'flex';
+    }
+
+    function closeBaseCheckout() {
+        const modal = document.getElementById('baseCheckoutModal');
+        if(modal) modal.style.display = 'none';
+    }
+
+    function selectPayToken(tok) {
+        selectedToken = tok;
+        const uBtn = document.getElementById('tokenOptUSDC');
+        const eBtn = document.getElementById('tokenOptETH');
+        const rBtn = document.getElementById('tokenOptRNR');
+        const payLbl = document.getElementById('btnBasePayLabel');
+
+        [uBtn, eBtn, rBtn].forEach(b => {
+            b.style.background = "rgba(255,255,255,0.03)";
+            b.style.border = "1px solid rgba(255,255,255,0.1)";
+            b.style.color = "#cbd5e1";
+        });
+
+        if(tok === 'USDC') {
+            uBtn.style.background = "rgba(0, 82, 255, 0.2)";
+            uBtn.style.border = "2px solid #0052ff";
+            uBtn.style.color = "#fff";
+            payLbl.innerText = "Pay 100 USDC on Base";
+        } else if(tok === 'ETH') {
+            eBtn.style.background = "rgba(0, 82, 255, 0.2)";
+            eBtn.style.border = "2px solid #0052ff";
+            eBtn.style.color = "#fff";
+            payLbl.innerText = "Pay ~0.038 ETH on Base";
+        } else if(tok === 'RNR') {
+            rBtn.style.background = "rgba(168, 85, 247, 0.2)";
+            rBtn.style.border = "2px solid #a855f7";
+            rBtn.style.color = "#fff";
+            payLbl.innerText = "Pay 1,700 $RNR on Base (15% Off)";
+        }
+    }
+
+    async function executeBasePayment() {
+        const name = document.getElementById('baseCustName').value.trim();
+        const email = document.getElementById('baseCustEmail').value.trim();
+        const addr = document.getElementById('baseCustAddress').value.trim();
+        const btn = document.getElementById('btnBasePay');
+        const status = document.getElementById('basePayStatus');
+
+        if(!name || !email || !addr) {
+            alert('Please fill out your recipient name, email, and shipping address before paying.');
+            return;
+        }
+
+        if (typeof window.ethereum === 'undefined') {
+            alert('No Web3 wallet detected! Please open this page in Coinbase Wallet, MetaMask, Rainbow, or a Web3-compatible browser.');
+            return;
+        }
+
+        try {
+            btn.disabled = true;
+            btn.style.opacity = '0.7';
+            btn.innerHTML = '<span>Connecting to Base L2...</span>';
+            status.style.display = 'none';
+
+            // 1. Request Accounts
+            await window.ethereum.request({ method: 'eth_requestAccounts' });
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            
+            // 2. Ensure network is Base Mainnet (8453)
+            const network = await provider.getNetwork();
+            if (network.chainId !== 8453) {
+                try {
+                    await window.ethereum.request({
+                        method: 'wallet_switchEthereumChain',
+                        params: [{ chainId: BASE_CHAIN_HEX }],
+                    });
+                } catch (switchError) {
+                    if (switchError.code === 4902) {
+                        await window.ethereum.request({
+                            method: 'wallet_addEthereumChain',
+                            params: [{
+                                chainId: BASE_CHAIN_HEX,
+                                chainName: 'Base Mainnet',
+                                nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+                                rpcUrls: ['https://mainnet.base.org'],
+                                blockExplorerUrls: ['https://basescan.org']
+                            }],
+                        });
+                    } else {
+                        throw switchError;
+                    }
+                }
+            }
+
+            const signer = provider.getSigner();
+            const userAddress = await signer.getAddress();
+
+            btn.innerHTML = '<span>Awaiting Wallet Signature...</span>';
+
+            let tx;
+            if (selectedToken === 'USDC') {
+                const usdcContract = new ethers.Contract(USDC_CONTRACT_BASE, ERC20_ABI, signer);
+                const amount = ethers.utils.parseUnits("100.0", 6);
+                tx = await usdcContract.transfer(MERCHANT_RECEIVER, amount);
+            } else if (selectedToken === 'ETH') {
+                const amount = ethers.utils.parseEther("0.038");
+                tx = await signer.sendTransaction({
+                    to: MERCHANT_RECEIVER,
+                    value: amount
+                });
+            } else if (selectedToken === 'RNR') {
+                const rnrAddress = "0x452Ca685eF98C01e36E8Be33ae111146CB7891aD";
+                const rnrContract = new ethers.Contract(rnrAddress, ERC20_ABI, signer);
+                const amount = ethers.utils.parseUnits("1700.0", 18);
+                tx = await rnrContract.transfer(MERCHANT_RECEIVER, amount);
+            }
+
+            btn.innerHTML = '<span>Confirming on Base Block...</span>';
+            
+            try {
+                fetch('/api/order', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: name,
+                        email: email,
+                        shipping_address: addr,
+                        wallet: userAddress,
+                        tx_hash: tx.hash,
+                        token: selectedToken,
+                        amount: selectedToken === 'USDC' ? 100 : (selectedToken === 'ETH' ? 0.038 : 1700),
+                        item: 'Heimdall V1 Node (Batch 1 Allocation)'
+                    })
+                }).catch(() => {});
+            } catch(e) {}
+
+            status.style.display = 'block';
+            status.style.background = 'rgba(16, 185, 129, 0.15)';
+            status.style.border = '1px solid #10b981';
+            status.style.color = '#34d399';
+            status.innerHTML = `
+                <div style="font-size:15px; font-weight:900; margin-bottom:4px;">🎉 PAYMENT CONFIRMED ON BASE!</div>
+                <div>Your Heimdall V1 Node is reserved.</div>
+                <div style="margin-top:6px; font-size:11px; word-break:break-all;">
+                    Tx Hash: <a href="https://basescan.org/tx/${tx.hash}" target="_blank" style="color:#60a5fa; text-decoration:underline;">${tx.hash}</a>
+                </div>
+            `;
+
+            btn.innerHTML = '<span>✓ Order Reserved</span>';
+            btn.style.background = '#10b981';
+
+        } catch (err) {
+            console.error(err);
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            btn.innerHTML = '<span>Retry Payment on Base</span>';
+            status.style.display = 'block';
+            status.style.background = 'rgba(239, 68, 68, 0.15)';
+            status.style.border = '1px solid #ef4444';
+            status.style.color = '#f87171';
+            status.innerText = err.message ? (err.message.includes("rejected") ? "Transaction cancelled by user." : err.message.slice(0, 90) + "...") : "Payment failed. Check your wallet balance on Base.";
+        }
+    }
+
+    // Attach to any button on the page that mentions preorder, order, or gumroad
+    document.addEventListener("DOMContentLoaded", () => {
+        document.querySelectorAll('a[href*="gumroad.com"], a.btn-hw-claim, a.btn-hero-main, a.btn-order-glow').forEach(el => {
+            el.removeAttribute('target');
+            el.href = "#";
+            el.onclick = openBaseCheckout;
+            if(el.innerText.toLowerCase().includes("gumroad")) {
+                el.innerText = "Pay $100 with Base (USDC / ETH)";
+            }
+        });
+    });
+</script>
+
 </body>
 </html>
