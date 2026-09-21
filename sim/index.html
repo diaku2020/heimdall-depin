@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wave-Geometry Computing IDE</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        body {
+            background-color: #030712;
+            color: #f3f4f6;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", monospace;
+            overflow: hidden;
+            display: flex;
+            height: 100vh;
+        }
+
+        #canvas-container {
+            flex: 1;
+            position: relative;
+            background: #030712;
+            overflow: hidden;
+        }
+
+        #waveCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            cursor: crosshair;
+        }
+
+        #sidebar {
+            width: 380px;
+            background: rgba(15, 23, 42, 0.95);
+            border-left: 1px solid rgba(56, 189, 248, 0.25);
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            gap: 20px;
+            overflow-y: auto;
+            backdrop-filter: blur(12px);
+            z-index: 10;
+        }
+
+        h1 {
+            font-size: 18px;
+            font-weight: 900;
+            color: #38bdf8;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+
+        .subtitle {
+            font-size: 12px;
+            color: #94a3b8;
+            line-height: 1.4;
+            margin-bottom: 8px;
+        }
+
+        .panel {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .panel-title {
+            font-size: 12px;
+            font-weight: bold;
+            color: #38bdf8;
+            letter-spacing: 1px;
+            border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+            padding-bottom: 8px;
+            margin-bottom: 4px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .control-label {
+            font-size: 10px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .control-val {
+            color: #e0f2fe;
+            font-weight: bold;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            accent-color: #38bdf8;
+            background: rgba(15, 23, 42, 0.8);
+            height: 6px;
+            border-radius: 3px;
+            outline: none;
+        }
+
+        select {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            color: #e0f2fe;
+            padding: 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            outline: none;
+        }
+
+        .btn {
+            background: rgba(56, 189, 248, 0.15);
+            border: 1px solid #38bdf8;
+            color: #38bdf8;
+            padding: 10px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background: #38bdf8;
+            color: #030712;
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.6);
+        }
+
+        .btn-exec {
+            background: rgba(0, 255, 136, 0.15);
+            border-color: #00ff88;
+            color: #00ff88;
+            font-size: 13px;
+            padding: 12px;
+            margin-top: 10px;
+        }
+
+        .btn-exec:hover {
+            background: #00ff88;
+            color: #030712;
+            box-shadow: 0 0 16px rgba(0, 255, 136, 0.6);
+        }
+
+        .btn-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+
+        .hud-overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 8px;
+            padding: 16px;
+            font-family: monospace;
+            font-size: 12px;
+            color: #e0f2fe;
+            pointer-events: none;
+            backdrop-filter: blur(8px);
+            z-index: 10;
+        }
+
+        #status-indicator {
+            font-weight: bold;
+            color: #fbbf24;
+            margin-top: 6px;
+        }
+
+        #nodes-visual-container, #node-labels-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .node-label {
+            position: absolute;
+            transform: translate(-50%, -150%);
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid #38bdf8;
+            color: #e0f2fe;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 10px;
+            font-weight: bold;
+            box-shadow: 0 0 8px rgba(56, 189, 248, 0.4);
+            white-space: nowrap;
+        }
+        
+        .branch-label {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            color: #ff00ff;
+            font-family: monospace;
+            font-size: 14px;
+            font-weight: bold;
+            text-shadow: 0 0 8px #ff00ff;
+            pointer-events: none;
+        }
+
+        /* HTML Node Visuals */
+        .node-indicator {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            pointer-events: auto; /* let us click them */
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+        }
+        
+        .node-core {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: white;
+            box-shadow: 0 0 4px white;
+        }
+        
+        .node-ring {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 24px; height: 24px;
+            border-radius: 50%;
+            border: 2px solid #38bdf8;
+            box-shadow: 0 0 8px #38bdf8;
+        }
+
+        .node-phase-line {
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 12px; height: 2px;
+            background: #ff00ff;
+            transform-origin: left center;
+        }
+
+        .node-indicator.selected .node-ring {
+            border-color: white;
+            width: 28px; height: 28px;
+            border-width: 3px;
+            box-shadow: 0 0 12px white;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="canvas-container">
+        <!-- Pure 2D HTML Canvas for Reliability -->
+        <canvas id="waveCanvas"></canvas>
+        
+        <div class="hud-overlay">
+            <div style="color: #38bdf8; font-weight: 900; margin-bottom: 8px; font-size: 14px;">WAVE-GEOMETRY COMPUTING</div>
+            <div>FIELD SIZE: 40m × 40m</div>
+            <div>COMPUTE STATE: <span style="color: #00ff88;">REAL-TIME</span></div>
+            <div id="status-indicator">SIMULATION ONLY</div>
+            <div style="margin-top: 12px; color: #94a3b8; font-size: 10px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px;">
+                Click canvas to place node.<br>
+                Click node to select.<br>
+                Drag nodes to move.
+            </div>
+        </div>
+        
+        <!-- DOM elements overlaid for nodes & labels -->
+        <div id="nodes-visual-container"></div>
+        <div id="node-labels-container"></div>
+    </div>
+
+    <div id="sidebar">
+
+        <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 12px; margin-bottom: 8px; border-bottom: 1px solid rgba(56, 189, 248, 0.2);">
+            <a href="/about" style="color: #38bdf8; text-decoration: none; font-size: 11px; font-weight: bold; display: flex; align-items: center; gap: 4px;">&larr; HEIMDALL CLOUD</a>
+            <a href="/cad" style="color: #ffd700; text-decoration: none; font-size: 11px; font-weight: bold; display: flex; align-items: center; gap: 4px;">3D CAD STUDIO &rarr;</a>
+        </div>
+
+        <div>
+            <h1>GEOMETRIC IDE</h1>
+            <div class="subtitle">Track B: Visual Programming Interface (Canvas 2D)</div>
+        </div>
+
+        <div class="panel" id="properties-panel" style="display: none;">
+            <div class="panel-title">NODE PROPERTIES</div>
+            
+            <div class="control-group">
+                <div class="control-label">Type <span></span></div>
+                <select id="node-type">
+                    <option value="SOURCE">SOURCE (Emitter)</option>
+                    <option value="RECEIVER">RECEIVER (Reader)</option>
+                    <option value="NULL">NULL (Absorber)</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <div class="control-label">Amplitude <span id="val-amp" class="control-val">1.0</span></div>
+                <input type="range" id="inp-amp" min="0" max="1" step="0.01" value="1">
+            </div>
+
+            <div class="control-group">
+                <div class="control-label">Phase (deg) <span id="val-phase" class="control-val">0</span></div>
+                <input type="range" id="inp-phase" min="0" max="360" step="1" value="0">
+            </div>
+
+            <div class="control-group">
+                <div class="control-label">Frequency (GHz) <span id="val-freq" class="control-val">2.4</span></div>
+                <input type="range" id="inp-freq" min="1.0" max="6.0" step="0.1" value="2.4">
+            </div>
+            
+            <div class="control-group">
+                <div class="control-label">Chirality <span></span></div>
+                <select id="inp-chirality">
+                    <option value="LEFT">LEFT (LCP)</option>
+                    <option value="RIGHT">RIGHT (RCP)</option>
+                </select>
+            </div>
+            
+            <button class="btn" id="btn-delete" style="margin-top: 8px; border-color: #ef4444; color: #ef4444; background: rgba(239, 68, 68, 0.15);">DELETE NODE</button>
+        </div>
+        
+        <div class="panel" id="no-selection-panel">
+            <div style="color: #94a3b8; font-size: 12px; text-align: center; padding: 20px 0;">
+                Select a node to edit properties.
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title">GEOMETRIC LIBRARY</div>
+            <div class="btn-grid">
+                <button class="btn" onclick="loadPreset('DETECT')">PRESENCE DETECT (Standing Wave)</button>
+                <button class="btn" onclick="loadPreset('BRANCH')">BRANCH (Interference Logic)</button>
+                <button class="btn" onclick="loadPreset('MEMORY')">MEMORY (Resonant Loop)</button>
+                <button class="btn" onclick="clearNodes()" style="margin-top: 8px; border-color: #f59e0b; color: #f59e0b; background: rgba(245, 158, 11, 0.15);">CLEAR FIELD</button>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title">PHYSICAL WAVEBATTERY SCANNER</div>
+            <div style="font-size: 12px; color: #888; margin-bottom: 8px;">Acoustic Ringdown Analysis</div>
+            <canvas id="scanner-canvas" width="220" height="80" style="width: 100%; height: 80px; background: #000; border: 1px solid #333; margin-bottom: 8px; border-radius: 4px;"></canvas>
+            <div id="scan-results" style="font-size: 13px; color: #00ff88; margin-bottom: 8px; font-weight: bold; font-family: monospace;">Q-FACTOR: -- | EFFICIENCY: --%</div>
+            <div class="btn-grid">
+                <button class="btn" onclick="triggerBatteryScan()" style="border-color: #38bdf8; color: #38bdf8; background: rgba(56, 189, 248, 0.15);">? TRIGGER ACOUSTIC PULSE</button>
+                <button class="btn" id="btn-optimize" onclick="optimizeWavebattery()" style="display: none; border-color: #a855f7; color: #a855f7; background: rgba(168, 85, 247, 0.15);">? AUTO-OPTIMIZE (.SCAD)</button>
+            </div>
+        </div>
+
+        <div style="margin-top: auto;">
+            <button class="btn btn-exec" onclick="executeHardware()">▶ EXECUTE ON HARDWARE</button>
+        </div>
+    </div>
+
+<script>
+    // -----------------------------------------
+    // WGC IDE Core Logic (Pure Canvas 2D Version)
+    // -----------------------------------------
+    
+    let nodes = [];
+    let selectedNodeId = null;
+    let nextNodeId = 1;
+    
+    // UI Elements
+    const propPanel = document.getElementById('properties-panel');
+    const noSelPanel = document.getElementById('no-selection-panel');
+    const nodesContainer = document.getElementById('nodes-visual-container');
+    const labelsContainer = document.getElementById('node-labels-container');
+    const statusInd = document.getElementById('status-indicator');
+    
+    const uiType = document.getElementById('node-type');
+    const uiAmp = document.getElementById('inp-amp');
+    const uiPhase = document.getElementById('inp-phase');
+    const uiFreq = document.getElementById('inp-freq');
+    const uiChiral = document.getElementById('inp-chirality');
+    const btnDelete = document.getElementById('btn-delete');
+    
+    const valAmp = document.getElementById('val-amp');
+    const valPhase = document.getElementById('val-phase');
+    const valFreq = document.getElementById('val-freq');
+    
+    // Physics & Canvas Setup
+    const C_LIGHT = 299792458; // m/s
+    const FIELD_SIZE = 40; // meters
+    const RENDER_RES = 400; // computational grid size (400x400)
+    
+    const canvasContainer = document.getElementById('canvas-container');
+    const canvas = document.getElementById('waveCanvas');
+    const ctx = canvas.getContext('2d', { alpha: false });
+    
+    // Create an offscreen buffer for the heatmap pixels
+    const imgData = ctx.createImageData(RENDER_RES, RENDER_RES);
+    const data = imgData.data;
+
+    let time = 0;
+    
+    // Helper to calculate wavelength & k
+    function getWaveParams(freqGHz) {
+        const freqHz = freqGHz * 1e9;
+        const wl = C_LIGHT / freqHz;
+        const k = (2 * Math.PI) / wl;
+        return { wl, k };
+    }
+
+    // Interaction State
+    let isDragging = false;
+    let dragNodeId = null;
+
+    function resizeCanvas() {
+        const rect = canvasContainer.getBoundingClientRect();
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+    }
+    
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas(); // init
+
+    // Convert pixel coordinate to field coordinates (-20m to 20m)
+    function pxToField(pxX, pxY) {
+        const w = canvas.width;
+        const h = canvas.height;
+        // map center to (0,0)
+        const x = ((pxX / w) * FIELD_SIZE) - (FIELD_SIZE / 2);
+        const y = ((pxY / h) * FIELD_SIZE) - (FIELD_SIZE / 2);
+        return { x, y };
+    }
+    
+    // Convert field coordinates back to pixel coordinates
+    function fieldToPx(fx, fy) {
+        const w = canvas.width;
+        const h = canvas.height;
+        const x = ((fx + FIELD_SIZE/2) / FIELD_SIZE) * w;
+        const y = ((fy + FIELD_SIZE/2) / FIELD_SIZE) * h;
+        return { x, y };
+    }
+
+    // Mouse Interaction on Canvas
+    canvas.addEventListener('pointerdown', e => {
+        if (e.button !== 0) return;
+        
+        // Did we click an existing node DOM element? That's handled in the DOM click.
+        // So this means we clicked the blank canvas.
+        const pos = pxToField(e.offsetX, e.offsetY);
+        addNode(pos.x, pos.y);
+    });
+
+    canvas.addEventListener('pointermove', e => {
+        if (isDragging && dragNodeId !== null) {
+            const node = nodes.find(n => n.id === dragNodeId);
+            if (node) {
+                const pos = pxToField(e.offsetX, e.offsetY);
+                node.x = pos.x;
+                node.y = pos.y;
+                updateNodeDOM();
+            }
+        }
+    });
+
+    window.addEventListener('pointerup', () => {
+        isDragging = false;
+        dragNodeId = null;
+    });
+
+    // Node Logic
+    function addNode(x, y, config = {}) {
+        const node = {
+            id: nextNodeId++,
+            x: x,
+            y: y,
+            type: config.type || 'SOURCE',
+            amplitude: config.amplitude !== undefined ? config.amplitude : 1.0,
+            phase: config.phase || 0,
+            frequency: config.frequency || 2.4,
+            chirality: config.chirality || 'LEFT',
+            domElement: null
+        };
+        
+        // Create DOM visuals
+        const el = document.createElement('div');
+        el.className = 'node-indicator';
+        el.innerHTML = `
+            <div class="node-ring"></div>
+            <div class="node-core"></div>
+            <div class="node-phase-line"></div>
+        `;
+        
+        // Setup Dragging & Selection on DOM node
+        el.addEventListener('pointerdown', e => {
+            e.stopPropagation(); // don't trigger canvas click
+            selectNode(node.id);
+            isDragging = true;
+            dragNodeId = node.id;
+        });
+        
+        nodesContainer.appendChild(el);
+        node.domElement = el;
+        
+        nodes.push(node);
+        selectNode(node.id);
+        updateNodeDOM();
+        return node;
+    }
+
+    function selectNode(id) {
+        selectedNodeId = id;
+        const node = nodes.find(n => n.id === id);
+        
+        if (node) {
+            propPanel.style.display = 'flex';
+            noSelPanel.style.display = 'none';
+            
+            uiType.value = node.type;
+            uiAmp.value = node.amplitude;
+            uiPhase.value = node.phase;
+            uiFreq.value = node.frequency;
+            uiChiral.value = node.chirality;
+            
+            valAmp.innerText = node.amplitude.toFixed(2);
+            valPhase.innerText = node.phase;
+            valFreq.innerText = node.frequency.toFixed(1);
+        }
+        updateNodeDOM();
+    }
+
+    function deselectNode() {
+        selectedNodeId = null;
+        propPanel.style.display = 'none';
+        noSelPanel.style.display = 'flex';
+        updateNodeDOM();
+    }
+    
+    function deleteSelected() {
+        if (!selectedNodeId) return;
+        const idx = nodes.findIndex(n => n.id === selectedNodeId);
+        if (idx > -1) {
+            nodes[idx].domElement.remove();
+            nodes.splice(idx, 1);
+        }
+        deselectNode();
+    }
+    
+    btnDelete.addEventListener('click', deleteSelected);
+
+    // UI Listeners
+    uiType.addEventListener('input', e => updateSelected('type', e.target.value));
+    uiAmp.addEventListener('input', e => { updateSelected('amplitude', parseFloat(e.target.value)); valAmp.innerText = e.target.value; });
+    uiPhase.addEventListener('input', e => { updateSelected('phase', parseFloat(e.target.value)); valPhase.innerText = e.target.value; });
+    uiFreq.addEventListener('input', e => { updateSelected('frequency', parseFloat(e.target.value)); valFreq.innerText = e.target.value; });
+    uiChiral.addEventListener('input', e => updateSelected('chirality', e.target.value));
+
+    function updateSelected(key, val) {
+        if (!selectedNodeId) return;
+        const node = nodes.find(n => n.id === selectedNodeId);
+        if (node) {
+            node[key] = val;
+            updateNodeDOM();
+        }
+    }
+
+    function updateNodeDOM() {
+        nodes.forEach(n => {
+            const px = fieldToPx(n.x, n.y);
+            n.domElement.style.left = px.x + 'px';
+            n.domElement.style.top = px.y + 'px';
+            
+            const ring = n.domElement.querySelector('.node-ring');
+            const core = n.domElement.querySelector('.node-core');
+            const line = n.domElement.querySelector('.node-phase-line');
+            
+            if (n.id === selectedNodeId) {
+                n.domElement.classList.add('selected');
+            } else {
+                n.domElement.classList.remove('selected');
+            }
+            
+            // Type styling
+            if (n.type === 'SOURCE') {
+                ring.style.borderColor = '#38bdf8';
+                core.style.background = '#ffffff';
+            } else if (n.type === 'RECEIVER') {
+                ring.style.borderColor = '#00ff88';
+                core.style.background = '#00ff88';
+            } else {
+                ring.style.borderColor = '#94a3b8';
+                core.style.background = '#475569';
+            }
+            
+            // Phase styling
+            line.style.transform = `rotate(${-n.phase}deg)`;
+        });
+        
+        updateLabels();
+    }
+    
+    function updateLabels() {
+        labelsContainer.innerHTML = '';
+        let sources = [];
+        
+        nodes.forEach(n => {
+            const px = fieldToPx(n.x, n.y);
+            
+            if (n.type === 'SOURCE') {
+                sources.push({n, px});
+                createLabel(px.x, px.y, 'VARIABLE', '#38bdf8');
+            } else if (n.type === 'RECEIVER') {
+                createLabel(px.x, px.y, `RETURN: 0.00`, '#00ff88', `return-val-${n.id}`);
+            } else {
+                createLabel(px.x, px.y, 'NULL', '#94a3b8');
+            }
+        });
+        
+        // Branches
+        for(let i=0; i<sources.length; i++) {
+            for(let j=i+1; j<sources.length; j++) {
+                const s1 = sources[i];
+                const s2 = sources[j];
+                const dist = Math.sqrt(Math.pow(s1.n.x - s2.n.x, 2) + Math.pow(s1.n.y - s2.n.y, 2));
+                if (dist < 10 && dist > 1) { // proximity threshold
+                    const mx = (s1.px.x + s2.px.x) / 2;
+                    const my = (s1.px.y + s2.px.y) / 2;
+                    const el = document.createElement('div');
+                    el.className = 'branch-label';
+                    el.style.left = mx + 'px';
+                    el.style.top = my + 'px';
+                    el.innerText = 'BRANCH';
+                    labelsContainer.appendChild(el);
+                }
+            }
+        }
+    }
+    
+    function createLabel(x, y, text, color, id = null) {
+        const el = document.createElement('div');
+        el.className = 'node-label';
+        if (id) el.id = id;
+        el.style.left = x + 'px';
+        el.style.top = y + 'px';
+        el.style.borderColor = color;
+        el.style.color = color;
+        el.innerText = text;
+        labelsContainer.appendChild(el);
+    }
+
+    // Presets
+    function clearNodes() {
+        nodes.forEach(n => n.domElement.remove());
+        nodes = [];
+        deselectNode();
+    }
+    
+    window.clearNodes = clearNodes;
+
+    window.loadPreset = function(type) {
+        clearNodes();
+        if (type === 'DETECT') {
+            addNode(-8, 0, { phase: 0 });
+            addNode(8, 0, { phase: 180 });
+            addNode(0, 0, { type: 'RECEIVER' });
+        } else if (type === 'BRANCH') {
+            addNode(-10, -5, { phase: 0 });
+            addNode(-10, 5, { phase: 90 });
+            addNode(0, 0, { type: 'RECEIVER' });
+            addNode(10, 0, { type: 'RECEIVER' });
+        } else if (type === 'MEMORY') {
+            // 13-node Chiral Resonant Loop (as defined in the patent)
+            for(let i=0; i<13; i++) {
+                const a = (i/13) * Math.PI * 2;
+                addNode(Math.cos(a)*8, Math.sin(a)*8, { phase: (i/13)*360 });
+            }
+            // Readout node in the center of the trap
+            addNode(0, 0, { type: 'RECEIVER' });
+        }
+    }
+
+    window.executeHardware = function() {
+        statusInd.innerText = "POSTING TO HARDWARE...";
+        statusInd.style.color = "#38bdf8";
+        
+        const payload = {
+            timestamp: Date.now(),
+            node_count: nodes.length,
+            nodes: nodes.map(n => ({
+                x: n.x, y: n.y, type: n.type, amp: n.amplitude, phase: n.phase, freq: n.frequency, chirality: n.chirality
+            }))
+        };
+        
+        const telemReadout = document.getElementById('telemetry-readout');
+
+        fetch('http://localhost:8002/execute', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        }).then(r => r.json()).then(data => {
+            statusInd.innerText = "RUNNING ON ESP32-C6 (" + (data.hardware || "HARDWARE") + ")";
+            statusInd.style.color = "#00ff88";
+        }).catch(e => {
+            alert("Error connecting to hardware bridge: " + e);
+        });
+    };
+
+    
+    let lastScanQ = 28.6;
+
+    window.triggerBatteryScan = function() {
+        const statusEl = document.getElementById('scan-results');
+        statusEl.innerText = 'SAMPLING WAVEFIELD RESONANCE...';
+        
+        fetch('http://localhost:8002/scan_battery', { signal: AbortSignal.timeout(1500) })
+            .then(r => r.json())
+            .then(data => {
+                lastScanQ = data.q_factor;
+                statusEl.innerText = `Q-FACTOR: ${data.q_factor} | EFFICIENCY: ${data.efficiency_pct}% (HARDWARE COM)`;
+                drawDecay(data.decay_curve);
+                document.getElementById('btn-optimize').style.display = 'block';
+            })
+            .catch(() => {
+                // Synthetic high-fidelity decay curve calculation
+                lastScanQ = 28.6;
+                const decay_curve = [];
+                for(let i=0; i<80; i++) {
+                    const t = i / 80;
+                    decay_curve.push(Math.exp(-t * 2.8) * (0.95 + 0.05 * Math.sin(t * 40)));
+                }
+                statusEl.innerText = `Q-FACTOR: 28.6 | EFFICIENCY: 57.2% (SYNTHETIC BENCH)`;
+                drawDecay(decay_curve);
+                document.getElementById('btn-optimize').style.display = 'block';
+            });
+    };
+
+    function drawDecay(curve) {
+        const sCanvas = document.getElementById('scanner-canvas');
+        if (!sCanvas) return;
+        const sCtx = sCanvas.getContext('2d');
+        sCtx.clearRect(0, 0, 220, 80);
+        sCtx.beginPath();
+        sCtx.strokeStyle = '#00ff88';
+        sCtx.lineWidth = 2;
+        for(let i=0; i<curve.length; i++) {
+            const x = (i / curve.length) * 220;
+            const y = 80 - (curve[i] * 70);
+            if (i===0) sCtx.moveTo(x, y);
+            else sCtx.lineTo(x, y);
+        }
+        sCtx.stroke();
+    }
+
+
+    
+    window.optimizeWavebattery = function() {
+        const q = lastScanQ || 28.6;
+        
+        fetch('http://localhost:8002/optimize_scad', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ q_factor: q }),
+            signal: AbortSignal.timeout(1500)
+        })
+        .then(r => r.json())
+        .then(data => {
+            alert(
+                `[OK] WAVEBATTERY V3 GENERATED (HARDWARE BRIDGE)
+
+` +
+                `Scan efficiency : ${data.scan_efficiency}%
+` +
+                `V1 baseline     : ${data.v1_efficiency}%
+
+` +
+                `V3 PHYSICAL DIMENSIONS:
+` +
+                `  Outer X   : ${data.v3_rx} mm
+` +
+                `  Outer Y   : ${data.v3_ry} mm
+` +
+                `  Inner bore: ${data.v3_inner} mm
+` +
+                `  Height    : ${data.v3_height} mm
+
+` +
+                `STL saved to Desktop:
+${data.stl_path}`
+            );
+        })
+        .catch(() => {
+            // Client-side pure mathematical geometry generation & direct download
+            const efficiency = Math.min(100.0, q * 2.0);
+            const gap = (71.0 - efficiency) / 100.0;
+            const scale = 1.0 + Math.max(0.0, gap * 0.4);
+            const v3_rx = +(8.5 * scale).toFixed(2);
+            const v3_ry = +(12.0 * scale).toFixed(2);
+            const bore_scale = 1.0 - Math.max(0.0, gap * 0.15);
+            const v3_inner = +(Math.max(2.0, 4.2 * bore_scale)).toFixed(2);
+            const v3_height = +(5.2 * scale).toFixed(2);
+            
+            const stl = generateWavebatterySTL(v3_rx, v3_ry, v3_inner, v3_height, 80);
+            triggerBrowserDownload(stl, 'wavebattery_v3.stl', 'application/sla');
+
+            const scad = `// WAVEBATTERY V3 — Generated by Heimdall Wave Computer
+` +
+                `// Scan Q-Factor: ${q} | Efficiency: ${efficiency.toFixed(1)}%
+` +
+                `// Baseline V1: 71.0% | Resonant Scaling: ${scale.toFixed(3)}x
+
+` +
+                `$fn = 100;
+` +
+                `outer_rx = ${v3_rx};
+` +
+                `outer_ry = ${v3_ry};
+` +
+                `inner_r  = ${v3_inner};
+` +
+                `height   = ${v3_height};
+
+` +
+                `difference() {
+` +
+                `    scale([outer_rx, outer_ry, 1]) cylinder(r=1, h=height);
+` +
+                `    cylinder(r=inner_r, h=height*3, center=true);
+` +
+                `}
+`;
+            triggerBrowserDownload(scad, 'wavebattery_v3.scad', 'text/plain');
+
+            alert(
+                `[OK] WAVEBATTERY V3 GENERATED (BROWSER DOWNLOAD)
+
+` +
+                `Scan efficiency : ${efficiency.toFixed(1)}%
+` +
+                `V1 baseline     : 71.0%
+
+` +
+                `V3 OPTIMIZED PHYSICAL GEOMETRY:
+` +
+                `  Outer X   : ${v3_rx} mm
+` +
+                `  Outer Y   : ${v3_ry} mm
+` +
+                `  Inner bore: ${v3_inner} mm (tighter = less leakage)
+` +
+                `  Height    : ${v3_height} mm
+
+` +
+                `Downloaded directly to your device ready to slice:
+* wavebattery_v3.stl
+* wavebattery_v3.scad`
+            );
+        });
+    };
+
+
+    // -----------------------------------------
+    // Hardware Bridge Telemetry Polling
+    function checkHardware() {
+        fetch('http://localhost:8002/status')
+            .then(r => r.json())
+            .then(data => {
+                if (data.connected && !statusInd.innerText.startsWith("RUNNING")) {
+                    statusInd.innerText = "HARDWARE ONLINE (" + data.port + ")";
+                    statusInd.style.color = "#00ff88";
+                }
+            })
+            .catch(() => {
+                if (!statusInd.innerText.startsWith("RUNNING")) {
+                    statusInd.innerText = "SIMULATION ONLY (HW OFFLINE)";
+                    statusInd.style.color = "#fbbf24";
+                }
+            });
+    }
+    setInterval(checkHardware, 1000);
+    checkHardware();
+
+    // Colormap helper for CPU rendering
+    function getColormap(val) {
+        // val expected between 0.0 and 1.0
+        val = Math.max(0.0, Math.min(1.0, val));
+        
+        // blue -> cyan -> black -> orange -> red
+        let r=0, g=0, b=0;
+        
+        if (val < 0.25) {
+            const t = val * 4.0;
+            // blue (0,51,204) to cyan (0,255,255)
+            r = 0; g = 51 + t*(204); b = 204 + t*(51);
+        } else if (val < 0.5) {
+            const t = (val - 0.25) * 4.0;
+            // cyan to black (3,8,20)
+            r = t*3; g = 255 - t*247; b = 255 - t*235;
+        } else if (val < 0.75) {
+            const t = (val - 0.5) * 4.0;
+            // black to orange (255,128,0)
+            r = 3 + t*252; g = 8 + t*120; b = 20 - t*20;
+        } else {
+            const t = (val - 0.75) * 4.0;
+            // orange to red (255,0,51)
+            r = 255; g = 128 - t*128; b = t*51;
+        }
+        
+        return [r, g, b];
+    }
+
+    // Continuous 2D Render Loop
+    function renderWaveField() {
+        requestAnimationFrame(renderWaveField);
+        
+        time += 0.1;
+        
+        // Only run heavy compute if we have sources
+        let sources = nodes.filter(n => n.type === 'SOURCE');
+        
+        // Precompute source properties to avoid inner loop lookups
+        const srcData = sources.map(n => {
+            const { k } = getWaveParams(n.frequency);
+            return {
+                x: n.x, y: n.y,
+                amp: n.amplitude,
+                phaseRad: n.phase * Math.PI / 180,
+                k: k
+            };
+        });
+        
+        const srcCount = srcData.length;
+        
+        // Physical target coordinates mapped into 40m space
+        // Compute wavefield grid
+        for (let py = 0; py < RENDER_RES; py++) {
+            const fy = ((py / RENDER_RES) * FIELD_SIZE) - (FIELD_SIZE / 2);
+            for (let px = 0; px < RENDER_RES; px++) {
+                const fx = ((px / RENDER_RES) * FIELD_SIZE) - (FIELD_SIZE / 2);
+                
+                let field = 0.0;
+                
+                for (let i = 0; i < srcCount; i++) {
+                    const s = srcData[i];
+                    const dist = Math.sqrt((fx - s.x)**2 + (fy - s.y)**2);
+                    const atten = 1.0 / (1.0 + dist * 0.5);
+                    field += s.amp * atten * Math.cos(s.k * dist - s.phaseRad - time);
+                }
+                
+                // Map [-2.0, 2.0] -> [0.0, 1.0] for colormap
+                const normField = (field + 2.0) / 4.0;
+                const [r, g, b] = getColormap(normField);
+                
+                // Grid lines logic
+                const isGrid = (Math.abs(fx % 2) < 0.05 || Math.abs(fy % 2) < 0.05);
+                
+                const idx = (py * RENDER_RES + px) * 4;
+                data[idx]   = isGrid ? r*0.8 + 25 : r; // R
+                data[idx+1] = isGrid ? g*0.8 + 50 : g; // G
+                data[idx+2] = isGrid ? b*0.8 + 75 : b; // B
+                data[idx+3] = 255; // Alpha
+            }
+        }
+        
+        // Draw offscreen buffer to a temporary canvas for scaling
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = RENDER_RES;
+        tempCanvas.height = RENDER_RES;
+        tempCanvas.getContext('2d').putImageData(imgData, 0, 0);
+        
+        // Draw scaled to actual screen
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(tempCanvas, 0, 0, canvas.width, canvas.height);
+
+        // Update RETURN field readout — static interference envelope + live hardware reflection
+        nodes.filter(n => n.type === 'RECEIVER').forEach(rn => {
+            let rField = 0.0;
+            for (let i = 0; i < srcCount; i++) {
+                const s = srcData[i];
+                const d = Math.sqrt((rn.x - s.x)**2 + (rn.y - s.y)**2);
+                rField += s.amp * (1.0 / (1.0 + d * 0.5)) * Math.cos(s.k * d - s.phaseRad);
+            }
+            
+            // Add live physical reflection if hardware is connected
+            if (liveHardware && liveHardware.connected && liveHardware.dist_cm > 0) {
+                // Map real radar distance to virtual space (scale by 4 for visibility)
+                const targetY = Math.min(16.0, Math.max(-16.0, (liveHardware.dist_cm / 100.0 - 2.0) * 4.0));
+                const targetDist = Math.sqrt((rn.x - 0)**2 + (rn.y - targetY)**2);
+                
+                // If motion detected, scatter amplitude increases
+                const scatterAmp = liveHardware.macro_motion ? 1.5 : 0.5;
+                
+                // Add the physical echo to the virtual receiver (static envelope, no time oscillation)
+                rField += scatterAmp * (1.0 / (1.0 + targetDist * 0.4)) * Math.cos(3.0 * targetDist);
+            }
+
+            const rEl = document.getElementById(`return-val-${rn.id}`);
+            if (rEl) rEl.innerText = `RETURN: ${Math.abs(rField).toFixed(3)}`;
+        });
+    }
+    
+    // Initial setup
+    loadPreset('DETECT');
+    renderWaveField();
+
+
+    // --- Client-Side Pure JS Wavebattery STL Generator ---
+    function generateWavebatterySTL(outer_rx, outer_ry, inner_r, height, segments = 80) {
+        let lines = ["solid wavebattery_v3"];
+        function pt_outer(deg, z) {
+            let a = deg * Math.PI / 180.0;
+            return [outer_rx * Math.cos(a), outer_ry * Math.sin(a), z];
+        }
+        function pt_inner(deg, z) {
+            let a = deg * Math.PI / 180.0;
+            return [inner_r * Math.cos(a), inner_r * Math.sin(a), z];
+        }
+        function normal(p1, p2, p3) {
+            let ax = p2[0] - p1[0], ay = p2[1] - p1[1], az = p2[2] - p1[2];
+            let bx = p3[0] - p1[0], by = p3[1] - p1[1], bz = p3[2] - p1[2];
+            let nx = ay * bz - az * by;
+            let ny = az * bx - ax * bz;
+            let nz = ax * by - ay * bx;
+            let len = Math.sqrt(nx*nx + ny*ny + nz*nz) || 1e-9;
+            return [nx/len, ny/len, nz/len];
+        }
+        function tri(p1, p2, p3) {
+            let n = normal(p1, p2, p3);
+            lines.push(`  facet normal ${n[0].toFixed(6)} ${n[1].toFixed(6)} ${n[2].toFixed(6)}`);
+            lines.push("    outer loop");
+            lines.push(`      vertex ${p1[0].toFixed(6)} ${p1[1].toFixed(6)} ${p1[2].toFixed(6)}`);
+            lines.push(`      vertex ${p2[0].toFixed(6)} ${p2[1].toFixed(6)} ${p2[2].toFixed(6)}`);
+            lines.push(`      vertex ${p3[0].toFixed(6)} ${p3[1].toFixed(6)} ${p3[2].toFixed(6)}`);
+            lines.push("    endloop");
+            lines.push("  endfacet");
+        }
+        for (let i = 0; i < segments; i++) {
+            let a1 = (i / segments) * 360.0;
+            let a2 = ((i + 1) / segments) * 360.0;
+            tri(pt_outer(a1,0), pt_outer(a2,0), pt_outer(a2,height));
+            tri(pt_outer(a1,0), pt_outer(a2,height), pt_outer(a1,height));
+            tri(pt_inner(a1,0), pt_inner(a2,height), pt_inner(a2,0));
+            tri(pt_inner(a1,0), pt_inner(a1,height), pt_inner(a2,height));
+            tri(pt_inner(a1,height), pt_outer(a1,height), pt_outer(a2,height));
+            tri(pt_inner(a1,height), pt_outer(a2,height), pt_inner(a2,height));
+            tri(pt_inner(a1,0), pt_outer(a2,0), pt_outer(a1,0));
+            tri(pt_inner(a1,0), pt_inner(a2,0), pt_outer(a2,0));
+        }
+        lines.push("endsolid wavebattery_v3");
+        return lines.join("\n");
+    }
+
+    function triggerBrowserDownload(content, filename, mimeType = "application/octet-stream") {
+        const blob = new Blob([content], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+</script>
+</body>
+</html>
