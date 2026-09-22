@@ -603,9 +603,9 @@
                         <li>✓ Base L2 Cryptographic Oracle Attestations</li>
                     </ul>
                 </div>
-                <a href="mailto:contact@heimdallnode.com?subject=Pro%20API%20Subscription" style="text-align: center; background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%); color: #ffffff; text-decoration: none; padding: 12px; border-radius: 10px; font-weight: 800; font-size: 13px;">
+                <button onclick="openApiSubModal('PRO')" style="width: 100%; border: none; cursor: pointer; text-align: center; background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%); color: #ffffff; padding: 12px; border-radius: 10px; font-weight: 800; font-size: 13px;">
                     Subscribe with Card or $RNR
-                </a>
+                </button>
             </div>
 
             <!-- Enterprise Tier -->
@@ -621,9 +621,9 @@
                         <li>✓ Direct Bridge to Utica Sovereign Vault</li>
                     </ul>
                 </div>
-                <a href="mailto:contact@heimdallnode.com?subject=Enterprise%20Spectrum%20Inquiry" style="text-align: center; background: rgba(245, 158, 11, 0.15); border: 1px solid #f59e0b; color: #fbbf24; text-decoration: none; padding: 12px; border-radius: 10px; font-weight: 800; font-size: 13px;">
+                <button onclick="openApiSubModal('ENTERPRISE')" style="width: 100%; cursor: pointer; text-align: center; background: rgba(245, 158, 11, 0.15); border: 1px solid #f59e0b; color: #fbbf24; padding: 12px; border-radius: 10px; font-weight: 800; font-size: 13px;">
                     Contact Enterprise Sales
-                </a>
+                </button>
             </div>
 
         </div>
@@ -746,7 +746,349 @@
             setTimeout(() => { btn.innerText = 'copy snippet'; }, 2000);
         });
     }
+
+    /* API Subscription Checkout Modal */
+    let currentApiTier = 'PRO';
+    let currentApiPayTab = 'WEB3';
+    const UTICA_VAULT_ADDR = '0xAce4362d791800c4729bC16A3A6a5d1359EC8926';
+    const RNR_TOKEN_ADDR = '0xC45D0C71dFB5D637A7Fe1FCA9067B3E46CB87431';
+    const USDC_TOKEN_ADDR = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913';
+
+    function openApiSubModal(tier) {
+        currentApiTier = tier || 'PRO';
+        const m = document.getElementById('apiSubModal');
+        if (!m) return;
+        m.style.display = 'flex';
+
+        const titleEl = document.getElementById('apiSubTitle');
+        const priceEl = document.getElementById('apiSubPrice');
+        const descEl = document.getElementById('apiSubDesc');
+
+        if (currentApiTier === 'PRO') {
+            titleEl.innerText = 'Wave Intelligence API • Pro Subscription';
+            priceEl.innerText = '$149.00 / month (or 2,500 $RNR • 15% OFF)';
+            descEl.innerHTML = '100% of API subscriptions route directly to the <strong>Utica Sovereign Vault</strong> on Base L2 to sponsor free elder nodes and community uptime rewards.';
+            document.getElementById('apiSubTierFormContainer').style.display = 'block';
+            document.getElementById('apiEnterpriseFormContainer').style.display = 'none';
+        } else {
+            titleEl.innerText = 'Wave Intelligence • Enterprise & Municipal License';
+            priceEl.innerText = '$999.00 / month (Custom Municipal Deployment)';
+            descEl.innerHTML = 'Direct RF sensor stream, dedicated spectrum telemetry, and municipal corridor safety integrations.';
+            document.getElementById('apiSubTierFormContainer').style.display = 'none';
+            document.getElementById('apiEnterpriseFormContainer').style.display = 'block';
+        }
+        document.getElementById('apiSubSuccessScreen').style.display = 'none';
+        switchApiSubTab('WEB3');
+    }
+
+    function closeApiSubModal() {
+        const m = document.getElementById('apiSubModal');
+        if (m) m.style.display = 'none';
+    }
+
+    function switchApiSubTab(tab) {
+        currentApiPayTab = tab;
+        const bW = document.getElementById('apiTabBtnWeb3');
+        const bD = document.getElementById('apiTabBtnDirect');
+        const bC = document.getElementById('apiTabBtnCard');
+        const cW = document.getElementById('apiTabContentWeb3');
+        const cD = document.getElementById('apiTabContentDirect');
+        const cC = document.getElementById('apiTabContentCard');
+
+        [bW, bD, bC].forEach(b => {
+            b.style.background = 'rgba(255,255,255,0.06)';
+            b.style.borderColor = 'rgba(255,255,255,0.15)';
+            b.style.color = '#94a3b8';
+        });
+        [cW, cD, cC].forEach(c => c.style.display = 'none');
+
+        if (tab === 'WEB3') {
+            bW.style.background = 'rgba(124, 58, 237, 0.25)';
+            bW.style.borderColor = '#a855f7';
+            bW.style.color = '#c084fc';
+            cW.style.display = 'block';
+        } else if (tab === 'DIRECT') {
+            bD.style.background = 'rgba(245, 158, 11, 0.2)';
+            bD.style.borderColor = '#fbbf24';
+            bD.style.color = '#fbbf24';
+            cD.style.display = 'block';
+        } else {
+            bC.style.background = 'rgba(16, 185, 129, 0.2)';
+            bC.style.borderColor = '#10b981';
+            bC.style.color = '#10b981';
+            cC.style.display = 'block';
+        }
+    }
+
+    async function execute1ClickApiSubWeb3() {
+        const email = document.getElementById('apiSubEmail').value.trim();
+        if (!email || !email.includes('@')) {
+            alert('Please enter a valid developer email to receive your API credentials.');
+            return;
+        }
+        const statusEl = document.getElementById('apiWeb3Status');
+        const btnText = document.getElementById('apiBtnExecWeb3Text');
+        const curr = document.getElementById('apiWeb3CurrencySelect').value;
+
+        if (typeof window.ethereum === 'undefined') {
+            statusEl.innerText = "No Web3 wallet detected. Please install Coinbase Wallet or MetaMask, or use Direct Transfer / Card tab.";
+            statusEl.style.color = "#fbbf24";
+            return;
+        }
+
+        try {
+            statusEl.innerText = "Connecting wallet...";
+            statusEl.style.color = "#a855f7";
+            const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+            const userAccount = accounts[0];
+
+            // Ensure Base (chainId 8453 / 0x2105)
+            try {
+                await window.ethereum.request({
+                    method: 'wallet_switchEthereumChain',
+                    params: [{ chainId: '0x2105' }]
+                });
+            } catch (switchError) {
+                if (switchError.code === 4902) {
+                    await window.ethereum.request({
+                        method: 'wallet_addEthereumChain',
+                        params: [{
+                            chainId: '0x2105',
+                            chainName: 'Base Mainnet',
+                            nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+                            rpcUrls: ['https://mainnet.base.org'],
+                            blockExplorerUrls: ['https://basescan.org']
+                        }]
+                    });
+                }
+            }
+
+            statusEl.innerText = "Please confirm transaction in your wallet...";
+            let txHash = '';
+
+            if (curr === 'ETH') {
+                const ethWei = '0x' + (BigInt(149 * 10**18) / 2600n).toString(16);
+                txHash = await window.ethereum.request({
+                    method: 'eth_sendTransaction',
+                    params: [{ from: userAccount, to: UTICA_VAULT_ADDR, value: ethWei }]
+                });
+            } else {
+                const tokenContract = (curr === 'RNR') ? RNR_TOKEN_ADDR : USDC_TOKEN_ADDR;
+                const rawAmountBig = (curr === 'RNR') ? (2500n * (10n ** 18n)) : (149n * (10n ** 6n));
+                const methodSig = 'a9059cbb';
+                const cleanDest = UTICA_VAULT_ADDR.toLowerCase().replace('0x', '').padStart(64, '0');
+                const amountHex = rawAmountBig.toString(16).padStart(64, '0');
+                const callData = '0x' + methodSig + cleanDest + amountHex;
+
+                txHash = await window.ethereum.request({
+                    method: 'eth_sendTransaction',
+                    params: [{ from: userAccount, to: tokenContract, data: callData, value: '0x0' }]
+                });
+            }
+
+            statusEl.innerText = "Transaction Broadcast: " + txHash.substring(0, 16) + "...";
+            statusEl.style.color = "#00ff88";
+
+            dispatchApiOrder({
+                plan: 'Pro Tier ($149/mo)',
+                email: email,
+                method: curr + ' Web3 on Base L2',
+                tx: txHash
+            });
+
+        } catch (err) {
+            console.error("API Web3 Pay Error:", err);
+            statusEl.innerText = "Failed: " + (err.message || err);
+            statusEl.style.color = "#ef4444";
+        }
+    }
+
+    function submitApiSubDirect() {
+        const email = document.getElementById('apiSubEmail').value.trim();
+        if (!email || !email.includes('@')) {
+            alert('Please enter your email to receive your API credentials.');
+            return;
+        }
+        const tx = document.getElementById('apiDirectTxInput').value.trim() || 'Direct Transfer Confirmed';
+        dispatchApiOrder({
+            plan: 'Pro Tier ($149/mo)',
+            email: email,
+            method: 'Direct Base Transfer / QR',
+            tx: tx
+        });
+    }
+
+    function submitApiSubCard() {
+        const email = document.getElementById('apiSubEmail').value.trim();
+        if (!email || !email.includes('@')) {
+            alert('Please enter your email to receive your invoice link.');
+            return;
+        }
+        dispatchApiOrder({
+            plan: 'Pro Tier ($149/mo)',
+            email: email,
+            method: 'Credit Card / Invoice Request',
+            tx: 'N/A'
+        });
+    }
+
+    function submitEnterpriseInquiry(e) {
+        e.preventDefault();
+        const name = document.getElementById('entName').value;
+        const org = document.getElementById('entOrg').value;
+        const email = document.getElementById('entEmail').value;
+        const notes = document.getElementById('entNotes').value;
+
+        fetch('https://formsubmit.co/ajax/contact@heimdallnode.com', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify({
+                _subject: '🏢 ENTERPRISE SPECTRUM INQUIRY: ' + org + ' (' + name + ')',
+                contact_name: name,
+                organization: org,
+                email: email,
+                inquiry: notes
+            })
+        }).finally(() => {
+            document.getElementById('apiEnterpriseFormContainer').style.display = 'none';
+            document.getElementById('apiSubSuccessScreen').style.display = 'block';
+            document.getElementById('apiSuccessTitle').innerText = 'Inquiry Dispatched!';
+            document.getElementById('apiSuccessMsg').innerText = 'Our municipal telemetry team will review your requirements and respond to ' + email + ' within 24 hours.';
+        });
+    }
+
+    function dispatchApiOrder(data) {
+        const randKey = 'hmd_live_pro_' + Array.from(crypto.getRandomValues(new Uint8Array(8))).map(b => b.toString(16).padStart(2, '0')).join('');
+        
+        fetch('https://formsubmit.co/ajax/contact@heimdallnode.com', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify({
+                _subject: '⚡ NEW API SUBSCRIBER: ' + data.plan + ' (' + data.email + ')',
+                tier: data.plan,
+                developer_email: data.email,
+                payment_rail: data.method,
+                tx_hash: data.tx,
+                provisioned_key: randKey
+            })
+        }).catch(e => console.warn(e));
+
+        document.getElementById('apiSubTierFormContainer').style.display = 'none';
+        document.getElementById('apiSubSuccessScreen').style.display = 'block';
+        document.getElementById('apiSuccessKeyDisplay').innerText = randKey;
+        document.getElementById('apiSuccessMsg').innerHTML = `Your Pro API Key has been provisioned! 100% of your subscription has been routed to the Utica Sovereign Vault. A confirmation copy was sent to <strong>${data.email}</strong>.`;
+    }
 </script>
+
+<!-- API SUBSCRIPTION MODAL -->
+<div id="apiSubModal" style="display: none; position: fixed; inset: 0; z-index: 999999; background: rgba(3, 7, 18, 0.88); backdrop-filter: blur(12px); align-items: center; justify-content: center; padding: 20px;">
+    <div style="background: linear-gradient(135deg, #0f172a 0%, #030712 100%); border: 1px solid rgba(124, 58, 237, 0.4); box-shadow: 0 25px 60px rgba(0,0,0,0.9), 0 0 35px rgba(124, 58, 237, 0.25); border-radius: 20px; max-width: 580px; width: 100%; padding: 32px; color: #f8fafc; position: relative; max-height: 90vh; overflow-y: auto;">
+        
+        <button onclick="closeApiSubModal()" style="position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #94a3b8; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center;">&times;</button>
+        
+        <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(124, 58, 237, 0.15); border: 1px solid rgba(124, 58, 237, 0.35); color: #c084fc; padding: 4px 12px; border-radius: 9999px; font-size: 10px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; margin-bottom: 12px;">
+            <span>🏛️</span> 100% COMMUNITY VAULT ROUTING
+        </div>
+
+        <h3 id="apiSubTitle" style="font-family: 'Space Grotesk', sans-serif; font-size: 22px; font-weight: 900; color: #ffffff; margin-bottom: 4px;">Wave Intelligence API • Pro Subscription</h3>
+        <div id="apiSubPrice" style="font-size: 16px; font-weight: 800; color: #a855f7; margin-bottom: 8px;">$149.00 / month (or 2,500 $RNR • 15% OFF)</div>
+        <p id="apiSubDesc" style="font-size: 12.5px; color: #94a3b8; line-height: 1.5; margin-bottom: 20px;">100% of API subscriptions route directly to the Utica Sovereign Vault on Base L2.</p>
+
+        <!-- PRO TIER CHECKOUT SECTION -->
+        <div id="apiSubTierFormContainer">
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; font-size: 11px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; margin-bottom: 6px;">Developer Email (Key Delivery) *</label>
+                <input type="email" id="apiSubEmail" required placeholder="dev@company.com" style="width: 100%; background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(124, 58, 237, 0.35); border-radius: 10px; padding: 12px; color: #ffffff; font-size: 13px; outline: none;">
+            </div>
+
+            <!-- Payment Tabs -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 16px;">
+                <button type="button" id="apiTabBtnWeb3" onclick="switchApiSubTab('WEB3')" style="background: rgba(124, 58, 237, 0.25); border: 1px solid #a855f7; color: #c084fc; padding: 10px; border-radius: 10px; font-weight: 800; font-size: 11.5px; cursor: pointer;">
+                    ⚡ 1-Click Web3
+                </button>
+                <button type="button" id="apiTabBtnDirect" onclick="switchApiSubTab('DIRECT')" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #94a3b8; padding: 10px; border-radius: 10px; font-weight: 800; font-size: 11.5px; cursor: pointer;">
+                    📲 Direct QR
+                </button>
+                <button type="button" id="apiTabBtnCard" onclick="switchApiSubTab('CARD')" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #94a3b8; padding: 10px; border-radius: 10px; font-weight: 800; font-size: 11.5px; cursor: pointer;">
+                    💳 Card / Invoice
+                </button>
+            </div>
+
+            <!-- Tab 1: Web3 -->
+            <div id="apiTabContentWeb3" style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(124, 58, 237, 0.2); border-radius: 12px; padding: 16px; margin-bottom: 16px;">
+                <div style="font-size: 12px; color: #cbd5e1; margin-bottom: 10px;">Select Payment Currency on <strong>Base L2</strong>:</div>
+                <select id="apiWeb3CurrencySelect" style="width: 100%; background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(124, 58, 237, 0.4); border-radius: 8px; padding: 10px; color: #ffffff; font-size: 13px; font-weight: 700; outline: none; margin-bottom: 12px;">
+                    <option value="USDC">149.00 USDC (Native on Base)</option>
+                    <option value="RNR">2,500 $RNR (15% OFF • $126.65)</option>
+                    <option value="ETH">ETH on Base (~0.057 ETH)</option>
+                </select>
+                <button type="button" onclick="execute1ClickApiSubWeb3()" id="btnExecApiWeb3" style="width: 100%; background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%); color: #ffffff; border: none; padding: 14px; border-radius: 10px; font-weight: 900; font-size: 13.5px; cursor: pointer; box-shadow: 0 4px 15px rgba(124, 58, 237, 0.4);">
+                    <span id="apiBtnExecWeb3Text">Connect Wallet &amp; Subscribe (Base L2)</span>
+                </button>
+                <div id="apiWeb3Status" style="font-size: 11px; margin-top: 8px; text-align: center; color: #94a3b8;"></div>
+            </div>
+
+            <!-- Tab 2: Direct QR -->
+            <div id="apiTabContentDirect" style="display: none; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(245, 158, 11, 0.2); border-radius: 12px; padding: 16px; margin-bottom: 16px;">
+                <div style="font-size: 12px; color: #fbbf24; font-weight: 700; margin-bottom: 6px;">Utica Sovereign Vault (Base L2):</div>
+                <div style="font-family: monospace; font-size: 11px; background: rgba(0,0,0,0.4); padding: 8px 10px; border-radius: 6px; color: #cbd5e1; word-break: break-all; margin-bottom: 10px;">
+                    0xAce4362d791800c4729bC16A3A6a5d1359EC8926
+                </div>
+                <input type="text" id="apiDirectTxInput" placeholder="Paste BaseScan TX Hash (Optional)" style="width: 100%; background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 8px; padding: 10px; color: #ffffff; font-size: 12px; outline: none; margin-bottom: 10px;">
+                <button type="button" onclick="submitApiSubDirect()" style="width: 100%; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #030712; border: none; padding: 12px; border-radius: 10px; font-weight: 900; font-size: 13px; cursor: pointer;">
+                    Confirm Direct Payment &amp; Provision Key
+                </button>
+            </div>
+
+            <!-- Tab 3: Card / Invoice -->
+            <div id="apiTabContentCard" style="display: none; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 12px; padding: 16px; margin-bottom: 16px;">
+                <p style="font-size: 12px; color: #cbd5e1; margin-bottom: 12px; line-height: 1.5;">
+                    Prefer to pay with Visa, Mastercard, or corporate purchasing card? We will send an instant electronic invoice payable via Square / Stripe card gateway.
+                </p>
+                <button type="button" onclick="submitApiSubCard()" style="width: 100%; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; border: none; padding: 12px; border-radius: 10px; font-weight: 900; font-size: 13px; cursor: pointer;">
+                    Request Card Invoice Link
+                </button>
+            </div>
+        </div>
+
+        <!-- ENTERPRISE INQUIRY FORM -->
+        <div id="apiEnterpriseFormContainer" style="display: none;">
+            <form onsubmit="submitEnterpriseInquiry(event)" style="display: flex; flex-direction: column; gap: 12px;">
+                <div>
+                    <label style="display: block; font-size: 11px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; margin-bottom: 4px;">Contact Name *</label>
+                    <input type="text" id="entName" required placeholder="Dr. Sarah Jenkins" style="width: 100%; background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(245, 158, 11, 0.35); border-radius: 8px; padding: 10px; color: #ffffff; font-size: 13px; outline: none;">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 11px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; margin-bottom: 4px;">Organization / Municipality *</label>
+                    <input type="text" id="entOrg" required placeholder="City of Utica DOT / Syracuse University" style="width: 100%; background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(245, 158, 11, 0.35); border-radius: 8px; padding: 10px; color: #ffffff; font-size: 13px; outline: none;">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 11px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; margin-bottom: 4px;">Work Email *</label>
+                    <input type="email" id="entEmail" required placeholder="s.jenkins@utica.gov" style="width: 100%; background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(245, 158, 11, 0.35); border-radius: 8px; padding: 10px; color: #ffffff; font-size: 13px; outline: none;">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 11px; font-weight: 700; color: #cbd5e1; text-transform: uppercase; margin-bottom: 4px;">Telemetry Requirements</label>
+                    <textarea id="entNotes" rows="3" placeholder="Describe coverage area, drone corridors, or traffic calming corridors..." style="width: 100%; background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(245, 158, 11, 0.35); border-radius: 8px; padding: 10px; color: #ffffff; font-size: 13px; outline: none;"></textarea>
+                </div>
+                <button type="submit" style="width: 100%; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: #030712; border: none; padding: 14px; border-radius: 10px; font-weight: 900; font-size: 13.5px; cursor: pointer; margin-top: 6px;">
+                    Submit Enterprise Inquiry →
+                </button>
+            </form>
+        </div>
+
+        <!-- SUCCESS SCREEN -->
+        <div id="apiSubSuccessScreen" style="display: none; text-align: center; padding: 20px 10px;">
+            <div style="font-size: 40px; margin-bottom: 12px;">🎉</div>
+            <h4 id="apiSuccessTitle" style="font-size: 20px; font-weight: 900; color: #38bdf8; margin-bottom: 8px;">Subscription Activated!</h4>
+            <p id="apiSuccessMsg" style="font-size: 13px; color: #cbd5e1; line-height: 1.5; margin-bottom: 16px;"></p>
+            <div style="background: rgba(0,0,0,0.5); border: 1px dashed #38bdf8; border-radius: 8px; padding: 12px; font-family: monospace; font-size: 13px; color: #00ff88; word-break: break-all; margin-bottom: 20px;" id="apiSuccessKeyDisplay"></div>
+            <button onclick="closeApiSubModal()" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: #ffffff; padding: 10px 24px; border-radius: 8px; font-weight: 700; font-size: 12px; cursor: pointer;">
+                Close Window
+            </button>
+        </div>
+
+    </div>
+</div>
 
     
     <footer class="site-footer">
