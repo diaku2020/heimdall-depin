@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700;800&family=Space+Grotesk:wght@500;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.2/ethers.umd.min.js"></script>
     <style>
         :root {
             --bg-page: #030712;
@@ -836,7 +837,149 @@
     }
 </script>
 
-    
+    <!-- ========================================================================= -->
+    <!-- SECURE HARDWARE & WEB3 CHECKOUT MODAL -->
+    <!-- ========================================================================= -->
+    <div id="hardwareOrderModal" style="display: none; position: fixed; inset: 0; z-index: 999999; background: rgba(3, 7, 18, 0.92); backdrop-filter: blur(14px); align-items: center; justify-content: center; padding: 20px;">
+        <div style="background: linear-gradient(135deg, #0f172a 0%, #030712 100%); border: 1px solid rgba(56, 189, 248, 0.4); box-shadow: 0 25px 60px rgba(0,0,0,0.9), 0 0 50px rgba(56, 189, 248, 0.2); border-radius: 20px; max-width: 640px; width: 100%; padding: 32px; color: #f8fafc; position: relative; max-height: 92vh; overflow-y: auto;">
+            
+            <button onclick="closeOrderModal()" style="position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #94a3b8; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center;">&times;</button>
+            
+            <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.35); color: #34d399; padding: 4px 12px; border-radius: 9999px; font-size: 10px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 12px;">
+                <span style="width: 6px; height: 6px; border-radius: 50%; background: #10b981; box-shadow: 0 0 8px #10b981;"></span>
+                SECURE HARDWARE CHECKOUT • BASE MAINNET
+            </div>
+
+            <h3 id="modalOrderProductTitle" style="font-size: 22px; font-weight: 900; color: #ffffff; margin-bottom: 4px;">
+                Order Utica Community Node
+            </h3>
+            <div id="modalOrderProductPrice" style="font-size: 15px; font-weight: 800; color: #00ff88; margin-bottom: 18px; font-family: monospace;">
+                $10.00 USD (or 200 $RNR on Base L2) • Free Shipping
+            </div>
+
+            <!-- ORDER FORM & CHECKOUT -->
+            <div id="orderFormContainer">
+                <!-- Step 1: Shipping Details -->
+                <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 18px; margin-bottom: 18px;">
+                    <div style="font-size: 11px; font-weight: 800; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px;">
+                        1. Shipping &amp; Contact Information
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <div>
+                            <input type="text" id="orderShipName" placeholder="Full Name *" required style="width: 100%; background: rgba(3, 7, 18, 0.8); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 8px; padding: 10px 12px; color: #fff; font-size: 13px; outline: none;">
+                        </div>
+                        <div>
+                            <input type="text" id="orderShipStreet" placeholder="Street Address *" required style="width: 100%; background: rgba(3, 7, 18, 0.8); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 8px; padding: 10px 12px; color: #fff; font-size: 13px; outline: none;">
+                        </div>
+                        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 8px;">
+                            <input type="text" id="orderShipCity" placeholder="City *" required style="background: rgba(3, 7, 18, 0.8); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 8px; padding: 10px 12px; color: #fff; font-size: 13px; outline: none;">
+                            <input type="text" id="orderShipState" placeholder="State *" required style="background: rgba(3, 7, 18, 0.8); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 8px; padding: 10px 12px; color: #fff; font-size: 13px; outline: none;">
+                            <input type="text" id="orderShipZip" placeholder="ZIP *" required style="background: rgba(3, 7, 18, 0.8); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 8px; padding: 10px 12px; color: #fff; font-size: 13px; outline: none;">
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                            <input type="email" id="orderShipEmail" placeholder="Email Address *" required style="background: rgba(3, 7, 18, 0.8); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 8px; padding: 10px 12px; color: #fff; font-size: 13px; outline: none;">
+                            <input type="tel" id="orderShipPhone" placeholder="Phone (for tracking updates) *" required style="background: rgba(3, 7, 18, 0.8); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 8px; padding: 10px 12px; color: #fff; font-size: 13px; outline: none;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Payment Rail Selection -->
+                <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 18px; margin-bottom: 20px;">
+                    <div style="font-size: 11px; font-weight: 800; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px;">
+                        2. Choose Payment Method
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 16px;">
+                        <button type="button" id="tabBtnWeb3" onclick="switchOrderPayTab('WEB3')" style="background: rgba(56, 189, 248, 0.2); border: 1px solid #38bdf8; color: #38bdf8; padding: 10px 6px; border-radius: 8px; font-size: 11px; font-weight: 800; cursor: pointer; text-align: center;">
+                            ⚡ 1-Click Web3
+                        </button>
+                        <button type="button" id="tabBtnDirect" onclick="switchOrderPayTab('DIRECT')" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #94a3b8; padding: 10px 6px; border-radius: 8px; font-size: 11px; font-weight: 800; cursor: pointer; text-align: center;">
+                            📱 Direct Transfer / QR
+                        </button>
+                        <button type="button" id="tabBtnCard" onclick="switchOrderPayTab('CARD')" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #94a3b8; padding: 10px 6px; border-radius: 8px; font-size: 11px; font-weight: 800; cursor: pointer; text-align: center;">
+                            💳 Card Invoice
+                        </button>
+                    </div>
+
+                    <!-- Tab 1: 1-Click Web3 Pay -->
+                    <div id="tabContentWeb3" style="display: block;">
+                        <div style="margin-bottom: 12px;">
+                            <label style="display: block; font-size: 11px; color: #94a3b8; margin-bottom: 6px;">Pay With Currency (Base L2):</label>
+                            <select id="web3CurrencySelect" onchange="updateWeb3AmountDisplay()" style="width: 100%; background: #030712; border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 8px; padding: 10px; color: #00ff88; font-family: monospace; font-size: 12px; font-weight: bold; outline: none;">
+                                <option value="RNR">RandRTech ($RNR) • 15% Off Eligible</option>
+                                <option value="USDC">USDC on Base (Native)</option>
+                                <option value="ETH">ETH on Base</option>
+                            </select>
+                        </div>
+
+                        <div style="background: #030712; border: 1px solid rgba(0, 255, 136, 0.3); border-radius: 10px; padding: 12px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 12px; color: #cbd5e1;">Amount to Transmit:</span>
+                            <span id="web3TransactingAmount" style="font-size: 16px; font-weight: 900; color: #00ff88; font-family: monospace;">200 $RNR</span>
+                        </div>
+
+                        <div id="web3WalletStatus" style="font-size: 11.5px; color: #94a3b8; margin-bottom: 12px; text-align: center; font-family: monospace;">
+                            Status: Ready to connect wallet
+                        </div>
+
+                        <button type="button" onclick="execute1ClickWeb3Pay()" id="btnExecWeb3Pay" style="width: 100%; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; border: none; padding: 15px; border-radius: 10px; font-size: 14px; font-weight: 900; cursor: pointer; box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4); display: flex; align-items: center; justify-content: center; gap: 8px;">
+                            <span>⚡</span> <span id="btnExecWeb3Text">Connect Wallet &amp; Pay (Base L2)</span>
+                        </button>
+                    </div>
+
+                    <!-- Tab 2: Direct Transfer / QR Code -->
+                    <div id="tabContentDirect" style="display: none;">
+                        <p style="font-size: 12px; color: #94a3b8; margin-bottom: 12px; line-height: 1.5;">
+                            Send payment from Coinbase app, MetaMask, Rainbow, or any Base L2 wallet to the verified contract address:
+                        </p>
+                        <div style="background: #030712; border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 10px; padding: 12px; margin-bottom: 14px;">
+                            <div style="font-size: 10px; font-weight: 800; color: #38bdf8; margin-bottom: 4px; text-transform: uppercase;">Destination Base Address:</div>
+                            <div id="directPayAddressDisplay" style="font-family: monospace; font-size: 11.5px; color: #fbbf24; word-break: break-all; margin-bottom: 8px;">
+                                0xAce4362d791800c4729bC16A3A6a5d1359EC8926
+                            </div>
+                            <button type="button" onclick="copyDirectPayAddress()" id="btnCopyAddress" style="background: rgba(56, 189, 248, 0.2); border: 1px solid #38bdf8; color: #38bdf8; padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; cursor: pointer;">
+                                📋 Copy Address
+                            </button>
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 11px; color: #94a3b8; margin-bottom: 6px;">Transaction Hash (Optional):</label>
+                            <input type="text" id="manualTxHashInput" placeholder="0x... (from your wallet confirmation)" style="width: 100%; background: #030712; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 10px 12px; color: #00ff88; font-family: monospace; font-size: 12px; outline: none; margin-bottom: 12px;">
+                        </div>
+                        <button type="button" onclick="submitDirectOrder()" style="width: 100%; background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%); color: #030712; border: none; padding: 14px; border-radius: 10px; font-size: 13px; font-weight: 900; cursor: pointer;">
+                            ✓ I Have Transferred — Complete Order
+                        </button>
+                    </div>
+
+                    <!-- Tab 3: Request Card / Square Invoice -->
+                    <div id="tabContentCard" style="display: none;">
+                        <p style="font-size: 12px; color: #94a3b8; margin-bottom: 14px; line-height: 1.6;">
+                            Prefer to pay with a regular <strong>Debit or Credit Card</strong>? We will immediately text or email you an official Square card checkout link to complete payment without crypto.
+                        </p>
+                        <button type="button" onclick="submitCardInvoiceRequest()" id="btnReqCardInvoice" style="width: 100%; background: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%); color: #030712; border: none; padding: 14px; border-radius: 10px; font-size: 13px; font-weight: 900; cursor: pointer;">
+                            💳 Send Me a Card Payment Link →
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Success Screen -->
+            <div id="orderSuccessScreen" style="display: none; background: rgba(16, 185, 129, 0.12); border: 2px solid #10b981; border-radius: 16px; padding: 28px; text-align: center;">
+                <div style="font-size: 40px; margin-bottom: 10px;">🎉</div>
+                <h3 style="font-size: 22px; font-weight: 900; color: #34d399; margin-bottom: 8px;">Order Successfully Placed!</h3>
+                <p id="successOrderRef" style="font-size: 14px; color: #f8fafc; font-weight: 700; margin-bottom: 12px; font-family: monospace;">
+                    ORDER ID: #HMD-8453-READY
+                </p>
+                <div id="successTxDetails" style="font-size: 12px; color: #38bdf8; font-family: monospace; word-break: break-all; margin-bottom: 16px;"></div>
+                <p style="font-size: 13px; color: #cbd5e1; line-height: 1.6; margin-bottom: 20px;">
+                    Your hardware node is queued for assembly in Utica, NY. Dispatch instructions and shipping confirmation have been transmitted to our fulfillment team.
+                </p>
+                <button onclick="closeOrderModal()" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: #fff; padding: 10px 24px; border-radius: 10px; font-weight: 800; font-size: 12px; cursor: pointer;">
+                    Close Window
+                </button>
+            </div>
+
+        </div>
+    </div>
+
     <footer class="site-footer">
         <div class="footer-inner">
             <div>
@@ -932,14 +1075,271 @@
             selectHardwareProduct(currentProduct);
         }
 
+        const BASE_CHAIN_ID_HEX = '0x2105'; // 8453 in hex
+        const RNR_TOKEN_BASE = '0xC45D0C71dFB5D637A7Fe1FCA9067B3E46CB87431';
+        const USDC_TOKEN_BASE = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913';
+        const UTICA_VAULT_ADDRESS = '0xAce4362d791800c4729bC16A3A6a5d1359EC8926';
+        const RESERVE_ROUTER_ADDRESS = '0x7FBf5F7364412f14D535c40d4DBf2Df95fCD6D4e';
+
+        let activePayTab = 'WEB3';
+        let connectedAccount = null;
+
         function handlePrimaryOrder() {
-            const amt = (currentProduct === 'UTICA') ? '10.00' : '300.00';
-            const item = (currentProduct === 'UTICA') ? 'Utica Community Node' : 'Commercial Radar Spire';
-            if (currentPaymentMethod === 'USD') {
-                window.location.href = `mailto:contact@heimdallnode.com?subject=Order%20${encodeURIComponent(item)}%20(${amt}%20USD)&body=Hi%20Heimdall%20Team,%0A%0AI%20would%20like%20to%20order%20the%20${encodeURIComponent(item)}%20for%20$${amt}%20USD.%0A%0AShipping%20Address:%0APhone%20Number:`;
+            openOrderModal();
+        }
+
+        function openOrderModal() {
+            const m = document.getElementById('hardwareOrderModal');
+            if (!m) return;
+            m.style.display = 'flex';
+
+            const titleEl = document.getElementById('modalOrderProductTitle');
+            const priceEl = document.getElementById('modalOrderProductPrice');
+            const dirAddrEl = document.getElementById('directPayAddressDisplay');
+
+            if (currentProduct === 'UTICA') {
+                titleEl.innerText = 'Order Utica Community Node';
+                priceEl.innerText = '$10.00 USD (or 200 $RNR on Base L2) • Free Shipping';
+                dirAddrEl.innerText = UTICA_VAULT_ADDRESS;
             } else {
-                const rnrAmt = (currentProduct === 'UTICA') ? '200 $RNR' : '5,100 $RNR';
-                window.location.href = `mailto:contact@heimdallnode.com?subject=Crypto%20Order%20${encodeURIComponent(item)}%20(${rnrAmt})&body=Hi%20Heimdall%20Team,%0A%0AI%20would%20like%20to%20pay%20for%20the%20${encodeURIComponent(item)}%20using%20${encodeURIComponent(rnrAmt)}%20on%20Base.%0A%0AMy%20Wallet%20Address:%0AShipping%20Address:`;
+                titleEl.innerText = 'Order Commercial Production Radar Spire';
+                priceEl.innerText = '$300.00 USD ($255 with 5,100 $RNR • 15% OFF) • Free Shipping';
+                dirAddrEl.innerText = RESERVE_ROUTER_ADDRESS;
+            }
+            updateWeb3AmountDisplay();
+            switchOrderPayTab(activePayTab);
+            document.getElementById('orderFormContainer').style.display = 'block';
+            document.getElementById('orderSuccessScreen').style.display = 'none';
+        }
+
+        function closeOrderModal() {
+            const m = document.getElementById('hardwareOrderModal');
+            if (m) m.style.display = 'none';
+        }
+
+        function switchOrderPayTab(tab) {
+            activePayTab = tab;
+            const btnWeb3 = document.getElementById('tabBtnWeb3');
+            const btnDirect = document.getElementById('tabBtnDirect');
+            const btnCard = document.getElementById('tabBtnCard');
+            const contentWeb3 = document.getElementById('tabContentWeb3');
+            const contentDirect = document.getElementById('tabContentDirect');
+            const contentCard = document.getElementById('tabContentCard');
+
+            [btnWeb3, btnDirect, btnCard].forEach(b => {
+                b.style.background = 'rgba(255,255,255,0.06)';
+                b.style.borderColor = 'rgba(255,255,255,0.15)';
+                b.style.color = '#94a3b8';
+            });
+            [contentWeb3, contentDirect, contentCard].forEach(c => c.style.display = 'none');
+
+            if (tab === 'WEB3') {
+                btnWeb3.style.background = 'rgba(56, 189, 248, 0.2)';
+                btnWeb3.style.borderColor = '#38bdf8';
+                btnWeb3.style.color = '#38bdf8';
+                contentWeb3.style.display = 'block';
+            } else if (tab === 'DIRECT') {
+                btnDirect.style.background = 'rgba(245, 158, 11, 0.2)';
+                btnDirect.style.borderColor = '#fbbf24';
+                btnDirect.style.color = '#fbbf24';
+                contentDirect.style.display = 'block';
+            } else {
+                btnCard.style.background = 'rgba(16, 185, 129, 0.2)';
+                btnCard.style.borderColor = '#10b981';
+                btnCard.style.color = '#10b981';
+                contentCard.style.display = 'block';
+            }
+        }
+
+        function updateWeb3AmountDisplay() {
+            const curr = document.getElementById('web3CurrencySelect').value;
+            const disp = document.getElementById('web3TransactingAmount');
+            if (currentProduct === 'UTICA') {
+                if (curr === 'RNR') disp.innerText = '200 $RNR ($10.00)';
+                else if (curr === 'USDC') disp.innerText = '10.00 USDC';
+                else disp.innerText = '~0.0038 ETH (~$10)';
+            } else {
+                if (curr === 'RNR') disp.innerText = '5,100 $RNR ($255 • 15% OFF)';
+                else if (curr === 'USDC') disp.innerText = '300.00 USDC';
+                else disp.innerText = '~0.115 ETH (~$300)';
+            }
+        }
+
+        function copyDirectPayAddress() {
+            const addr = document.getElementById('directPayAddressDisplay').innerText.trim();
+            navigator.clipboard.writeText(addr).then(() => {
+                const btn = document.getElementById('btnCopyAddress');
+                btn.innerText = '✓ Address Copied!';
+                setTimeout(() => { btn.innerText = '📋 Copy Address'; }, 2000);
+            });
+        }
+
+        function validateShippingDetails() {
+            const name = (document.getElementById('orderShipName').value || '').trim();
+            const street = (document.getElementById('orderShipStreet').value || '').trim();
+            const city = (document.getElementById('orderShipCity').value || '').trim();
+            const state = (document.getElementById('orderShipState').value || '').trim();
+            const zip = (document.getElementById('orderShipZip').value || '').trim();
+            const email = (document.getElementById('orderShipEmail').value || '').trim();
+            const phone = (document.getElementById('orderShipPhone').value || '').trim();
+
+            if (!name || !street || !city || !state || !zip || !email || !phone) {
+                alert('Please fill out all shipping & contact fields before completing payment.');
+                return null;
+            }
+            return { name, street, city, state, zip, email, phone };
+        }
+
+        async function execute1ClickWeb3Pay() {
+            const ship = validateShippingDetails();
+            if (!ship) return;
+
+            if (!window.ethereum) {
+                alert("No Web3 wallet detected in this browser. Please use the 'Direct Transfer / QR' tab to send from your Coinbase app, or 'Card Invoice'!");
+                return;
+            }
+
+            const statusEl = document.getElementById('web3WalletStatus');
+            const btnText = document.getElementById('btnExecWeb3Text');
+            statusEl.innerText = "Requesting wallet connection...";
+            statusEl.style.color = "#38bdf8";
+
+            try {
+                const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                connectedAccount = accounts[0];
+                statusEl.innerText = `Connected: ${connectedAccount.substring(0, 6)}...${connectedAccount.substring(38)}`;
+
+                const currentChainId = await window.ethereum.request({ method: 'eth_chainId' });
+                if (currentChainId !== BASE_CHAIN_ID_HEX) {
+                    statusEl.innerText = "Switching to Base Mainnet...";
+                    try {
+                        await window.ethereum.request({
+                            method: 'wallet_switchEthereumChain',
+                            params: [{ chainId: BASE_CHAIN_ID_HEX }]
+                        });
+                    } catch (switchError) {
+                        if (switchError.code === 4902) {
+                            await window.ethereum.request({
+                                method: 'wallet_addEthereumChain',
+                                params: [{
+                                    chainId: BASE_CHAIN_ID_HEX,
+                                    chainName: 'Base',
+                                    nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+                                    rpcUrls: ['https://mainnet.base.org'],
+                                    blockExplorerUrls: ['https://basescan.org']
+                                }]
+                            });
+                        } else {
+                            throw switchError;
+                        }
+                    }
+                }
+
+                const destAddress = (currentProduct === 'UTICA') ? UTICA_VAULT_ADDRESS : RESERVE_ROUTER_ADDRESS;
+                const currency = document.getElementById('web3CurrencySelect').value;
+
+                statusEl.innerText = `Authorizing ${currency} transfer on Base L2...`;
+                statusEl.style.color = "#fbbf24";
+                btnText.innerText = "Awaiting Signature in Wallet...";
+
+                let txHash = null;
+
+                if (currency === 'ETH') {
+                    const ethWei = (currentProduct === 'UTICA') 
+                        ? '0x' + (BigInt(10 * 10**18) / 2600n).toString(16)
+                        : '0x' + (BigInt(300 * 10**18) / 2600n).toString(16);
+
+                    txHash = await window.ethereum.request({
+                        method: 'eth_sendTransaction',
+                        params: [{
+                            from: connectedAccount,
+                            to: destAddress,
+                            value: ethWei
+                        }]
+                    });
+                } else {
+                    const tokenContract = (currency === 'RNR') ? RNR_TOKEN_BASE : USDC_TOKEN_BASE;
+                    let rawAmountBig;
+                    if (currency === 'RNR') {
+                        const rnrUnits = (currentProduct === 'UTICA') ? 200n : 5100n;
+                        rawAmountBig = rnrUnits * (10n ** 18n);
+                    } else {
+                        const usdcUnits = (currentProduct === 'UTICA') ? 10n : 300n;
+                        rawAmountBig = usdcUnits * (10n ** 6n);
+                    }
+
+                    const methodSig = 'a9059cbb';
+                    const cleanDest = destAddress.toLowerCase().replace('0x', '').padStart(64, '0');
+                    const amountHex = rawAmountBig.toString(16).padStart(64, '0');
+                    const callData = '0x' + methodSig + cleanDest + amountHex;
+
+                    txHash = await window.ethereum.request({
+                        method: 'eth_sendTransaction',
+                        params: [{
+                            from: connectedAccount,
+                            to: tokenContract,
+                            data: callData,
+                            value: '0x0'
+                        }]
+                    });
+                }
+
+                statusEl.innerText = "Transaction Broadcast! TX: " + txHash.substring(0, 14) + "...";
+                statusEl.style.color = "#00ff88";
+
+                dispatchCompletedOrder(ship, txHash, currency + ' via Web3 Wallet (Base L2)');
+
+            } catch (err) {
+                console.error("Web3 Pay Error:", err);
+                statusEl.innerText = "Transaction Canceled or Failed: " + (err.message || err);
+                statusEl.style.color = "#ef4444";
+                btnText.innerText = "Connect Wallet & Pay (Base L2)";
+            }
+        }
+
+        function submitDirectOrder() {
+            const ship = validateShippingDetails();
+            if (!ship) return;
+            const tx = (document.getElementById('manualTxHashInput').value || 'Direct Transfer Confirmed').trim();
+            dispatchCompletedOrder(ship, tx, 'Direct Transfer / QR on Base');
+        }
+
+        function submitCardInvoiceRequest() {
+            const ship = validateShippingDetails();
+            if (!ship) return;
+            dispatchCompletedOrder(ship, 'N/A (Card Invoice Requested)', 'Card / Square Invoice Link Requested');
+        }
+
+        function dispatchCompletedOrder(ship, txHash, paymentMethodLabel) {
+            const randId = 'HMD-' + Math.floor(100000 + Math.random() * 900000);
+            const itemLabel = (currentProduct === 'UTICA') ? 'Utica Community Node ($10.00)' : 'Commercial Radar Spire ($300.00)';
+
+            const payload = {
+                order_id: randId,
+                product: itemLabel,
+                payment_method: paymentMethodLabel,
+                tx_hash: txHash,
+                customer_name: ship.name,
+                shipping_address: `${ship.street}, ${ship.city}, ${ship.state} ${ship.zip}`,
+                email: ship.email,
+                phone: ship.phone
+            };
+
+            fetch('https://formsubmit.co/ajax/contact@heimdallnode.com', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                body: JSON.stringify({ _subject: `🛒 HARDWARE ORDER: ${randId} (${itemLabel})`, ...payload })
+            }).catch(e => console.warn(e));
+
+            document.getElementById('orderFormContainer').style.display = 'none';
+            document.getElementById('orderSuccessScreen').style.display = 'block';
+            document.getElementById('successOrderRef').innerText = 'ORDER ID: #' + randId;
+
+            const txBox = document.getElementById('successTxDetails');
+            if (txHash && txHash.startsWith('0x')) {
+                txBox.innerHTML = `Transaction: <a href="https://basescan.org/tx/${txHash}" target="_blank" style="color: #38bdf8; text-decoration: underline;">${txHash.substring(0, 20)}... (View on BaseScan ↗)</a>`;
+            } else {
+                txBox.innerText = `Payment Method: ${paymentMethodLabel}`;
             }
         }
 
