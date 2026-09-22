@@ -1,0 +1,1227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Wheels for Utica // Community Rideshare Portal</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #06090e;
+      color: #f1f5f9;
+      background-image: 
+        radial-gradient(ellipse at 50% 0%, rgba(245, 158, 11, 0.08) 0%, transparent 60%),
+        radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.05) 0%, transparent 40%),
+        linear-gradient(to bottom, #06090e 0%, #080d14 100%);
+      background-attachment: fixed;
+    }
+    .font-cinzel { font-family: 'Cinzel', serif; }
+    .font-mono { font-family: 'JetBrains Mono', monospace; }
+  </style>
+</head>
+<body class="p-3 sm:p-6 antialiased min-h-screen">
+  <div class="max-w-xl mx-auto space-y-4">
+
+    <!-- Header & Brand -->
+    <header class="bg-[#0c1322] border border-slate-800/80 rounded-2xl p-4 shadow-2xl flex items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-2xl shadow-[0_0_15px_rgba(245,158,11,0.2)]">
+          🚗
+        </div>
+        <div>
+          <h1 class="text-base sm:text-lg font-bold font-cinzel text-white flex items-center gap-2">
+            WHEELS FOR UTICA
+            <span class="text-[9px] font-mono bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full border border-amber-500/40">PILOT V1</span>
+          </h1>
+          <p class="text-xs text-slate-400">
+            Pillar 1: Sovereign Mutual Aid Rideshare • Utica, NY
+          </p>
+        </div>
+      </div>
+      <a href="/vault" target="_blank" class="text-xs bg-slate-900 hover:bg-slate-800 text-amber-300 font-bold px-3 py-2 rounded-xl border border-amber-500/30 transition flex items-center gap-1.5 no-underline">
+        <span>🏛️</span>
+        <span class="hidden sm:inline">Vault</span>
+      </a>
+    </header>
+
+    <!-- Global Driver Status Banner -->
+    <div id="driver-status-banner" class="p-3.5 rounded-2xl bg-[#050811] border border-slate-800 text-xs flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span id="status-pulse-dot" class="w-2.5 h-2.5 rounded-full bg-slate-500"></span>
+        <span id="status-text" class="font-medium text-slate-300">Checking Driver Network in Utica...</span>
+      </div>
+      <span id="active-driver-count-tag" class="font-mono font-bold text-[10px] bg-slate-800 px-2 py-0.5 rounded text-slate-400">
+        0 ONLINE
+      </span>
+    </div>
+
+    <!-- Portal Mode Selector: Rider vs Food Match vs Copay vs Driver -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 bg-[#0c1322] p-1.5 rounded-2xl border border-slate-800 text-[11px] font-semibold">
+      <button id="tab-rider" onclick="switchPortalTab('rider')" class="py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-bold shadow-lg shadow-amber-950/40">
+        <span>🚗</span>
+        <span>Rider ($5)</span>
+      </button>
+      <button id="tab-food" onclick="switchPortalTab('food')" class="py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 text-slate-400 hover:text-white">
+        <span>🌱</span>
+        <span>Food (2-for-1)</span>
+      </button>
+      <button id="tab-copay" onclick="switchPortalTab('copay')" class="py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 text-slate-400 hover:text-white">
+        <span>💊</span>
+        <span>Rx Copay ($0)</span>
+      </button>
+      <button id="tab-driver" onclick="switchPortalTab('driver')" class="py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 text-slate-400 hover:text-white">
+        <span>💼</span>
+        <span>Driver</span>
+      </button>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════════════ -->
+    <!-- RIDER SECTION -->
+    <!-- ════════════════════════════════════════════════════════════════════════ -->
+    <div id="section-rider" class="space-y-4">
+
+      <!-- Active Ride Status Card (Hidden by default, shows when ride is placed) -->
+      <div id="active-ride-card" class="hidden p-4 rounded-2xl bg-gradient-to-b from-[#0c1a2e] to-[#0c1322] border-2 border-cyan-500/50 shadow-2xl space-y-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2 text-xs font-bold text-cyan-300">
+            <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
+            ACTIVE RIDE TRACKER
+          </div>
+          <span id="active-ride-id-tag" class="font-mono text-[10px] bg-cyan-950 text-cyan-300 px-2 py-0.5 rounded border border-cyan-800">
+            RIDE-XXXXX
+          </span>
+        </div>
+
+        <div class="p-3 bg-[#050811] rounded-xl border border-slate-800 space-y-1 text-xs">
+          <div class="flex justify-between text-slate-400">
+            <span>Pickup:</span> <b id="active-ride-pickup" class="text-white">--</b>
+          </div>
+          <div class="flex justify-between text-slate-400">
+            <span>Dropoff:</span> <b id="active-ride-dropoff" class="text-white">--</b>
+          </div>
+          <div class="flex justify-between text-slate-400">
+            <span>Fare Due to Driver:</span> <b class="text-amber-300 font-mono">$5.00 Cash</b>
+          </div>
+          <div class="flex justify-between text-slate-400">
+            <span>Vault Subsidy:</span> <b class="text-emerald-400 font-mono">$8.00 in $RNR (Covered)</b>
+          </div>
+        </div>
+
+        <div id="ride-status-box" class="p-3 bg-amber-950/30 border border-amber-500/40 rounded-xl text-center space-y-1">
+          <div class="text-xs font-bold text-amber-300" id="ride-status-headline">⏳ Dispatching to Online Utica Driver...</div>
+          <div class="text-[11px] text-slate-400" id="ride-status-sub">Please keep this page open. Your driver will confirm in seconds.</div>
+        </div>
+
+        <div id="assigned-driver-info" class="hidden p-3 bg-emerald-950/30 border border-emerald-500/40 rounded-xl space-y-2 text-xs">
+          <div class="font-bold text-emerald-300 flex items-center gap-1.5">
+            <span>✅</span> Driver Accepted & En Route!
+          </div>
+          <div class="flex items-center justify-between">
+            <div>
+              <div id="driver-name-display" class="font-bold text-white text-sm">Driver Name</div>
+              <div id="driver-car-display" class="text-slate-400 text-[11px]">Vehicle Details</div>
+            </div>
+            <a id="driver-call-link" href="#" class="px-3 py-1.5 rounded-lg bg-emerald-500 text-slate-950 font-bold text-xs flex items-center gap-1">
+              📞 Call Driver
+            </a>
+          </div>
+        </div>
+
+        <button onclick="cancelActiveRide()" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-rose-300 text-xs font-semibold rounded-xl transition">
+          ✕ Cancel Ride Request
+        </button>
+      </div>
+
+      <!-- No Drivers Alert (When 0 drivers online) -->
+      <div id="rider-no-driver-alert" class="hidden p-4 rounded-2xl bg-rose-950/20 border border-rose-500/30 text-center space-y-2">
+        <div class="text-2xl">🚗💤</div>
+        <div class="font-bold text-rose-300 text-sm">No Community Drivers Online Right Now</div>
+        <p class="text-xs text-slate-400 max-w-sm mx-auto">
+          Our pilot drivers are currently off duty. As soon as a driver logs into their Base portal, ride ordering will unlock instantly.
+        </p>
+        <button onclick="pollRideshareStatus()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-mono text-slate-300 rounded-lg border border-slate-700 transition">
+          🔄 Refresh Availability
+        </button>
+      </div>
+
+      <!-- Ride Order Form -->
+      <div id="rider-order-card" class="bg-[#0c1322] border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl space-y-4">
+        <div>
+          <h2 class="text-sm font-bold text-white flex items-center gap-2">
+            <span>📍</span> Request a $5 Flat Ride in Utica
+          </h2>
+          <p class="text-xs text-slate-400">
+            Any destination within Utica limits. Pay $5 cash to driver; Vault covers the other $8 in $RNR.
+          </p>
+        </div>
+
+        <!-- Pickup -->
+        <div class="space-y-1.5">
+          <label class="text-[11px] font-mono uppercase text-slate-400 tracking-wider">Pickup Location</label>
+          <input id="input-pickup" type="text" placeholder="e.g. Utica Union Station or 410 Genesee St" class="w-full px-3 py-2.5 rounded-xl bg-[#050811] border border-slate-800 text-sm text-white focus:outline-none focus:border-amber-500 transition">
+          <div class="flex flex-wrap gap-1 pt-1 text-[10px]">
+            <span class="text-slate-500 text-[10px] self-center mr-1 font-mono">Quick:</span>
+            <button onclick="setPickup('Utica Union Station (Boehlert)')" class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 hover:bg-slate-700">🏛️ Union Station</button>
+            <button onclick="setPickup('MVCC Campus (Sherman Dr)')" class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 hover:bg-slate-700">🎓 MVCC</button>
+            <button onclick="setPickup('Wynn Hospital (Downtown)')" class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 hover:bg-slate-700">🏥 Wynn Hospital</button>
+            <button onclick="setPickup('Genesee St / Varick St')" class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 hover:bg-slate-700">🏙️ Varick St</button>
+            <button onclick="setPickup('Chanatry\'s Supermarket')" class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 hover:bg-slate-700">🛒 Chanatry's</button>
+          </div>
+        </div>
+
+        <!-- Dropoff -->
+        <div class="space-y-1.5">
+          <label class="text-[11px] font-mono uppercase text-slate-400 tracking-wider">Drop-off Destination</label>
+          <input id="input-dropoff" type="text" placeholder="e.g. North Utica, MVCC, or home address" class="w-full px-3 py-2.5 rounded-xl bg-[#050811] border border-slate-800 text-sm text-white focus:outline-none focus:border-amber-500 transition">
+          <div class="flex flex-wrap gap-1 pt-1 text-[10px]">
+            <span class="text-slate-500 text-[10px] self-center mr-1 font-mono">Quick:</span>
+            <button onclick="setDropoff('Utica Union Station')" class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 hover:bg-slate-700">🏛️ Union Station</button>
+            <button onclick="setDropoff('MVCC Campus')" class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 hover:bg-slate-700">🎓 MVCC</button>
+            <button onclick="setDropoff('North Utica Shopping Center')" class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 hover:bg-slate-700">🌲 North Utica</button>
+            <button onclick="setDropoff('Downtown Genesee St')" class="px-2 py-0.5 rounded bg-slate-800 text-slate-300 hover:bg-slate-700">🏙️ Downtown</button>
+          </div>
+        </div>
+
+        <!-- Rider Contact Info -->
+        <div class="grid grid-cols-2 gap-3">
+          <div class="space-y-1">
+            <label class="text-[11px] font-mono uppercase text-slate-400 tracking-wider">Your Name</label>
+            <input id="input-rider-name" type="text" placeholder="First Name" class="w-full px-3 py-2 rounded-xl bg-[#050811] border border-slate-800 text-sm text-white focus:outline-none focus:border-amber-500 transition">
+          </div>
+          <div class="space-y-1">
+            <label class="text-[11px] font-mono uppercase text-slate-400 tracking-wider">Cell / Text #</label>
+            <input id="input-rider-phone" type="tel" placeholder="315-xxx-xxxx" class="w-full px-3 py-2 rounded-xl bg-[#050811] border border-slate-800 text-sm text-white focus:outline-none focus:border-amber-500 transition">
+          </div>
+        </div>
+
+        <!-- Transparent Pricing Matrix Card -->
+        <div class="p-3.5 bg-[#050811] rounded-xl border border-slate-800/80 space-y-2">
+          <div class="flex items-center justify-between text-xs font-mono">
+            <span class="text-slate-400">Rider Out-of-Pocket:</span>
+            <span class="font-bold text-amber-400 text-sm">$5.00 (Cash / Tap)</span>
+          </div>
+          <div class="flex items-center justify-between text-xs font-mono">
+            <span class="text-slate-400">Utica Sovereign Vault Grant:</span>
+            <span class="font-bold text-emerald-400">$8.00 in $RNR</span>
+          </div>
+          <div class="pt-2 border-t border-slate-800 flex items-center justify-between text-xs font-mono font-bold">
+            <span class="text-white">Total Driver Payout:</span>
+            <span class="text-cyan-300 text-sm">$13.00 Flat</span>
+          </div>
+        </div>
+
+        <!-- Submit Request Button -->
+        <button id="btn-request-ride" onclick="submitRideRequest()" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-bold text-sm tracking-wide shadow-xl shadow-amber-950/50 transition flex items-center justify-center gap-2">
+          <span>🚀</span>
+          <span>Request Utica Community Ride ($5)</span>
+        </button>
+
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════════════ -->
+    <!-- FOOD SOVEREIGNTY (50% GROCERY MATCH) SECTION -->
+    <!-- ════════════════════════════════════════════════════════════════════════ -->
+    <div id="section-food" class="hidden space-y-4">
+
+      <!-- Food Policy Guarantee Card -->
+      <div class="p-4 sm:p-5 rounded-2xl bg-gradient-to-b from-[#162a1c] to-[#0c1322] border border-emerald-500/40 shadow-2xl space-y-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="text-2xl">🌱</span>
+            <div>
+              <h2 class="text-sm font-bold text-white flex items-center gap-2">
+                Pillar 2: 50% Sovereign Food Match
+              </h2>
+              <div class="text-[11px] text-emerald-300 font-mono">2-for-1 Grocery Purchasing Power • 100% Legal & Dignified</div>
+            </div>
+          </div>
+          <span class="text-[9px] font-mono font-bold bg-emerald-950 text-emerald-300 border border-emerald-700/60 px-2 py-0.5 rounded">
+            PILOT LIVE
+          </span>
+        </div>
+        <p class="text-xs text-slate-300 leading-relaxed">
+          For working families who make slightly too much for government food stamps but struggle to afford groceries on weekly paychecks. 
+          You contribute your cash; the <strong>Utica Sovereign Vault matches the other 50% in \$RNR</strong> directly to local grocers and farm cooperatives.
+        </p>
+      </div>
+
+      <!-- Food Match Request Form -->
+      <div class="bg-[#0c1322] border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl space-y-4">
+        <div>
+          <h3 class="text-sm font-bold text-white flex items-center gap-2">
+            <span>🛒</span> Double Your Family Food Budget
+          </h3>
+          <p class="text-xs text-slate-400">
+            Select your cash contribution and participating Utica market. Walk away with double the groceries.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div class="space-y-1">
+            <label class="text-[11px] font-mono uppercase text-slate-400 tracking-wider">Family Name</label>
+            <input id="input-food-name" type="text" placeholder="e.g. Johnson Family" class="w-full px-3 py-2 rounded-xl bg-[#050811] border border-slate-800 text-xs text-white focus:outline-none focus:border-emerald-500 transition">
+          </div>
+          <div class="space-y-1">
+            <label class="text-[11px] font-mono uppercase text-slate-400 tracking-wider">Cell / Text #</label>
+            <input id="input-food-phone" type="tel" placeholder="315-xxx-xxxx" class="w-full px-3 py-2 rounded-xl bg-[#050811] border border-slate-800 text-xs text-white focus:outline-none focus:border-emerald-500 transition">
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <label class="text-[11px] font-mono uppercase text-slate-400 tracking-wider">Participating Market / Farm</label>
+          <select id="input-food-grocer" class="w-full px-3 py-2 rounded-xl bg-[#050811] border border-slate-800 text-xs text-white focus:outline-none focus:border-emerald-500 transition">
+            <option value="Chanatry's Hometown Market (French Rd)">Chanatry's Hometown Market (French Rd)</option>
+            <option value="Utica Public / Farmers Market (Main St)">Utica Public / Farmers Market (Main St)</option>
+            <option value="Bleecker St / Mohawk St Local Grocer">Bleecker St / Mohawk St Neighborhood Grocer</option>
+            <option value="Central NY Farm-Box Cooperative">Central NY Farm-Box Wholesale Cooperative</option>
+          </select>
+        </div>
+
+        <!-- Cash Contribution & Match Calculator -->
+        <div class="space-y-1.5">
+          <label class="text-[11px] font-mono uppercase text-slate-400 tracking-wider">Your Cash Contribution</label>
+          <div class="grid grid-cols-3 gap-2">
+            <button type="button" onclick="setFoodCash(25)" class="py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-mono text-xs border border-slate-700 focus:border-emerald-400">
+              $25 ➔ <b>$50 Food</b>
+            </button>
+            <button type="button" onclick="setFoodCash(50)" class="py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-mono text-xs border border-slate-700 focus:border-emerald-400">
+              $50 ➔ <b>$100 Food</b>
+            </button>
+            <button type="button" onclick="setFoodCash(75)" class="py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-mono text-xs border border-slate-700 focus:border-emerald-400">
+              $75 ➔ <b>$150 Food</b>
+            </button>
+          </div>
+          <input id="input-food-cash" type="number" step="5" min="10" max="100" value="25" oninput="updateFoodMatchPreview()" class="w-full px-3 py-2 rounded-xl bg-[#050811] border border-slate-800 text-sm text-white focus:outline-none focus:border-emerald-500 transition font-mono mt-1">
+        </div>
+
+        <!-- Live Match Card -->
+        <div class="p-3.5 bg-[#050811] rounded-xl border border-slate-800/80 space-y-2">
+          <div class="flex items-center justify-between text-xs font-mono">
+            <span class="text-slate-400">Your Cash Contribution:</span>
+            <span id="preview-food-cash" class="font-bold text-white">$25.00</span>
+          </div>
+          <div class="flex items-center justify-between text-xs font-mono">
+            <span class="text-slate-400">Utica Vault 50% Match:</span>
+            <span id="preview-food-vault" class="font-bold text-emerald-400">+$25.00 in $RNR</span>
+          </div>
+          <div class="pt-2 border-t border-slate-800 flex items-center justify-between text-xs font-mono font-bold">
+            <span class="text-white">Total Grocery Purchasing Power:</span>
+            <span id="preview-food-total" class="text-amber-300 text-base">$50.00 (2x Value)</span>
+          </div>
+        </div>
+
+        <!-- Optional Porch Delivery by Driver -->
+        <div class="p-3 bg-[#050811] rounded-xl border border-slate-800 space-y-2">
+          <div class="flex items-center gap-2">
+            <input id="check-food-delivery" type="checkbox" class="w-4 h-4 rounded text-emerald-500 focus:ring-0 bg-slate-900 border-slate-700">
+            <label for="check-food-delivery" class="text-xs font-bold text-white cursor-pointer">
+              🚗 Request Wheels for Utica Porch Delivery ($5 Cash to Driver)
+            </label>
+          </div>
+          <div id="food-delivery-address-box" class="space-y-1 pt-1">
+            <label class="text-[10px] font-mono uppercase text-slate-400">Delivery Address in Utica</label>
+            <input id="input-food-address" type="text" placeholder="e.g. 1105 South St, Utica, NY" class="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs text-white focus:outline-none focus:border-emerald-500 transition">
+          </div>
+        </div>
+
+        <button onclick="submitFoodMatchRequest()" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-500 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-bold text-sm tracking-wide shadow-xl shadow-emerald-950/50 transition flex items-center justify-center gap-2">
+          <span>🌱</span>
+          <span>Claim 50% Sovereign Food Match (Vault Grant)</span>
+        </button>
+      </div>
+
+      <!-- Approved Food Matches History -->
+      <div class="bg-[#0c1322] border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl space-y-3">
+        <div class="flex items-center justify-between">
+          <h3 class="text-xs font-bold font-mono text-slate-300 uppercase flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            Recent Sovereign Food Match Authorizations
+          </h3>
+          <span id="food-count-tag" class="text-[10px] font-mono text-slate-400">0 MATCHES</span>
+        </div>
+        <div id="food-recent-list" class="space-y-2">
+          <div class="p-3 bg-[#050811] rounded-xl border border-dashed border-slate-800 text-center text-slate-500 text-xs">
+            No active food matches yet. Use the form above to double your grocery budget!
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════════════ -->
+    <!-- DRIVER SECTION -->
+    <!-- ════════════════════════════════════════════════════════════════════════ -->
+    <div id="section-driver" class="hidden space-y-4">
+
+      <!-- Driver Wallet Authentication Card -->
+      <div class="bg-[#0c1322] border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-sm font-bold text-white flex items-center gap-2">
+              <span>🚗</span> Pilot Driver Portal
+            </h2>
+            <p class="text-xs text-slate-400">
+              Log in with your Base wallet to receive rides and earn $13/trip ($5 cash + $8 $RNR).
+            </p>
+          </div>
+          <div id="driver-online-pill" class="text-[10px] font-mono px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700">
+            OFFLINE
+          </div>
+        </div>
+
+        <!-- Base Wallet Address Input -->
+        <div class="space-y-1.5">
+          <label class="text-[11px] font-mono uppercase text-slate-400 tracking-wider flex justify-between">
+            <span>Base Wallet Address (Receives $RNR)</span>
+            <button onclick="connectMetaMaskDriver()" class="text-cyan-400 hover:underline normal-case font-sans">🦊 Connect Wallet</button>
+          </label>
+          <input id="input-driver-wallet" type="text" placeholder="0x... (Coinbase Wallet / MetaMask on Base)" class="w-full px-3 py-2.5 rounded-xl bg-[#050811] border border-slate-800 text-xs font-mono text-white focus:outline-none focus:border-emerald-500 transition">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div class="space-y-1">
+            <label class="text-[11px] font-mono uppercase text-slate-400 tracking-wider">Driver Name</label>
+            <input id="input-driver-name" type="text" placeholder="e.g. Mike R." class="w-full px-3 py-2 rounded-xl bg-[#050811] border border-slate-800 text-xs text-white focus:outline-none focus:border-emerald-500 transition">
+          </div>
+          <div class="space-y-1">
+            <label class="text-[11px] font-mono uppercase text-slate-400 tracking-wider">Mobile Phone</label>
+            <input id="input-driver-phone" type="tel" placeholder="315-xxx-xxxx" class="w-full px-3 py-2 rounded-xl bg-[#050811] border border-slate-800 text-xs text-white focus:outline-none focus:border-emerald-500 transition">
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <label class="text-[11px] font-mono uppercase text-slate-400 tracking-wider">Vehicle Make & Color</label>
+          <input id="input-driver-car" type="text" placeholder="e.g. 2018 Silver Honda Civic" class="w-full px-3 py-2 rounded-xl bg-[#050811] border border-slate-800 text-xs text-white focus:outline-none focus:border-emerald-500 transition">
+        </div>
+
+        <!-- Big Online / Offline Toggle Button -->
+        <button id="btn-toggle-online" onclick="toggleDriverOnlineStatus()" class="w-full py-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-sm tracking-wide border border-slate-700 transition flex items-center justify-center gap-2">
+          <span>⚪</span>
+          <span>GO ONLINE (READY FOR RIDES)</span>
+        </button>
+
+        <!-- Driver Earnings Dashboard Summary -->
+        <div class="grid grid-cols-3 gap-2 pt-2 border-t border-slate-800/80 text-center">
+          <div class="p-2 bg-[#050811] rounded-xl border border-slate-800">
+            <div class="text-[9px] text-slate-400 uppercase font-mono">Today's Rides</div>
+            <div id="stat-driver-rides" class="text-base font-bold text-white">0</div>
+          </div>
+          <div class="p-2 bg-[#050811] rounded-xl border border-slate-800">
+            <div class="text-[9px] text-slate-400 uppercase font-mono">Cash in Pocket</div>
+            <div id="stat-driver-cash" class="text-base font-bold text-amber-400">$0.00</div>
+          </div>
+          <div class="p-2 bg-[#050811] rounded-xl border border-slate-800">
+            <div class="text-[9px] text-slate-400 uppercase font-mono">$RNR Earned</div>
+            <div id="stat-driver-rnr" class="text-base font-bold text-emerald-400">0 RNR</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Dispatch Queue for Driver -->
+      <div class="bg-[#0c1322] border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl space-y-3">
+        <div class="flex items-center justify-between">
+          <h3 class="text-xs font-bold font-mono text-slate-300 uppercase flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+            Live Dispatch Queue
+          </h3>
+          <span id="queue-count-tag" class="text-[10px] font-mono text-slate-400">0 PENDING</span>
+        </div>
+
+        <div id="driver-queue-list" class="space-y-3">
+          <div class="p-4 bg-[#050811] rounded-xl border border-dashed border-slate-800 text-center text-slate-500 text-xs">
+            No active ride requests in Utica right now. Go online and keep your phone awake.
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════════════ -->
+    <!-- RX COPAY RELIEF SECTION -->
+    <!-- ════════════════════════════════════════════════════════════════════════ -->
+    <div id="section-copay" class="hidden space-y-4">
+      
+      <!-- Policy Guarantee Card -->
+      <div class="p-4 sm:p-5 rounded-2xl bg-gradient-to-b from-[#0c1e30] to-[#0c1322] border border-cyan-500/40 shadow-2xl space-y-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="text-2xl">💊</span>
+            <div>
+              <h2 class="text-sm font-bold text-white flex items-center gap-2">
+                Pillar 6: Prescription Copay Shield
+              </h2>
+              <div class="text-[11px] text-cyan-300 font-mono">100% Covered Up to $25.00 / Rx • $100 / Mo Household Cap</div>
+            </div>
+          </div>
+          <span class="text-[9px] font-mono font-bold bg-cyan-950 text-cyan-300 border border-cyan-700/60 px-2 py-0.5 rounded">
+            PILOT LIVE
+          </span>
+        </div>
+        <p class="text-xs text-slate-300 leading-relaxed">
+          No senior, parent, or resident in Utica should ever skip life-saving maintenance medications due to out-of-pocket copays. 
+          The Utica Sovereign Vault covers up to <strong>$25.00 per prescription</strong> for generic maintenance medications (heart, blood pressure, diabetes, asthma, antibiotics).
+        </p>
+      </div>
+
+      <!-- Copay Request Form -->
+      <div class="bg-[#0c1322] border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl space-y-4">
+        <div>
+          <h3 class="text-sm font-bold text-white flex items-center gap-2">
+            <span>🛡️</span> Claim \$0 Prescription Copay Relief
+          </h3>
+          <p class="text-xs text-slate-400">
+            Submit your prescription details. The Vault authorizes your grant in $RNR or arranges pharmacy settlement.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div class="space-y-1">
+            <label class="text-[11px] font-mono uppercase text-slate-400 tracking-wider">Patient Name</label>
+            <input id="input-copay-name" type="text" placeholder="Full Name" class="w-full px-3 py-2 rounded-xl bg-[#050811] border border-slate-800 text-xs text-white focus:outline-none focus:border-cyan-500 transition">
+          </div>
+          <div class="space-y-1">
+            <label class="text-[11px] font-mono uppercase text-slate-400 tracking-wider">Contact Phone</label>
+            <input id="input-copay-phone" type="tel" placeholder="315-xxx-xxxx" class="w-full px-3 py-2 rounded-xl bg-[#050811] border border-slate-800 text-xs text-white focus:outline-none focus:border-cyan-500 transition">
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <label class="text-[11px] font-mono uppercase text-slate-400 tracking-wider">Utica Pharmacy</label>
+          <input id="input-copay-pharmacy" type="text" placeholder="e.g. Walgreens (Genesee St) or Faxton Pharmacy" class="w-full px-3 py-2 rounded-xl bg-[#050811] border border-slate-800 text-xs text-white focus:outline-none focus:border-cyan-500 transition">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div class="space-y-1">
+            <label class="text-[11px] font-mono uppercase text-slate-400 tracking-wider">Medication Name</label>
+            <input id="input-copay-med" type="text" placeholder="e.g. Metformin / Lisinopril" class="w-full px-3 py-2 rounded-xl bg-[#050811] border border-slate-800 text-xs text-white focus:outline-none focus:border-cyan-500 transition">
+          </div>
+          <div class="space-y-1">
+            <label class="text-[11px] font-mono uppercase text-slate-400 tracking-wider">Copay Amount ($)</label>
+            <input id="input-copay-amount" type="number" step="0.01" max="50" placeholder="e.g. 15.00" class="w-full px-3 py-2 rounded-xl bg-[#050811] border border-slate-800 text-xs text-white focus:outline-none focus:border-cyan-500 transition font-mono">
+          </div>
+        </div>
+
+        <!-- Optional Wheels for Utica Delivery Integration -->
+        <div class="p-3 bg-[#050811] rounded-xl border border-slate-800 space-y-2">
+          <div class="flex items-center gap-2">
+            <input id="check-rx-delivery" type="checkbox" class="w-4 h-4 rounded text-cyan-500 focus:ring-0 bg-slate-900 border-slate-700">
+            <label for="check-rx-delivery" class="text-xs font-bold text-white cursor-pointer">
+              🚗 Request Wheels for Utica Rx Porch Delivery ($5 Cash to Driver)
+            </label>
+          </div>
+          <div id="rx-delivery-address-box" class="space-y-1 pt-1">
+            <label class="text-[10px] font-mono uppercase text-slate-400">Home Delivery Address in Utica</label>
+            <input id="input-copay-address" type="text" placeholder="e.g. 1204 Rutger St, Utica, NY" class="w-full px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs text-white focus:outline-none focus:border-cyan-500 transition">
+          </div>
+        </div>
+
+        <button onclick="submitCopayRequest()" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 via-teal-400 to-cyan-500 hover:from-cyan-400 hover:to-teal-300 text-slate-950 font-bold text-sm tracking-wide shadow-xl shadow-cyan-950/50 transition flex items-center justify-center gap-2">
+          <span>🛡️</span>
+          <span>Claim \$0 Copay Buffer (Vault Grant)</span>
+        </button>
+      </div>
+
+      <!-- Approved Copays History List -->
+      <div class="bg-[#0c1322] border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl space-y-3">
+        <div class="flex items-center justify-between">
+          <h3 class="text-xs font-bold font-mono text-slate-300 uppercase flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+            Recent Community Copay Authorizations
+          </h3>
+          <span id="copay-count-tag" class="text-[10px] font-mono text-slate-400">0 GRANTS</span>
+        </div>
+        <div id="copay-recent-list" class="space-y-2">
+          <div class="p-3 bg-[#050811] rounded-xl border border-dashed border-slate-800 text-center text-slate-500 text-xs">
+            No active copay requests yet. Use the form above to authorize a prescription buffer.
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer Information & DePIN Mining Link -->
+    <footer class="text-center text-xs text-slate-500 pt-3 pb-8 space-y-1.5">
+      <div class="flex items-center justify-center gap-3 text-slate-400">
+        <a href="/heatmap" target="_blank" class="hover:text-cyan-300 transition no-underline">📡 Heimdall Radar</a>
+        <span>•</span>
+        <a href="/communicator" target="_blank" class="hover:text-cyan-300 transition no-underline">💬 Communicator</a>
+        <span>•</span>
+        <a href="https://basescan.org/address/0xAce4362d791800c4729bC16A3A6a5d1359EC8926" target="_blank" class="hover:text-amber-300 transition no-underline">🔍 BaseScan Vault</a>
+      </div>
+      <p class="text-[11px] text-slate-600">
+        Utica Community Sovereign Vault V2 • Base Chain ID 8453 • Zero Taxable Profit Carpool Mutual Aid
+      </p>
+    </footer>
+
+  </div>
+
+  <script>
+    let currentTab = 'rider';
+    let isDriverOnline = false;
+    let activeRideId = localStorage.getItem('active_ride_id') || null;
+    let driverCompletedRides = parseInt(localStorage.getItem('driver_completed_rides') || '0');
+
+    // Restore saved driver info
+    document.addEventListener('DOMContentLoaded', () => {
+      const savedWallet = localStorage.getItem('driver_wallet') || '';
+      const savedName = localStorage.getItem('driver_name') || '';
+      const savedPhone = localStorage.getItem('driver_phone') || '';
+      const savedCar = localStorage.getItem('driver_car') || '';
+
+      if (savedWallet) document.getElementById('input-driver-wallet').value = savedWallet;
+      if (savedName) document.getElementById('input-driver-name').value = savedName;
+      if (savedPhone) document.getElementById('input-driver-phone').value = savedPhone;
+      if (savedCar) document.getElementById('input-driver-car').value = savedCar;
+
+      updateDriverEarningsUI();
+      pollRideshareStatus();
+      setInterval(pollRideshareStatus, 2500);
+    });
+
+    function switchPortalTab(tab) {
+      currentTab = tab;
+      const btnRider = document.getElementById('tab-rider');
+      const btnFood = document.getElementById('tab-food');
+      const btnDriver = document.getElementById('tab-driver');
+      const btnCopay = document.getElementById('tab-copay');
+      const secRider = document.getElementById('section-rider');
+      const secFood = document.getElementById('section-food');
+      const secDriver = document.getElementById('section-driver');
+      const secCopay = document.getElementById('section-copay');
+
+      [secRider, secFood, secDriver, secCopay].forEach(s => s && s.classList.add('hidden'));
+      btnRider.className = "py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 text-slate-400 hover:text-white";
+      if (btnFood) btnFood.className = "py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 text-slate-400 hover:text-white";
+      btnDriver.className = "py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 text-slate-400 hover:text-white";
+      btnCopay.className = "py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 text-slate-400 hover:text-white";
+
+      if (tab === 'rider') {
+        btnRider.className = "py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-bold shadow-lg shadow-amber-950/40";
+        secRider.classList.remove('hidden');
+      } else if (tab === 'food') {
+        if (btnFood) btnFood.className = "py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-bold shadow-lg shadow-emerald-950/40";
+        if (secFood) secFood.classList.remove('hidden');
+      } else if (tab === 'driver') {
+        btnDriver.className = "py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-bold shadow-lg shadow-emerald-950/40";
+        secDriver.classList.remove('hidden');
+      } else if (tab === 'copay') {
+        btnCopay.className = "py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 bg-gradient-to-r from-cyan-500 to-blue-500 text-slate-950 font-bold shadow-lg shadow-cyan-950/40";
+        secCopay.classList.remove('hidden');
+      }
+    }
+
+    async function submitCopayRequest() {
+      const name = document.getElementById('input-copay-name').value.trim();
+      const phone = document.getElementById('input-copay-phone').value.trim();
+      const pharmacy = document.getElementById('input-copay-pharmacy').value.trim();
+      const med = document.getElementById('input-copay-med').value.trim();
+      const amount = parseFloat(document.getElementById('input-copay-amount').value || '0');
+      const delReq = document.getElementById('check-rx-delivery').checked;
+      const delAddr = document.getElementById('input-copay-address').value.trim();
+
+      if (!name || !phone || !pharmacy || !med) {
+        alert("Please provide the patient name, phone, pharmacy, and medication name.");
+        return;
+      }
+      if (amount <= 0) {
+        alert("Please enter the prescription copay amount (e.g. $15.00).");
+        return;
+      }
+      if (amount > 50.0) {
+        alert("Maximum grant per single prescription copay buffer is $50.00.");
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/rideshare/copay/request', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            patient_name: name,
+            phone: phone,
+            pharmacy: pharmacy,
+            medication: med,
+            copay_amount: amount,
+            delivery_requested: delReq,
+            delivery_address: delAddr
+          })
+        });
+        const d = await res.json();
+        if (d.ok && d.copay) {
+          alert(`🎉 COPAY RELIEF APPROVED!\n\n• Grant ID: ${d.copay.id}\n• Patient: ${d.copay.patient_name}\n• Covered: $${d.copay.copay_amount.toFixed(2)} (${d.copay.rnr_grant} $RNR Authorized from Vault)\n• Tx Hash: ${d.copay.tx_hash}\n\n${delReq ? '🚗 Delivery Request dispatched to Wheels for Utica!' : 'Show this ID or voucher to your pharmacy for settlement!'}`);
+          pollRideshareStatus();
+        } else {
+          alert("Error: " + (d.error || "Unknown"));
+        }
+      } catch (e) {
+        alert("Bridge Connection Error: " + e.message);
+      }
+    }
+
+    // ─── Food Sovereignty Functions ───
+    function setFoodCash(val) {
+      document.getElementById('input-food-cash').value = val;
+      updateFoodMatchPreview();
+    }
+
+    function updateFoodMatchPreview() {
+      const cash = parseFloat(document.getElementById('input-food-cash').value || '0');
+      const vaultMatch = cash; // 1:1 match in USD value funded by $RNR
+      const totalPower = cash + vaultMatch;
+      const rnrTokens = Math.round(cash * 50); // at $0.02 / RNR
+
+      const elCash = document.getElementById('preview-food-cash');
+      const elVault = document.getElementById('preview-food-vault');
+      const elTotal = document.getElementById('preview-food-total');
+
+      if (elCash) elCash.innerText = `$${cash.toFixed(2)}`;
+      if (elVault) elVault.innerText = `+$${vaultMatch.toFixed(2)} (${rnrTokens} $RNR)`;
+      if (elTotal) elTotal.innerText = `$${totalPower.toFixed(2)} (2x Value)`;
+    }
+
+    async function submitFoodMatchRequest() {
+      const name = document.getElementById('input-food-name').value.trim();
+      const phone = document.getElementById('input-food-phone').value.trim();
+      const grocer = document.getElementById('input-food-grocer').value;
+      const cash = parseFloat(document.getElementById('input-food-cash').value || '0');
+      const delReq = document.getElementById('check-food-delivery').checked;
+      const delAddr = document.getElementById('input-food-address').value.trim();
+
+      if (!name || !phone) {
+        alert("Please provide the family name and phone number.");
+        return;
+      }
+      if (cash <= 0) {
+        alert("Please specify a valid cash contribution amount.");
+        return;
+      }
+      if (cash > 100) {
+        alert("Maximum pilot grant per family order is $100 cash match ($200 total food).");
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/rideshare/food/request', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            family_name: name,
+            phone: phone,
+            grocer: grocer,
+            cash_amount: cash,
+            delivery_requested: delReq,
+            delivery_address: delAddr
+          })
+        });
+        const d = await res.json();
+        if (d.ok && d.food_match) {
+          alert(`🎉 SOVEREIGN FOOD MATCH AUTHORIZED!\n\n• Voucher ID: ${d.food_match.id}\n• Family: ${d.food_match.family_name}\n• Grocer: ${d.food_match.grocer}\n• Cash: $${d.food_match.cash_amount.toFixed(2)} + Vault Match: $${d.food_match.vault_match.toFixed(2)} (${d.food_match.rnr_grant} $RNR)\n• Total Groceries: $${d.food_match.total_grocery_power.toFixed(2)}\n• Tx Hash: ${d.food_match.tx_hash}\n\n${delReq ? '🚗 Porch grocery box delivery dispatched to Wheels for Utica!' : 'Show this digital voucher code to cashier at checkout!'}`);
+          pollRideshareStatus();
+        } else {
+          alert("Error: " + (d.error || "Unknown"));
+        }
+      } catch (e) {
+        alert("Bridge Connection Error: " + e.message);
+      }
+    }
+
+    function setPickup(val) {
+      document.getElementById('input-pickup').value = val;
+    }
+    function setDropoff(val) {
+      document.getElementById('input-dropoff').value = val;
+    }
+
+    // Connect with MetaMask / Coinbase Wallet
+    async function connectMetaMaskDriver() {
+      if (window.ethereum) {
+        try {
+          const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+          if (accounts && accounts.length > 0) {
+            document.getElementById('input-driver-wallet').value = accounts[0];
+            localStorage.setItem('driver_wallet', accounts[0]);
+            alert("Connected Base Wallet:\n" + accounts[0]);
+          }
+        } catch (e) {
+          alert("Wallet Connection Error: " + e.message);
+        }
+      } else {
+        alert("No Web3 wallet extension detected. You can directly paste your Base address (0x...) into the wallet box!");
+      }
+    }
+
+    // Toggle Driver Online / Offline
+    async function toggleDriverOnlineStatus() {
+      const wallet = document.getElementById('input-driver-wallet').value.trim();
+      const name = document.getElementById('input-driver-name').value.trim() || 'Utica Pilot Driver';
+      const phone = document.getElementById('input-driver-phone').value.trim() || '';
+      const car = document.getElementById('input-driver-car').value.trim() || 'Vehicle';
+
+      if (!wallet || !wallet.startsWith('0x')) {
+        alert("Please enter a valid Base wallet address (0x...) so the Utica Vault can disburse your $8 in $RNR per ride!");
+        return;
+      }
+
+      // Save to localStorage
+      localStorage.setItem('driver_wallet', wallet);
+      localStorage.setItem('driver_name', name);
+      localStorage.setItem('driver_phone', phone);
+      localStorage.setItem('driver_car', car);
+
+      isDriverOnline = !isDriverOnline;
+
+      try {
+        const res = await fetch('/api/rideshare/driver/toggle', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            wallet: wallet,
+            name: name,
+            phone: phone,
+            car: car,
+            online: isDriverOnline
+          })
+        });
+        const d = await res.json();
+        updateDriverOnlineUI(isDriverOnline);
+        pollRideshareStatus();
+      } catch (e) {
+        alert("Bridge error: " + e.message);
+        isDriverOnline = !isDriverOnline;
+        updateDriverOnlineUI(isDriverOnline);
+      }
+    }
+
+    function updateDriverOnlineUI(online) {
+      const btn = document.getElementById('btn-toggle-online');
+      const pill = document.getElementById('driver-online-pill');
+      if (online) {
+        btn.className = "w-full py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-bold text-sm tracking-wide shadow-xl shadow-emerald-950/50 transition flex items-center justify-center gap-2";
+        btn.innerHTML = "<span>🟢</span><span>YOU ARE ONLINE (READY FOR RIDES)</span>";
+        pill.innerText = "ONLINE";
+        pill.className = "text-[10px] font-mono px-2.5 py-1 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-800 font-bold";
+      } else {
+        btn.className = "w-full py-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-sm tracking-wide border border-slate-700 transition flex items-center justify-center gap-2";
+        btn.innerHTML = "<span>⚪</span><span>GO ONLINE (READY FOR RIDES)</span>";
+        pill.innerText = "OFFLINE";
+        pill.className = "text-[10px] font-mono px-2.5 py-1 rounded-full bg-slate-800 text-slate-400 border border-slate-700";
+      }
+    }
+
+    function updateDriverEarningsUI() {
+      document.getElementById('stat-driver-rides').innerText = driverCompletedRides;
+      document.getElementById('stat-driver-cash').innerText = `$${(driverCompletedRides * 5).toFixed(2)}`;
+      document.getElementById('stat-driver-rnr').innerText = `${driverCompletedRides * 400} RNR`;
+    }
+
+    // Submit a Ride Request (Rider)
+    async function submitRideRequest() {
+      const pickup = document.getElementById('input-pickup').value.trim();
+      const dropoff = document.getElementById('input-dropoff').value.trim();
+      const name = document.getElementById('input-rider-name').value.trim();
+      const phone = document.getElementById('input-rider-phone').value.trim();
+
+      if (!pickup || !dropoff) {
+        alert("Please specify both a Pickup and Drop-off destination in Utica.");
+        return;
+      }
+      if (!name || !phone) {
+        alert("Please provide your name and a contact phone number so your driver can locate and text/call you.");
+        return;
+      }
+
+      const btn = document.getElementById('btn-request-ride');
+      btn.disabled = true;
+      btn.innerText = "Dispatching Request...";
+
+      try {
+        const res = await fetch('/api/rideshare/ride/request', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            rider_name: name,
+            phone: phone,
+            pickup: pickup,
+            dropoff: dropoff
+          })
+        });
+        const data = await res.json();
+        if (data.ok && data.ride) {
+          activeRideId = data.ride.id;
+          localStorage.setItem('active_ride_id', activeRideId);
+          showActiveRideCard(data.ride);
+        } else {
+          alert("Error placing request: " + (data.error || "Unknown"));
+        }
+      } catch (e) {
+        alert("Bridge Connection Error: " + e.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = "<span>🚀</span><span>Request Utica Community Ride ($5)</span>";
+      }
+    }
+
+    function showActiveRideCard(ride) {
+      document.getElementById('rider-order-card').classList.add('hidden');
+      const card = document.getElementById('active-ride-card');
+      card.classList.remove('hidden');
+
+      document.getElementById('active-ride-id-tag').innerText = ride.id;
+      document.getElementById('active-ride-pickup').innerText = ride.pickup;
+      document.getElementById('active-ride-dropoff').innerText = ride.dropoff;
+
+      const headline = document.getElementById('ride-status-headline');
+      const sub = document.getElementById('ride-status-sub');
+      const driverBox = document.getElementById('assigned-driver-info');
+
+      if (ride.status === 'PENDING') {
+        headline.innerText = "⏳ Dispatching to Online Utica Driver...";
+        headline.className = "text-xs font-bold text-amber-300";
+        sub.innerText = "Please keep this page open. Your driver will confirm in seconds.";
+        driverBox.classList.add('hidden');
+      } else if (ride.status === 'ACCEPTED') {
+        headline.innerText = "🚗 Driver Accepted & En Route!";
+        headline.className = "text-xs font-bold text-emerald-300";
+        sub.innerText = "Prepare $5 cash for the driver. Your ride is on the way.";
+        driverBox.classList.remove('hidden');
+
+        if (ride.driver_info) {
+          document.getElementById('driver-name-display').innerText = ride.driver_info.name || 'Community Driver';
+          document.getElementById('driver-car-display').innerText = `${ride.driver_info.car || 'Vehicle'} • ${ride.driver_info.phone || ''}`;
+          document.getElementById('driver-call-link').href = `tel:${ride.driver_info.phone}`;
+        }
+      } else if (ride.status === 'COMPLETED') {
+        headline.innerText = "🏁 Ride Complete! Welcome to Your Destination.";
+        headline.className = "text-xs font-bold text-cyan-300";
+        sub.innerText = `Vault has disbursed $8.00 in $RNR to your driver. Thank you for building sovereign community mobility in Utica!`;
+        setTimeout(() => {
+          localStorage.removeItem('active_ride_id');
+          activeRideId = null;
+          card.classList.add('hidden');
+          document.getElementById('rider-order-card').classList.remove('hidden');
+        }, 8000);
+      }
+    }
+
+    async function cancelActiveRide() {
+      if (!activeRideId) return;
+      if (!confirm("Are you sure you want to cancel this ride request?")) return;
+      try {
+        await fetch('/api/rideshare/ride/cancel', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ride_id: activeRideId })
+        });
+        localStorage.removeItem('active_ride_id');
+        activeRideId = null;
+        document.getElementById('active-ride-card').classList.add('hidden');
+        document.getElementById('rider-order-card').classList.remove('hidden');
+      } catch (e) {
+        alert("Error: " + e.message);
+      }
+    }
+
+    // Driver: Accept a Ride
+    async function driverAcceptRide(rideId) {
+      const wallet = document.getElementById('input-driver-wallet').value.trim();
+      if (!wallet) {
+        alert("Please enter your Base wallet address first!");
+        return;
+      }
+      try {
+        const res = await fetch('/api/rideshare/ride/accept', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ride_id: rideId, driver_wallet: wallet })
+        });
+        const data = await res.json();
+        pollRideshareStatus();
+      } catch (e) {
+        alert("Error accepting ride: " + e.message);
+      }
+    }
+
+    // Driver: Complete a Ride & Claim $8 in $RNR
+    async function driverCompleteRide(rideId) {
+      if (!confirm("Confirm Ride Completion:\nHave you dropped off the rider and received your $5 cash?\n\nClick OK to finalize and claim your $8 in $RNR!")) return;
+      try {
+        const res = await fetch('/api/rideshare/ride/complete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ride_id: rideId })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          driverCompletedRides++;
+          localStorage.setItem('driver_completed_rides', driverCompletedRides.toString());
+          updateDriverEarningsUI();
+          alert(`🎉 RIDE COMPLETED!\n\n• $5.00 Cash Collected in Hand\n• 400 $RNR ($8.00) Disbursed from Utica Sovereign Vault\n• Tx Ref: ${data.tx_hash}\n\nGreat work keeping Utica moving!`);
+          pollRideshareStatus();
+        }
+      } catch (e) {
+        alert("Error completing ride: " + e.message);
+      }
+    }
+
+    // Poll live status from server
+    async function pollRideshareStatus() {
+      try {
+        const res = await fetch('/api/rideshare/status');
+        const data = await res.json();
+
+        const count = data.online_drivers_count || 0;
+        const banner = document.getElementById('driver-status-banner');
+        const dot = document.getElementById('status-pulse-dot');
+        const text = document.getElementById('status-text');
+        const tag = document.getElementById('active-driver-count-tag');
+
+        tag.innerText = `${count} ONLINE`;
+
+        if (count > 0) {
+          dot.className = "w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse";
+          text.innerHTML = `<b class="text-emerald-400">${count} Community Driver${count > 1 ? 's' : ''} Online</b> in Utica • Ready for Pickups`;
+          banner.className = "p-3.5 rounded-2xl bg-emerald-950/20 border border-emerald-500/40 text-xs flex items-center justify-between";
+          tag.className = "font-mono font-bold text-[10px] bg-emerald-950 text-emerald-300 border border-emerald-800 px-2 py-0.5 rounded";
+
+          // Enable rider form, hide no-driver alert
+          if (!activeRideId) {
+            document.getElementById('rider-no-driver-alert').classList.add('hidden');
+            document.getElementById('rider-order-card').classList.remove('hidden');
+          }
+        } else {
+          dot.className = "w-2.5 h-2.5 rounded-full bg-rose-400";
+          text.innerHTML = `<b class="text-rose-400">0 Drivers Currently Online</b> • Waiting for Driver to Sign In`;
+          banner.className = "p-3.5 rounded-2xl bg-[#050811] border border-slate-800 text-xs flex items-center justify-between";
+          tag.className = "font-mono font-bold text-[10px] bg-slate-800 px-2 py-0.5 rounded text-slate-400";
+
+          // If no active ride, show no-driver alert
+          if (!activeRideId) {
+            document.getElementById('rider-no-driver-alert').classList.remove('hidden');
+            document.getElementById('rider-order-card').classList.add('hidden');
+          }
+        }
+
+        // Check active ride status for rider
+        if (activeRideId) {
+          const found = (data.active_rides || []).find(r => r.id === activeRideId);
+          if (found) {
+            showActiveRideCard(found);
+          } else {
+            // Might be completed
+            const lastActive = data.active_rides ? data.active_rides.find(r => r.id === activeRideId) : null;
+            if (!lastActive) {
+              // Complete card
+              const headline = document.getElementById('ride-status-headline');
+              const sub = document.getElementById('ride-status-sub');
+              headline.innerText = "🏁 Ride Complete! Welcome to Your Destination.";
+              headline.className = "text-xs font-bold text-cyan-300";
+              sub.innerText = "Vault has disbursed $8.00 in $RNR to your driver. Thank you for supporting Wheels for Utica!";
+              setTimeout(() => {
+                localStorage.removeItem('active_ride_id');
+                activeRideId = null;
+                document.getElementById('active-ride-card').classList.add('hidden');
+                document.getElementById('rider-order-card').classList.remove('hidden');
+              }, 8000);
+            }
+          }
+        }
+
+        // Render Driver Queue
+        renderDriverQueue(data.active_rides || []);
+
+        // Render Copay Grants
+        renderCopaysList(data.copays || []);
+
+        // Render Food Matches
+        renderFoodMatchesList(data.food_matches || []);
+
+      } catch (e) {
+        console.warn("Poll status error:", e);
+      }
+    }
+
+    // Render Copays List
+    function renderCopaysList(copays) {
+      const list = document.getElementById('copay-recent-list');
+      const tag = document.getElementById('copay-count-tag');
+      if (!list || !tag) return;
+
+      tag.innerText = `${copays.length} GRANTS`;
+
+      if (copays.length === 0) {
+        list.innerHTML = `
+          <div class="p-3 bg-[#050811] rounded-xl border border-dashed border-slate-800 text-center text-slate-500 text-xs">
+            No active copay requests yet. Use the form above to authorize a prescription buffer.
+          </div>
+        `;
+        return;
+      }
+
+      let html = '';
+      copays.slice().reverse().forEach(c => {
+        html += `
+          <div class="p-3 bg-[#050811] rounded-xl border border-cyan-500/30 space-y-1.5 text-xs">
+            <div class="flex items-center justify-between">
+              <div class="font-bold text-white flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                ${c.patient_name} (${c.medication})
+              </div>
+              <span class="font-mono text-[9px] bg-emerald-950 text-emerald-300 border border-emerald-800 px-1.5 py-0.5 rounded font-bold">
+                $${c.copay_amount.toFixed(2)} COVERED
+              </span>
+            </div>
+            <div class="flex justify-between text-[11px] text-slate-400">
+              <span>Pharmacy: <b class="text-slate-200">${c.pharmacy}</b></span>
+              <span class="font-mono text-cyan-300">${c.rnr_grant} $RNR Authorized</span>
+            </div>
+            ${c.delivery_requested ? `
+              <div class="text-[10px] text-amber-400 bg-amber-950/20 px-2 py-1 rounded border border-amber-500/30 flex items-center justify-between">
+                <span>🚗 Porch Delivery Requested: ${c.delivery_address || 'Utica'}</span>
+                <span class="font-mono font-bold">$5 Cash to Driver</span>
+              </div>
+            ` : ''}
+            <div class="text-[9px] text-slate-600 font-mono truncate">
+              Ref ID: ${c.id} • Tx: ${c.tx_hash}
+            </div>
+          </div>
+        `;
+      });
+      list.innerHTML = html;
+    }
+
+    // Render Food Matches List
+    function renderFoodMatchesList(matches) {
+      const list = document.getElementById('food-recent-list');
+      const tag = document.getElementById('food-count-tag');
+      if (!list || !tag) return;
+
+      tag.innerText = `${matches.length} MATCHES`;
+
+      if (matches.length === 0) {
+        list.innerHTML = `
+          <div class="p-3 bg-[#050811] rounded-xl border border-dashed border-slate-800 text-center text-slate-500 text-xs">
+            No active food matches yet. Use the form above to double your grocery budget!
+          </div>
+        `;
+        return;
+      }
+
+      let html = '';
+      matches.slice().reverse().forEach(m => {
+        html += `
+          <div class="p-3 bg-[#050811] rounded-xl border border-emerald-500/30 space-y-1.5 text-xs">
+            <div class="flex items-center justify-between">
+              <div class="font-bold text-white flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                ${m.family_name}
+              </div>
+              <span class="font-mono text-[9px] bg-emerald-950 text-emerald-300 border border-emerald-800 px-1.5 py-0.5 rounded font-bold">
+                $${m.total_grocery_power.toFixed(2)} GROCERIES
+              </span>
+            </div>
+            <div class="flex justify-between text-[11px] text-slate-400">
+              <span>Market: <b class="text-slate-200">${m.grocer}</b></span>
+              <span class="font-mono text-emerald-300">${m.rnr_grant} $RNR Matched</span>
+            </div>
+            ${m.delivery_requested ? `
+              <div class="text-[10px] text-amber-400 bg-amber-950/20 px-2 py-1 rounded border border-amber-500/30 flex items-center justify-between">
+                <span>🚗 Porch Delivery Requested: ${m.delivery_address || 'Utica'}</span>
+                <span class="font-mono font-bold">$5 Cash to Driver</span>
+              </div>
+            ` : ''}
+            <div class="text-[9px] text-slate-600 font-mono truncate">
+              Voucher: ${m.id} • Tx: ${m.tx_hash}
+            </div>
+          </div>
+        `;
+      });
+      list.innerHTML = html;
+    }
+
+    // Render Driver Queue
+    function renderDriverQueue(activeRides) {
+      const list = document.getElementById('driver-queue-list');
+      const countTag = document.getElementById('queue-count-tag');
+      const currentDriverWallet = (document.getElementById('input-driver-wallet').value || '').trim().toLowerCase();
+
+      countTag.innerText = `${activeRides.length} ACTIVE`;
+
+      if (activeRides.length === 0) {
+        list.innerHTML = `
+          <div class="p-4 bg-[#050811] rounded-xl border border-dashed border-slate-800 text-center text-slate-500 text-xs">
+            No active ride requests in Utica right now. Go online and keep your phone awake.
+          </div>
+        `;
+        return;
+      }
+
+      let html = '';
+      activeRides.forEach(ride => {
+        const isAssignedToMe = ride.driver_wallet && ride.driver_wallet === currentDriverWallet;
+        const isPending = ride.status === 'PENDING';
+
+        html += `
+          <div class="p-4 rounded-xl bg-[#050811] ${isAssignedToMe ? 'border-2 border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.2)]' : 'border border-slate-800'} space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="font-bold text-white text-xs flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full ${isPending ? 'bg-amber-400 animate-pulse' : 'bg-emerald-400'}"></span>
+                ${ride.rider_name} (${ride.phone || 'No phone'})
+              </div>
+              <span class="font-mono text-[9px] ${isPending ? 'bg-amber-950 text-amber-300 border-amber-800' : 'bg-emerald-950 text-emerald-300 border-emerald-800'} font-bold px-2 py-0.5 rounded border">
+                ${ride.status}
+              </span>
+            </div>
+
+            <div class="space-y-1 text-xs">
+              <div class="flex justify-between">
+                <span class="text-slate-400">Pickup:</span>
+                <b class="text-white text-right">${ride.pickup}</b>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-slate-400">Dropoff:</span>
+                <b class="text-white text-right">${ride.dropoff}</b>
+              </div>
+              <div class="flex justify-between pt-1 border-t border-slate-800/80">
+                <span class="text-slate-400">Driver Earnings:</span>
+                <span class="font-mono font-bold text-cyan-300">$5 Cash + $8 $RNR ($13 Total)</span>
+              </div>
+            </div>
+
+            <div class="pt-1">
+              ${isPending ? `
+                <button onclick="driverAcceptRide('${ride.id}')" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-bold text-xs tracking-wide shadow-lg transition">
+                  ✅ ACCEPT RIDE & START TRIP
+                </button>
+              ` : (isAssignedToMe ? `
+                <div class="space-y-2">
+                  <div class="grid grid-cols-2 gap-2">
+                    <a href="https://maps.google.com/?q=${encodeURIComponent(ride.pickup + ', Utica, NY')}" target="_blank" class="py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs text-center border border-slate-700 transition no-underline">
+                      📍 Nav to Pickup
+                    </a>
+                    <a href="tel:${ride.phone}" class="py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs text-center border border-slate-700 transition no-underline">
+                      📞 Call Rider
+                    </a>
+                  </div>
+                  <button onclick="driverCompleteRide('${ride.id}')" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-slate-950 font-bold text-xs tracking-wide shadow-lg transition">
+                    🏁 COMPLETE RIDE & CLAIM $8 IN $RNR
+                  </button>
+                </div>
+              ` : `
+                <div class="text-[10px] text-slate-500 font-mono text-center">Accepted by another community driver</div>
+              `)}
+            </div>
+          </div>
+        `;
+      });
+
+      list.innerHTML = html;
+    }
+  </script>
+</body>
+</html>
