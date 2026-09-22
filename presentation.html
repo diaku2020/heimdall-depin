@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Utica Community Sovereign Vault & Heimdall DePIN | Executive Deck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #030712;
+    --card: rgba(15, 23, 42, 0.75);
+    --border: rgba(56, 189, 248, 0.22);
+    --cyan: #38bdf8;
+    --gold: #fbbf24;
+    --green: #34d399;
+    --purple: #c084fc;
+    --rose: #fb7185;
+    --text: #f8fafc;
+    --muted: #94a3b8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif; }
+  body { background: var(--bg); color: var(--text); min-height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+  
+  /* Top Nav / Brand Bar */
+  header {
+    height: 58px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    background: rgba(3, 7, 18, 0.9);
+    backdrop-filter: blur(14px);
+    z-index: 100;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 14px; letter-spacing: 0.5px; }
+  .badge-gold { background: rgba(251, 191, 36, 0.15); border: 1px solid var(--gold); color: var(--gold); padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; }
+  .badge-cyan { background: rgba(56, 189, 248, 0.15); border: 1px solid var(--cyan); color: var(--cyan); padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; }
+  .badge-green { background: rgba(52, 211, 153, 0.15); border: 1px solid var(--green); color: var(--green); padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; }
+  .slide-counter { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--muted); }
+
+  /* Deck Container */
+  .deck-container {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .slide {
+    position: absolute;
+    width: 94%;
+    max-width: 1220px;
+    height: 84vh;
+    background: radial-gradient(circle at 50% 0%, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.96) 80%);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 38px 46px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 35px rgba(56, 189, 248, 0.1);
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.96) translateY(20px);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .slide.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: scale(1) translateY(0);
+  }
+
+  /* Slide Typography */
+  .slide-tag { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; color: var(--cyan); margin-bottom: 6px; }
+  .slide-title { font-family: 'Cinzel', serif; font-size: 30px; font-weight: 900; line-height: 1.25; letter-spacing: -0.3px; margin-bottom: 10px; color: #ffffff; }
+  .slide-subtitle { font-size: 14px; color: var(--muted); line-height: 1.55; max-width: 980px; margin-bottom: 20px; }
+
+  /* Content Layouts */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; flex: 1; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; flex: 1; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; flex: 1; }
+  .grid-7 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; flex: 1; }
+
+  .card-box {
+    background: rgba(2, 6, 23, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .card-box.highlight-gold { border-color: rgba(251, 191, 36, 0.4); background: rgba(251, 191, 36, 0.05); }
+  .card-box.highlight-cyan { border-color: rgba(56, 189, 248, 0.4); background: rgba(56, 189, 248, 0.05); }
+  .card-box.highlight-green { border-color: rgba(52, 211, 153, 0.4); background: rgba(52, 211, 153, 0.05); }
+
+  .card-title { font-size: 15px; font-weight: 800; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+  .card-desc { font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+  .card-metric { font-size: 26px; font-weight: 900; font-family: 'JetBrains Mono', monospace; margin-top: 10px; }
+
+  /* Interactive Elements & Formulas */
+  .formula-pill {
+    background: #020617;
+    border: 1px dashed var(--gold);
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--gold);
+    margin: 10px 0 0;
+    text-align: center;
+  }
+
+  /* Table styling */
+  table.matrix-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    margin-top: 8px;
+  }
+  table.matrix-table th {
+    text-align: left;
+    padding: 8px 12px;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  table.matrix-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Bottom Controls */
+  footer {
+    height: 58px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    background: rgba(3, 7, 18, 0.9);
+    backdrop-filter: blur(14px);
+    z-index: 100;
+  }
+  .nav-btn {
+    background: rgba(56, 189, 248, 0.12);
+    border: 1px solid var(--cyan);
+    color: var(--cyan);
+    padding: 9px 20px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .nav-btn:hover { background: var(--cyan); color: #020617; box-shadow: 0 0 14px rgba(56, 189, 248, 0.5); }
+  .progress-track { flex: 1; height: 5px; background: rgba(255, 255, 255, 0.08); border-radius: 3px; margin: 0 28px; overflow: hidden; }
+  .progress-fill { height: 100%; width: 14.28%; background: linear-gradient(90deg, var(--cyan), var(--gold)); transition: width 0.3s ease; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <span>🛡️ HEIMDALL DEPIN</span>
+    <span class="badge-gold">UTICA SOVEREIGN VAULT</span>
+    <span class="badge-green">BASE MAINNET LIVE</span>
+    <span class="badge-cyan">$RNR TOKEN</span>
+  </div>
+  <div class="slide-counter" id="slideNum">SLIDE 1 OF 10</div>
+</header>
+
+<div class="deck-container">
+
+  <!-- SLIDE 1: The Core Thesis -->
+  <div class="slide active" id="s1">
+    <div>
+      <div class="slide-tag">Executive Summary · Civic Technology</div>
+      <div class="slide-title">The First Technology-Backed Sovereign Wealth Fund For an American City</div>
+      <div class="slide-subtitle">
+        Silicon Valley extracts wealth from communities through subscriptions and hardware paywalls. 
+        Heimdall inverts this paradigm: National commercial RF hardware exports automatically fund a 
+        <strong>17% hard-asset Gold & Bitcoin treasury</strong> dedicated to Utica, NY—powering 
+        100% free life-safety mesh and guaranteed generational community endowments.
+      </div>
+    </div>
+
+    <div class="grid-3">
+      <div class="card-box highlight-cyan">
+        <div>
+          <div class="card-title">📡 Commercial Hardware Engine</div>
+          <div class="card-desc">Commercial 3D RF spires sold nationally ($300 retail) for luxury security, assisted living facilities, and commercial sensing. Zero subscriptions.</div>
+        </div>
+        <div class="card-metric" style="color: var(--cyan);">$300 Retail</div>
+      </div>
+      <div class="card-box highlight-gold">
+        <div>
+          <div class="card-title">🏛️ 17% Hard-Asset Inflow</div>
+          <div class="card-desc">Every commercial unit sale automatically routes 17% ($51.00) into physical Paxos Gold (PAXG) & Bitcoin (cbBTC) on Base L2.</div>
+        </div>
+        <div class="card-metric" style="color: var(--gold);">$51.00 / Unit</div>
+      </div>
+      <div class="card-box highlight-green">
+        <div>
+          <div class="card-title">🌆 The $10 Utica Mesh Node</div>
+          <div class="card-desc">Sold to Utica families at $10 (covers bare BOM). 100% of sales go directly into the Vault, while nodes earn $RNR mining rewards!</div>
+        </div>
+        <div class="card-metric" style="color: var(--green);">$10 (100% to Vault)</div>
+      </div>
+    </div>
+
+    <div class="formula-pill">
+      TOKEN PEG BACKING: 1.0 $RNR = 1.0 Milligram Physical Gold (PAXG) + 100 Satoshis Bitcoin (cbBTC) · Base L2 Verified
+    </div>
+  </div>
+
+  <!-- SLIDE 2: Two Products, One Mission -->
+  <div class="slide" id="s2">
+    <div>
+      <div class="slide-tag">Dual-Track Product Architecture</div>
+      <div class="slide-title">Separating National Commercial Revenue from Free Local Civic Mesh</div>
+      <div class="slide-subtitle">
+        We maintain a strict separation between high-margin commercial enterprise sales across North America and 
+        the self-sustaining, life-saving municipal mesh deployed across Utica neighborhood homes.
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card-box">
+        <div>
+          <div class="card-title" style="color: var(--cyan);">Product A: Commercial Heimdall RF Spire</div>
+          <div class="card-desc" style="margin-top: 10px;">
+            • Target Market: National smart home, luxury residential, assisted living chains.<br>
+            • Price: <strong>$300 retail</strong> per spire node (undercuts $1,500 enterprise radars).<br>
+            • Function: Camera-free presence detection, vital-sign radar, intrusion detection.<br>
+            • Revenue Role: 17% ($51.00/unit) automatically sweeps into the Utica Community Vault.
+          </div>
+        </div>
+        <div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--cyan); margin-top: 14px;">
+          EXPORT REVENUE: NATIONAL $\rightarrow$ $51.00/UNIT TO UTICA VAULT
+        </div>
+      </div>
+
+      <div class="card-box highlight-green">
+        <div>
+          <div class="card-title" style="color: var(--green);">Product B: Utica Community Life-Safety Mesh</div>
+          <div class="card-desc" style="margin-top: 10px;">
+            • Target Market: Utica, NY families, low-income elders, and neighborhood porches.<br>
+            • Price: <strong>$10.00 (Covers bare BOM) — 100% Recycled into the Vault</strong>.<br>
+            • Function: Off-grid emergency Wi-Fi, passive fall detection, wandering child tracking.<br>
+            • Economic Role: Hosts earn $RNR tokens from the 14.7M DePIN reward pool for maintaining uptime.
+          </div>
+        </div>
+        <div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--green); margin-top: 14px;">
+          CIVIC RECYCLING: 100% OF LOCAL NODE REVENUE ENTERS THE VAULT
+        </div>
+      </div>
+    </div>
+
+    <div style="font-size: 12px; color: var(--muted); text-align: center;">
+      Utica becomes the sovereign demonstration lighthouse that every post-industrial Rust Belt city will seek to replicate.
+    </div>
+  </div>
+
+  <!-- SLIDE 3: The 7 Sovereign Civic Pillars -->
+  <div class="slide" id="s3">
+    <div>
+      <div class="slide-tag">Humanitarian Governance · Municipal Charter</div>
+      <div class="slide-title">The 7 Sovereign Civic Pillars of the Utica Vault</div>
+      <div class="slide-subtitle">
+        Codified permanently into the <code>UticaCommunityVaultV2.sol</code> smart contract on Base L2 to guarantee perpetual human dignity:
+      </div>
+    </div>
+
+    <div class="grid-7" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px;">
+      <div class="card-box">
+        <div class="card-title" style="color: var(--cyan); font-size: 13px;">🚗 1. Wheels for Utica</div>
+        <div class="card-desc" style="font-size: 11px;">Free universal transportation, municipal garage repair grants, community auto insurance.</div>
+      </div>
+      <div class="card-box">
+        <div class="card-title" style="color: var(--green); font-size: 13px;">🌱 2. Food Sovereignty</div>
+        <div class="card-desc" style="font-size: 11px;">Direct vouchers to local Oneida County farmers markets & home raised-bed garden kits.</div>
+      </div>
+      <div class="card-box">
+        <div class="card-title" style="color: var(--purple); font-size: 13px;">🎓 3. Youth Tech Academy</div>
+        <div class="card-desc" style="font-size: 11px;">Free RF hardware & coding courses with paid living stipends for local Utica students.</div>
+      </div>
+      <div class="card-box">
+        <div class="card-title" style="color: var(--gold); font-size: 13px;">🏡 4. Housing Dignity</div>
+        <div class="card-desc" style="font-size: 11px;">Zero homelessness initiative through reclamation and rehabilitation of blighted properties.</div>
+      </div>
+      <div class="card-box">
+        <div class="card-title" style="color: var(--rose); font-size: 13px;">🔥 5. Winter Heating Shield</div>
+        <div class="card-desc" style="font-size: 11px;">Sub-zero winter utility credits & neighborhood solar microgrids to prevent shutoffs.</div>
+      </div>
+      <div class="card-box highlight-gold">
+        <div class="card-title" style="color: var(--gold); font-size: 13px;">🏪 6. Bodega & $0 Copays</div>
+        <div class="card-desc" style="font-size: 11px;">0% merchant POS terminals for neighborhood bodegas and $0 prescription copay buffers.</div>
+      </div>
+      <div class="card-box highlight-cyan">
+        <div class="card-title" style="color: var(--cyan); font-size: 13px;">📡 7. Wave Infrastructure</div>
+        <div class="card-desc" style="font-size: 11px;">Decentralized emergency Wi-Fi mesh, passive elderly fall alerts, wandering autism radar, and privacy-first non-invasive vehicle & plate profiling without optical surveillance cameras.</div>
+      </div>
+    </div>
+
+    <div class="formula-pill">
+      MULTI-SIG GOVERNANCE: Grassroots 5-of-9 Community Council composed of local farmers, tradesmen, and neighborhood assemblies.
+    </div>
+  </div>
+
+  <!-- SLIDE 4: The 3-Year Dual-Engine Milestones -->
+  <div class="slide" id="s4">
+    <div>
+      <div class="slide-tag">Near-Term Execution · 3-Year Dual-Engine Model</div>
+      <div class="slide-title">3-Year Milestones: Scaling Hardware + Recurring Wave Cloud APIs</div>
+      <div class="slide-subtitle">
+        Bridging the near-term road from the Utica flagship pilot to regional DePIN expansion, combining hardware sales, high-margin software SaaS, and 100% free senior civic care grants:
+      </div>
+    </div>
+
+    <div class="grid-3">
+      <div class="card-box highlight-cyan">
+        <div>
+          <div class="card-title" style="color: var(--cyan);">Year 1: Utica Flagship Pilot</div>
+          <div class="card-desc" style="margin-top: 8px;">
+            • <strong>500 Total Active Nodes</strong> (150 Free Senior Grants + 150 Community + 200 Spires).<br>
+            • <strong>$95.6K Gross Revenue</strong> ($63K hardware + $32.6K API software ARR).<br>
+            • <strong>$10,200</strong> swept into Gold (PAXG) & Bitcoin (cbBTC) in the Vault.<br>
+            • 150 low-income elderly households protected with free fall detection.
+          </div>
+        </div>
+        <div class="card-metric" style="color: var(--cyan); font-size: 20px; margin-top: 10px;">$95.6K Rev · 150 Seniors</div>
+      </div>
+
+      <div class="card-box highlight-gold">
+        <div>
+          <div class="card-title" style="color: var(--gold);">Year 2: Mohawk Valley Expansion</div>
+          <div class="card-desc" style="margin-top: 8px;">
+            • <strong>2,500 Total Nodes</strong> (600 Free Senior Grants + 900 Community + 1,000 Spires).<br>
+            • <strong>$536.5K Gross Revenue</strong> ($315K hardware + $221.5K API software ARR).<br>
+            • <strong>$61,200 Cumulative Gold & BTC</strong> swept into municipal treasury.<br>
+            • 750 vulnerable homes blanketed by decentralized ambient radar.
+          </div>
+        </div>
+        <div class="card-metric" style="color: var(--gold); font-size: 20px; margin-top: 10px;">$536.5K Rev · $221K ARR</div>
+      </div>
+
+      <div class="card-box highlight-green">
+        <div>
+          <div class="card-title" style="color: var(--green);">Year 3: Multi-City DePIN Scale</div>
+          <div class="card-desc" style="margin-top: 8px;">
+            • <strong>10,000 Total Nodes</strong> (2,000 Free Senior Grants + 3,000 Community + 5,000 Spires).<br>
+            • <strong>$2.50M Gross Revenue</strong> ($1.55M hardware + $953.4K API software ARR).<br>
+            • <strong>$316,200 Cumulative Gold & BTC</strong> permanent endowment floor.<br>
+            • 2,750+ elderly & disabled citizens protected with zero copays.
+          </div>
+        </div>
+        <div class="card-metric" style="color: var(--green); font-size: 20px; margin-top: 10px;">$2.50M Rev · $953K ARR</div>
+      </div>
+    </div>
+
+    <div class="formula-pill">
+      THE RECURRING FLYWHEEL: Hardware Deployments & Vault Grants $\rightarrow$ Denser Radar Mesh $\rightarrow$ High-Margin Wave Intelligence APIs ($49/mo Pro, $499/mo Enterprise) $\rightarrow$ Perpetual Gold & BTC Inflow
+    </div>
+  </div>
+
+  <!-- SLIDE 5: Unmanned, Camera-Free Traffic Calming & Speed Mesh -->
+  <div class="slide" id="s5">
+    <div>
+      <div class="slide-tag">Physical DePIN Innovation · 4-Phase Technical Roadmap</div>
+      <div class="slide-title">Unmanned, Camera-Free Traffic Calming & Speed Sensing</div>
+      <div class="slide-subtitle">
+        Replacing $15,000 clunky curb trailers and invasive optical surveillance cameras with sleek 4-inch radar nodes deployed across neighborhood porches and school corridors:
+      </div>
+    </div>
+
+    <div class="grid-4">
+      <div class="card-box">
+        <div class="card-title" style="color: var(--cyan); font-size: 13px;">Phase 1: Doppler FFT Engine</div>
+        <div class="card-desc" style="font-size: 11px; margin-top: 6px;">
+          • <strong>&plusmn;0.1 mph Precision:</strong> 2D Range-Doppler FFT with cosine angle compensation.<br>
+          • <strong>RF Embossed Plate Profiling:</strong> 1.5mm metal step backscatter & chassis classification (zero optical lenses).
+        </div>
+        <div style="font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--cyan); margin-top: 10px;">WEEKS 1 - 4</div>
+      </div>
+
+      <div class="card-box">
+        <div class="card-title" style="color: var(--gold); font-size: 13px;">Phase 2: Utica Residential Corridor</div>
+        <div class="card-desc" style="font-size: 11px; margin-top: 6px;">
+          • <strong>20 Porch Beta Nodes:</strong> Genesee St & school crosswalk safety stretches.<br>
+          • <strong>Community Speed Calming:</strong> Awareness without predatory tickets. Hosts earn $RNR telemetry rewards.
+        </div>
+        <div style="font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--gold); margin-top: 10px;">WEEKS 5 - 8</div>
+      </div>
+
+      <div class="card-box highlight-green">
+        <div class="card-title" style="color: var(--green); font-size: 13px;">Phase 3: Municipal Safety Portal</div>
+        <div class="card-desc" style="font-size: 11px; margin-top: 6px;">
+          • <strong>Near-Miss Pedestrian Alerts:</strong> Identifies hard vehicle braking within 2m of pedestrians.<br>
+          • <strong>Winter Road Friction:</strong> Real-time hydroplaning warnings via tire-spray radar.
+        </div>
+        <div style="font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--green); margin-top: 10px;">WEEKS 9 - 14</div>
+      </div>
+
+      <div class="card-box highlight-cyan">
+        <div class="card-title" style="color: var(--purple); font-size: 13px;">Phase 4: Autonomous Corridors</div>
+        <div class="card-desc" style="font-size: 11px; margin-top: 6px;">
+          • <strong>Emergency Green-Wave:</strong> Nodes detect ambulance acoustics & Doppler to clear intersections.<br>
+          • <strong>Regional Scaling:</strong> Expanding from Utica across Mohawk Valley corridors.
+        </div>
+        <div style="font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--purple); margin-top: 10px;">WEEKS 15 - 24</div>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px;">
+      <div style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 10px; padding: 10px 14px; font-size: 11px;">
+        <span style="color: var(--cyan); font-weight: 800;">🚁 FUTURE OTA UPDATE: AIRSPACE SOVEREIGNTY</span><br>
+        <span style="color: var(--muted);">Detects hovering consumer drones via rotor blade micro-Doppler chop + decodes overhead aircraft & helicopter ADS-B transponders.</span>
+      </div>
+      <div style="background: rgba(52, 211, 153, 0.08); border: 1px solid rgba(52, 211, 153, 0.3); border-radius: 10px; padding: 10px 14px; font-size: 11px;">
+        <span style="color: var(--green); font-weight: 800;">🛡️ FREE $0-SUBSCRIPTION PROPERTY PERIMETER GUARD</span><br>
+        <span style="color: var(--muted);">360° radar detects car-prowlers & yard motion in total darkness. Disrupts $50/mo Ring & ADT monopolies — the node pays the homeowner in $RNR!</span>
+      </div>
+    </div>
+
+    <div class="formula-pill">
+      PRIVACY FIRST: 100% Camera-Free (Pure Sub-THz Wave Physics) · Zero Face Recording · Speed Calming + Airspace Defense + Free Home Security
+    </div>
+  </div>
+
+  <!-- SLIDE 6: 100% Community Sovereign Control & API Wealth Routing -->
+  <div class="slide" id="s6">
+    <div>
+      <div class="slide-tag">Democratic Ownership · Community Wealth Creation</div>
+      <div class="slide-title">100% Community Sovereign Control: "It's Their Nodes, They Get Paid"</div>
+      <div class="slide-subtitle">
+        Unlike Big Tech monopolies that harvest neighborhood data for corporate stock buybacks, every dollar generated by the Heimdall network belongs to the citizens who host the physical hardware:
+      </div>
+    </div>
+
+    <div class="grid-3">
+      <div class="card-box highlight-gold">
+        <div>
+          <div class="card-title" style="color: var(--gold); font-size: 16px;">🏛️ 100% API Revenue to the Vault</div>
+          <div class="card-desc" style="margin-top: 10px;">
+            Every commercial Wave Cloud API subscription ($49/mo Pro, $499/mo Enterprise) paid by healthcare clinics, researchers, or city planners <strong>routes directly into the Utica Sovereign Vault</strong>.
+          </div>
+        </div>
+        <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--gold); margin-top: 12px;">NO CORPORATE SINK: ALL DATA REVENUE FEEDS THE VAULT</div>
+      </div>
+
+      <div class="card-box highlight-cyan">
+        <div>
+          <div class="card-title" style="color: var(--cyan); font-size: 16px;">💵 Direct Host Telemetry Payouts</div>
+          <div class="card-desc" style="margin-top: 10px;">
+            It's the community's nodes—the people who provide power and Wi-Fi earn continuous $RNR and USDC telemetry payouts. As commercial API usage climbs, host dividends grow automatically.
+          </div>
+        </div>
+        <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--cyan); margin-top: 12px;">HOSTS GET COMPENSATED FOR MESH COVERAGE</div>
+      </div>
+
+      <div class="card-box highlight-green">
+        <div>
+          <div class="card-title" style="color: var(--green); font-size: 16px;">🗳️ Total Democratic Veto Power</div>
+          <div class="card-desc" style="margin-top: 10px;">
+            The 5-of-9 Grassroots Community Council has absolute on-chain governance. If a neighborhood votes they don't want a speed-calming corridor or a specific sensor feature, <strong>it is instantly removed</strong>.
+          </div>
+        </div>
+        <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--green); margin-top: 12px;">NO SURVEILLANCE IMPOSED WITHOUT COMMUNITY CONSENT</div>
+      </div>
+    </div>
+
+    <div class="formula-pill">
+      DEMOCRATIC SOVEREIGNTY: Data generated by the community is owned by the community · 100% of API Subscriptions Feed the Vault · 5-of-9 Council Can Veto Anytime
+    </div>
+  </div>
+
+  <!-- SLIDE 7: The 10-Year $98M Math -->
+  <div class="slide" id="s7">
+    <div>
+      <div class="slide-tag">Financial Architecture · 10-Year Hardware Model</div>
+      <div class="slide-title">The $61M - $120M Math: Sustainable Hardware Capital Inflow</div>
+      <div class="slide-subtitle">
+        Priced at an aggressive $300 retail (undercutting legacy $1,500 radars with zero monthly fees), Heimdall captures national volume with ease:
+      </div>
+    </div>
+
+    <div class="grid-4">
+      <div class="card-box">
+        <div class="metric-label" style="font-size: 12px; color: var(--muted);">Yearly Target</div>
+        <div class="card-metric" style="color: var(--cyan); font-size: 22px;">120K Units</div>
+        <div class="card-desc" style="margin-top: 6px;">Only 10,000 nodes/mo nationally across 50 states.</div>
+      </div>
+      <div class="card-box">
+        <div class="metric-label" style="font-size: 12px; color: var(--muted);">10-Year Volume</div>
+        <div class="card-metric" style="color: var(--purple); font-size: 22px;">1.2M Nodes</div>
+        <div class="card-desc" style="margin-top: 6px;">Capturing < 2% of the US residential sensor market.</div>
+      </div>
+      <div class="card-box highlight-gold">
+        <div class="metric-label" style="font-size: 12px; color: var(--muted);">Direct Vault Inflow</div>
+        <div class="card-metric" style="color: var(--gold); font-size: 22px;">$61.2M USDC</div>
+        <div class="card-desc" style="margin-top: 6px;">$51.00 × 1.2M nodes swept directly into Gold & Bitcoin.</div>
+      </div>
+      <div class="card-box highlight-green">
+        <div class="metric-label" style="font-size: 12px; color: var(--muted);">Appreciation Projected</div>
+        <div class="card-metric" style="color: var(--green); font-size: 22px;">$80M - $130M+</div>
+        <div class="card-desc" style="margin-top: 6px;">Compound historical growth of Gold (PAXG) & BTC reserves.</div>
+      </div>
+    </div>
+
+    <div class="formula-pill">
+      PLUS UTICA 100% RECYCLING: Every $10 community node sold in Utica routes 100% directly into the Vault!
+    </div>
+  </div>
+
+
+  <!-- SLIDE 8: The 20-Year Post-Scarcity Vision -->
+  <div class="slide" id="s8">
+    <div>
+      <div class="slide-tag">Long-Term Vision · Generational Transformation</div>
+      <div class="slide-title">The 20-Year Horizon: The Alaska / Norway Model for a City</div>
+      <div class="slide-subtitle">
+        How technological sovereignty permanently eradicates survival poverty and creates true human liberty in Upstate New York.
+      </div>
+    </div>
+
+    <div class="grid-3">
+      <div class="card-box">
+        <div class="card-title">🏛️ The Sovereign Endowment</div>
+        <div class="card-desc">
+          At maturity in 20 years, the Utica Community Vault holds an estimated $250M+ in hard assets. 
+          A conservative 5% annual yield generates <strong>$12.5 Million/year</strong> in perpetual civic revenue.
+        </div>
+      </div>
+      <div class="card-box highlight-gold">
+        <div class="card-title">💵 Universal Civic Dividends</div>
+        <div class="card-desc">
+          Direct dividends distributed to local households and porch node guardians. 
+          Zero dependence on state budget deficits or temporary municipal grants.
+        </div>
+      </div>
+      <div class="card-box highlight-cyan">
+        <div class="card-title">🕊️ True Post-Scarcity Freedom</div>
+        <div class="card-desc">
+          People still work—not out of wage slavery or the fear of starvation, but to build, create, teach, 
+          and care for family. Survival needs are permanently guaranteed by the physical asset mesh.
+        </div>
+      </div>
+    </div>
+
+    <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid var(--border); border-radius: 10px; padding: 14px 20px; font-size: 13px; color: var(--muted); text-align: center;">
+      <em>"Norway capitalized North Sea oil for its citizens. Utica capitalizes wave intelligence and decentralized physical hardware for its children."</em>
+    </div>
+  </div>
+
+  <!-- SLIDE 9: Live Base L2 Deployed Suite -->
+  <div class="slide" id="s9">
+    <div>
+      <div class="slide-tag">Technical Verification · Base Mainnet Live</div>
+      <div class="slide-title">Deployed On-Chain Architecture & Verified Contracts</div>
+      <div class="slide-subtitle">
+        100% verified on Base Mainnet. All tokenomics, vaults, vesting schedules, and pools are active right now:
+      </div>
+    </div>
+
+    <table class="matrix-table">
+      <thead>
+        <tr>
+          <th>Contract</th>
+          <th>Address</th>
+          <th>Function</th>
+          <th>State</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong style="color: var(--gold);">$RNR Token</strong></td>
+          <td>0xC45D0C71dFB5D637A7Fe1FCA9067B3E46CB87431</td>
+          <td>21M Hard Cap / DePIN Hardware Layer</td>
+          <td><span style="color: var(--green);">● Live / Distributed</span></td>
+        </tr>
+        <tr>
+          <td><strong style="color: var(--cyan);">Utica Vault V2</strong></td>
+          <td>0xAce4362d791800c4729bC16A3A6a5d1359EC8926</td>
+          <td>35,000 $RNR Seed Endowment</td>
+          <td><span style="color: var(--green);">● Active Guardian</span></td>
+        </tr>
+        <tr>
+          <td><strong style="color: var(--purple);">Uniswap V3 Pool</strong></td>
+          <td>0x40cfD1595ebD596deaA1FEB9aa73D09d05441400</td>
+          <td>WETH/$RNR Pool @ $0.0200 USD</td>
+          <td><span style="color: var(--green);">● Swaps Active</span></td>
+        </tr>
+        <tr>
+          <td><strong>Founder Vesting</strong></td>
+          <td>0xC3b1928B2B0C9465351831960876699D6Db6A45B</td>
+          <td>6.26M $RNR Linear Vesting</td>
+          <td><span style="color: var(--gold);">● Locked</span></td>
+        </tr>
+        <tr>
+          <td><strong>DePIN Distributor</strong></td>
+          <td>0x658B4AD38Af3557791844Bce66890661DAc64ce4</td>
+          <td>14.70M $RNR Hardware Mining Pool</td>
+          <td><span style="color: var(--cyan);">● Ready</span></td>
+        </tr>
+        <tr>
+          <td><strong>Reserve Router</strong></td>
+          <td>0x7FBf5F7364412f14D535c40d4DBf2Df95fCD6D4e</td>
+          <td>17% Inflow Sweeper (Gold/BTC)</td>
+          <td><span style="color: var(--green);">● Deployed</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="formula-pill">
+      DISTRIBUTION AUDIT: 35K Vault + 6.26M Vesting + 14.70M Mining + 5K Uniswap Pool = EXACTLY 21,000,000 $RNR
+    </div>
+  </div>
+
+  <!-- SLIDE 10: Immediate Action Roadmap -->
+  <div class="slide" id="s10">
+    <div>
+      <div class="slide-tag">Actionable Roadmap · Next Phase Execution</div>
+      <div class="slide-title">Next Steps: Bringing the Sovereign Vault to the Streets of Utica</div>
+      <div class="slide-subtitle">
+        Now that all contracts and liquidity are live, we execute on real-world municipal adoption:
+      </div>
+    </div>
+
+    <div class="grid-3">
+      <div class="card-box highlight-cyan">
+        <div class="card-title" style="color: var(--cyan);">Phase 1: Local Street Pilot</div>
+        <div class="card-desc">
+          • Hand out first 150 free porch nodes to low-income seniors via the Civic Care Subsidy.<br>
+          • Test camera-free fall detection and emergency offline SOS with volunteer families.<br>
+          • Link nodes to the <code>wgc_hardware_bridge</code> for live telemetry.
+        </div>
+        <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--cyan); margin-top: 10px;">TIMELINE: WEEKS 1 - 3</div>
+      </div>
+
+      <div class="card-box highlight-gold">
+        <div class="card-title" style="color: var(--gold);">Phase 2: First Copay & Civic Grants</div>
+        <div class="card-desc">
+          • Partner with an independent local Utica community pharmacy.<br>
+          • Execute the first <strong>$0 copay relief grants</strong> directly from the Command Center.<br>
+          • Seat the grassroots 5-of-9 community council to transition from guardian to decentralized control.
+        </div>
+        <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--gold); margin-top: 10px;">TIMELINE: WEEKS 4 - 6</div>
+      </div>
+
+      <div class="card-box highlight-green">
+        <div class="card-title" style="color: var(--green);">Phase 3: National Hardware Commercialization</div>
+        <div class="card-desc">
+          • Launch pre-orders for the commercial Heimdall RF Spire ($300 retail).<br>
+          • Activate automated 17% sweeps ($51.00/unit) into Gold (PAXG) and Bitcoin (cbBTC).<br>
+          • Scale the Wave Intelligence Cloud API to enterprise home-care accounts.
+        </div>
+        <div style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--green); margin-top: 10px;">TIMELINE: WEEKS 7 - 12</div>
+      </div>
+    </div>
+
+    <div class="formula-pill">
+      MISSION: The first sovereign American city where technology serves human dignity instead of extracting it.
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <button class="nav-btn" onclick="prevSlide()">← PREVIOUS</button>
+  <div class="progress-track">
+    <div class="progress-fill" id="progFill"></div>
+  </div>
+  <button class="nav-btn" onclick="nextSlide()">NEXT SLIDE →</button>
+</footer>
+
+<script>
+  let cur = 1;
+  const total = 10;
+
+  function showSlide(n) {
+    document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+    document.getElementById('s' + n).classList.add('active');
+    document.getElementById('slideNum').innerText = `SLIDE ${n} OF ${total}`;
+    document.getElementById('progFill').style.width = `${(n / total) * 100}%`;
+  }
+
+  function nextSlide() {
+    if (cur < total) { cur++; showSlide(cur); }
+  }
+
+  function prevSlide() {
+    if (cur > 1) { cur--; showSlide(cur); }
+  }
+
+  // Keyboard navigation
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === 'Space') nextSlide();
+    if (e.key === 'ArrowLeft') prevSlide();
+  });
+</script>
+
+</body>
+</html>
