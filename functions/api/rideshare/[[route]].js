@@ -59,6 +59,54 @@ export async function onRequestPost(context) {
 
     const now = Date.now() / 1000;
 
+    // 0. DRIVER APPLICATION (VETTING)
+    if (pathname.includes("/driver/apply")) {
+        const wallet = (body.wallet || "").trim().toLowerCase();
+        if (!wallet) {
+            return new Response(JSON.stringify({ error: "Wallet address required" }), { headers: CORS_HEADERS, status: 400 });
+        }
+        globalDrivers[wallet] = {
+            wallet: wallet,
+            name: body.name || "Community Driver Applicant",
+            phone: body.phone || "",
+            car: body.car || "Vehicle",
+            plate: body.plate || "",
+            license: body.license || "",
+            insurance: body.insurance || "",
+            sponsor: body.sponsor || "",
+            vetted: false,
+            vetted_status: "PENDING",
+            online: false,
+            applied_at: now,
+            last_ping: now
+        };
+        return new Response(JSON.stringify({ ok: true, status: "PENDING", driver: globalDrivers[wallet] }), { headers: CORS_HEADERS, status: 200 });
+    }
+
+    // 0B. DRIVER APPROVAL (COUNCIL / ADMIN)
+    if (pathname.includes("/driver/approve")) {
+        const wallet = (body.wallet || "").trim().toLowerCase();
+        const pin = (body.pin || "").trim();
+        if (pin !== "utica2026" && pin !== "admin") {
+            return new Response(JSON.stringify({ error: "Unauthorized Council PIN" }), { headers: CORS_HEADERS, status: 403 });
+        }
+        if (globalDrivers[wallet]) {
+            globalDrivers[wallet].vetted = true;
+            globalDrivers[wallet].vetted_status = "VERIFIED";
+            globalDrivers[wallet].approved_at = now;
+        } else {
+            globalDrivers[wallet] = {
+                wallet: wallet,
+                name: body.name || "Verified Community Driver",
+                vetted: true,
+                vetted_status: "VERIFIED",
+                online: false,
+                last_ping: now
+            };
+        }
+        return new Response(JSON.stringify({ ok: true, status: "VERIFIED", driver: globalDrivers[wallet] }), { headers: CORS_HEADERS, status: 200 });
+    }
+
     // 1. DRIVER TOGGLE
     if (pathname.includes("/driver/toggle")) {
         const wallet = (body.wallet || "").trim().toLowerCase();
@@ -66,14 +114,30 @@ export async function onRequestPost(context) {
             return new Response(JSON.stringify({ error: "Wallet address required" }), { headers: CORS_HEADERS, status: 400 });
         }
         const online = Boolean(body.online !== false);
+        const existing = globalDrivers[wallet] || {};
+        const isVetted = Boolean(existing.vetted || body.vetted || body.pin === "utica2026");
+
         globalDrivers[wallet] = {
+            ...existing,
             wallet: wallet,
-            name: body.name || "Utica Community Driver",
-            phone: body.phone || "",
-            car: body.car || "Vehicle",
-            online: online,
+            name: body.name || existing.name || "Utica Community Driver",
+            phone: body.phone || existing.phone || "",
+            car: body.car || existing.car || "Vehicle",
+            plate: body.plate || existing.plate || "",
+            vetted: isVetted,
+            vetted_status: isVetted ? "VERIFIED" : (existing.vetted_status || "PENDING"),
+            online: isVetted ? online : false,
             last_ping: now
         };
+
+        if (!isVetted && online) {
+            return new Response(JSON.stringify({ 
+                error: "Driver vetting required by Utica Community Council. Please complete and submit your application.",
+                status: "PENDING",
+                driver: globalDrivers[wallet]
+            }), { headers: CORS_HEADERS, status: 403 });
+        }
+
         return new Response(JSON.stringify({ ok: true, driver: globalDrivers[wallet] }), { headers: CORS_HEADERS, status: 200 });
     }
 
